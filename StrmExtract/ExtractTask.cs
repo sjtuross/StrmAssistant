@@ -1,21 +1,15 @@
-using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
-using MediaBrowser.Model.MediaInfo;
-using MediaBrowser.Model.Dto;
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Configuration;
-using MediaBrowser.Controller.Providers;
-using System.Collections;
-using MediaBrowser.Model.Entities;
+using System.Threading.Tasks;
 
 namespace StrmExtract
 {
@@ -69,55 +63,51 @@ namespace StrmExtract
 
             _logger.Info("StrmExtract - Number of items after: " + items.Count);
 
+            MetadataRefreshOptions options = new MetadataRefreshOptions(_fileSystem);
+            options.EnableRemoteContentProbe = true;
+            options.ReplaceAllMetadata = true;
+            options.EnableThumbnailImageExtraction = false;
+            options.ImageRefreshMode = MetadataRefreshMode.ValidationOnly;
+            options.MetadataRefreshMode = MetadataRefreshMode.ValidationOnly;
+            options.ReplaceAllImages = false;
+
             double total = items.Count;
             int current = 0;
-            foreach(BaseItem item in items)
+            int maxConcurrentCount = Plugin.Instance.GetPluginOptions().MaxConcurrentCount;
+            _logger.Info("StrmExtract - Max Concurrent Count: " + maxConcurrentCount);
+            SemaphoreSlim semaphore = new SemaphoreSlim(maxConcurrentCount);
+            List<Task> tasks = new List<Task>();
+
+            foreach (BaseItem item in items)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
                     _logger.Info("StrmExtract - Task Cancelled");
                     break;
                 }
-                double percent_done = (current / total) * 100;
-                progress.Report(percent_done);
 
-                MetadataRefreshOptions options = new MetadataRefreshOptions(_fileSystem);
-                options.EnableRemoteContentProbe = true;
-                options.ReplaceAllMetadata = true;
-                options.EnableThumbnailImageExtraction = false;
-                options.ImageRefreshMode = MetadataRefreshMode.ValidationOnly;
-                options.MetadataRefreshMode = MetadataRefreshMode.ValidationOnly;
-                options.ReplaceAllImages = false;
-
-                ItemUpdateType resp = await item.RefreshMetadata(options, cancellationToken);
-
-                //Thread.Sleep(5000);
-                current++;
-                _logger.Info("StrmExtract - " + current + "/" + total + " - " + item.Path);
+                await semaphore.WaitAsync(cancellationToken);
+                var task = Task.Run(async () =>
+                {
+                    try
+                    {
+                        ItemUpdateType resp = await item.RefreshMetadata(options, cancellationToken);
+                        current++;
+                        double percent_done = (current / total) * 100;
+                        progress.Report(percent_done);
+                        _logger.Info("StrmExtract - " + current + "/" + total + " - " + item.Path);
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }, cancellationToken);
+                tasks.Add(task);
             }
+            await Task.WhenAll(tasks);
 
             progress.Report(100.0);
             _logger.Info("StrmExtract - Task Complete");
-
-            /*
-            LibraryOptions lib_options = new LibraryOptions();
-            List<MediaSourceInfo> sources = item.GetMediaSources(true, true, lib_options);
-
-            _logger.Info("StrmExtract - GetMediaSources : " + sources.Count);
-
-            MediaInfoRequest request = new MediaInfoRequest();
-
-            MediaSourceInfo mediaSource = sources[0];
-            request.MediaSource = mediaSource;
-
-            _logger.Info("StrmExtract - GetMediaInfo");
-            MediaInfo info = await _mediaProbeManager.GetMediaInfo(request, cancellationToken);
-
-            _logger.Info("StrmExtract - Extracting Strm info " + info);
-
-            _logger.Info("StrmExtract - Extracting Strm info : url - " + info.DirectStreamUrl);
-            _logger.Info("StrmExtract - Extracting Strm info : runtime - " + info.RunTimeTicks);
-            */
         }
 
         public string Category
