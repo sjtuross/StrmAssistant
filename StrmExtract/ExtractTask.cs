@@ -50,11 +50,11 @@ namespace StrmExtract
             query.ExcludeItemTypes = new string[] { "Folder", "CollectionFolder", "UserView", "Series", "Season", "Trailer", "Playlist" };
 
             BaseItem[] results = _libraryManager.GetItemList(query);
-            _logger.Info("StrmExtract - Number of items before : " + results.Length);
+            _logger.Info("StrmExtract - Number of items before: " + results.Length);
             List<BaseItem> items = new List<BaseItem>();
             foreach(BaseItem item in  results)
             {
-                if(!string.IsNullOrEmpty(item.Path) &&
+                if (!string.IsNullOrEmpty(item.Path) &&
                     item.Path.EndsWith(".strm", StringComparison.InvariantCultureIgnoreCase) &&
                     item.GetMediaStreams().Count == 0)
                 {
@@ -62,11 +62,11 @@ namespace StrmExtract
                 }
                 else
                 {
-                    _logger.Info("StrmExtract - Item dropped : " + item.Name + " - " + item.Path + " - " + item.GetType() + " - " + item.GetMediaStreams().Count);
+                    _logger.Info("StrmExtract - Item dropped: " + item.Name + " - " + item.Path + " - " + item.GetType() + " - " + item.GetMediaStreams().Count);
                 }
             }
 
-            _logger.Info("StrmExtract - Number of items after : " + items.Count);
+            _logger.Info("StrmExtract - Number of items after: " + items.Count);
 
             double total = items.Count;
             int current = 0;
