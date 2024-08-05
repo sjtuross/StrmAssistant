@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Model.IO;
@@ -15,6 +15,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Controller.Providers;
 using System.Collections;
+using MediaBrowser.Model.Entities;
 
 namespace StrmExtract
 {
@@ -47,7 +48,7 @@ namespace StrmExtract
 
             query.HasPath = true;
             query.HasContainer = false;
-            query.ExcludeItemTypes = new string[] { "Folder", "CollectionFolder", "UserView", "Series", "Season", "Trailer", "Playlist" };
+            query.ExcludeItemTypes = new string[] { "Folder", "CollectionFolder", "UserView", "Series", "Season", "Trailer", "Playlist", "PhotoAlbum" };
 
             BaseItem[] results = _libraryManager.GetItemList(query);
             _logger.Info("StrmExtract - Number of items before: " + results.Length);
@@ -56,7 +57,7 @@ namespace StrmExtract
             {
                 if (!string.IsNullOrEmpty(item.Path) &&
                     item.Path.EndsWith(".strm", StringComparison.InvariantCultureIgnoreCase) &&
-                    item.GetMediaStreams().Count == 0)
+                    item.GetMediaStreams().FindAll(i => i.Type == MediaStreamType.Video || i.Type == MediaStreamType.Audio).Count == 0)
                 {
                     items.Add(item);
                 }
@@ -90,10 +91,9 @@ namespace StrmExtract
 
                 ItemUpdateType resp = await item.RefreshMetadata(options, cancellationToken);
 
-                _logger.Info("StrmExtract - " + current + "/" + total + " - " + item.Path);
-
                 //Thread.Sleep(5000);
                 current++;
+                _logger.Info("StrmExtract - " + current + "/" + total + " - " + item.Path);
             }
 
             progress.Report(100.0);
