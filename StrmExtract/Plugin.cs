@@ -43,6 +43,7 @@ namespace StrmExtract
         protected override void OnOptionsSaved(PluginOptions options)
         {
             this.logger.Info("MaxConcurrentCount is set to {0}", options.MaxConcurrentCount);
+            this.logger.Info("StrmOnly is set to {0}", options.StrmOnly);
         }
     }
 }

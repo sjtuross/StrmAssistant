@@ -21,5 +21,9 @@ namespace StrmExtract
                 context.AddValidationError(nameof(this.MaxConcurrentCount), "MaxConcurrentCount must be between 1 to 10");
             }
         }
+
+        [Description("Probe media info of strm only. Default is true.")]
+        [MediaBrowser.Model.Attributes.Required]
+        public bool StrmOnly { get; set; } = true;
     }
 }

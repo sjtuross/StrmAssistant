@@ -47,20 +47,24 @@ namespace StrmExtract
             BaseItem[] results = _libraryManager.GetItemList(query);
             _logger.Info("StrmExtract - Number of items before: " + results.Length);
             List<BaseItem> items = new List<BaseItem>();
-            foreach(BaseItem item in  results)
+            bool strmOnly = Plugin.Instance.GetPluginOptions().StrmOnly;
+            _logger.Info("StrmExtract - Strm Only: " + strmOnly);
+
+            foreach (BaseItem item in results)
             {
                 if (!string.IsNullOrEmpty(item.Path) &&
-                    item.Path.EndsWith(".strm", StringComparison.InvariantCultureIgnoreCase) &&
+                    strmOnly ? item.Path.EndsWith(".strm", StringComparison.InvariantCultureIgnoreCase) : true &&
                     item.GetMediaStreams().FindAll(i => i.Type == MediaStreamType.Video || i.Type == MediaStreamType.Audio).Count == 0)
                 {
                     items.Add(item);
                 }
                 else
                 {
-                    _logger.Info("StrmExtract - Item dropped: " + item.Name + " - " + item.Path + " - " + item.GetType() + " - " + item.GetMediaStreams().Count);
+                    _logger.Debug("StrmExtract - Item dropped: " + item.Name + " - " + item.Path + " - " + item.GetType() + " - " + item.GetMediaStreams().Count);
                 }
             }
 
+            _logger.Info("StrmExtract - Number of items dropped: " + (results.Length - items.Count));
             _logger.Info("StrmExtract - Number of items after: " + items.Count);
 
             MetadataRefreshOptions options = new MetadataRefreshOptions(_fileSystem);
@@ -92,13 +96,12 @@ namespace StrmExtract
                     try
                     {
                         ItemUpdateType resp = await item.RefreshMetadata(options, cancellationToken);
-                        current++;
-                        double percent_done = (current / total) * 100;
-                        progress.Report(percent_done);
-                        _logger.Info("StrmExtract - " + current + "/" + total + " - " + item.Path);
                     }
                     finally
                     {
+                        current++;
+                        progress.Report(current / total * 100);
+                        _logger.Info("StrmExtract - " + current + "/" + total + " - " + item.Path);
                         semaphore.Release();
                     }
                 }, cancellationToken);
