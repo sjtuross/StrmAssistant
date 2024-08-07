@@ -41,14 +41,14 @@ namespace StrmExtract
             InternalItemsQuery query = new InternalItemsQuery();
 
             query.HasPath = true;
-            query.HasContainer = false;
-            query.ExcludeItemTypes = new string[] { "Folder", "CollectionFolder", "UserView", "Series", "Season", "Trailer", "Playlist", "PhotoAlbum" };
-
+            query.HasAudioStream = false;
+            query.MediaTypes = new string[] { MediaType.Video, MediaType.Audio };
             BaseItem[] results = _libraryManager.GetItemList(query);
-            _logger.Info("StrmExtract - Number of items before: " + results.Length);
             List<BaseItem> items = new List<BaseItem>();
+
             bool strmOnly = Plugin.Instance.GetPluginOptions().StrmOnly;
             _logger.Info("StrmExtract - Strm Only: " + strmOnly);
+            _logger.Info("StrmExtract - Number of items before: " + results.Length);
 
             foreach (BaseItem item in results)
             {
