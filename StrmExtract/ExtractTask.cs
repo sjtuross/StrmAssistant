@@ -97,6 +97,10 @@ namespace StrmExtract
                     {
                         ItemUpdateType resp = await item.RefreshMetadata(options, cancellationToken);
                     }
+                    catch
+                    {
+                        _logger.Info("StrmExtract - Item failed: " + item.Name + " - " + item.Path);
+                    }
                     finally
                     {
                         current++;
