@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
@@ -43,13 +44,15 @@ namespace StrmExtract
             query.HasPath = true;
             query.HasAudioStream = false;
             query.MediaTypes = new string[] { MediaType.Video, MediaType.Audio };
+            query.OrderBy = new (string, SortOrder)[] { (ItemSortBy.PremiereDate, SortOrder.Descending) }; //PremiereDate refers to ReleaseDate
             BaseItem[] results = _libraryManager.GetItemList(query);
-            List<BaseItem> items = new List<BaseItem>();
+
 
             bool strmOnly = Plugin.Instance.GetPluginOptions().StrmOnly;
             _logger.Info("StrmExtract - Strm Only: " + strmOnly);
             _logger.Info("StrmExtract - Number of items before: " + results.Length);
 
+            List<BaseItem> items = new List<BaseItem>();
             foreach (BaseItem item in results)
             {
                 if (!string.IsNullOrEmpty(item.Path) &&
@@ -76,6 +79,7 @@ namespace StrmExtract
             options.ReplaceAllImages = false;
 
             double total = items.Count;
+            int index = 0;
             int current = 0;
             int maxConcurrentCount = Plugin.Instance.GetPluginOptions().MaxConcurrentCount;
             _logger.Info("StrmExtract - Max Concurrent Count: " + maxConcurrentCount);
@@ -91,6 +95,7 @@ namespace StrmExtract
                 }
 
                 await semaphore.WaitAsync(cancellationToken);
+                var taskIndex = ++index;
                 var task = Task.Run(async () =>
                 {
                     try
@@ -105,7 +110,7 @@ namespace StrmExtract
                     {
                         current++;
                         progress.Report(current / total * 100);
-                        _logger.Info("StrmExtract - " + current + "/" + total + " - " + item.Path);
+                        _logger.Info("StrmExtract - " + current + "/" + total + " - " + "Task " + taskIndex + ": " + item.Path);
                         semaphore.Release();
                     }
                 }, cancellationToken);
