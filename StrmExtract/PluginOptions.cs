@@ -25,5 +25,9 @@ namespace StrmExtract
         [Description("Probe media info of strm only. Default is true.")]
         [MediaBrowser.Model.Attributes.Required]
         public bool StrmOnly { get; set; } = true;
+
+        [Description("Include media extras to probe. Default is false.")]
+        [MediaBrowser.Model.Attributes.Required]
+        public bool IncludeExtra { get; set; } = false;
     }
 }

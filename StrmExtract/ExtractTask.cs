@@ -47,6 +47,25 @@ namespace StrmExtract
             query.OrderBy = new (string, SortOrder)[] { (ItemSortBy.PremiereDate, SortOrder.Descending) }; //PremiereDate refers to ReleaseDate
             BaseItem[] results = _libraryManager.GetItemList(query);
 
+            bool includeExtra = Plugin.Instance.GetPluginOptions().IncludeExtra;
+            _logger.Info("StrmExtract - Include Extra: " + includeExtra);
+            if (includeExtra)
+            {
+                query.ExtraTypes = new ExtraType[] { ExtraType.AdditionalPart,
+                                                     ExtraType.BehindTheScenes,
+                                                     ExtraType.Clip,
+                                                     ExtraType.DeletedScene,
+                                                     ExtraType.Interview,
+                                                     ExtraType.Sample,
+                                                     ExtraType.Scene,
+                                                     ExtraType.ThemeSong,
+                                                     ExtraType.ThemeVideo,
+                                                     ExtraType.Trailer };
+                query.OrderBy = new (string, SortOrder)[] { (ItemSortBy.DateCreated, SortOrder.Descending) }; //PremiereDate is not available for extra
+                BaseItem[] extras = _libraryManager.GetItemList(query);
+                Array.Resize(ref results, results.Length + extras.Length);
+                Array.Copy(extras, 0, results, results.Length - extras.Length, extras.Length);
+            }
 
             bool strmOnly = Plugin.Instance.GetPluginOptions().StrmOnly;
             _logger.Info("StrmExtract - Strm Only: " + strmOnly);

@@ -44,6 +44,7 @@ namespace StrmExtract
         {
             this.logger.Info("MaxConcurrentCount is set to {0}", options.MaxConcurrentCount);
             this.logger.Info("StrmOnly is set to {0}", options.StrmOnly);
+            this.logger.Info("IncludeExtra is set to {0}", options.IncludeExtra);
         }
     }
 }
