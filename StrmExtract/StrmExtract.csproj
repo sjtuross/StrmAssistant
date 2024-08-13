@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;</TargetFrameworks>
-    <AssemblyVersion>1.0.0.6</AssemblyVersion>
-    <FileVersion>1.0.0.6</FileVersion>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <AssemblyVersion>1.0.0.7</AssemblyVersion>
+    <FileVersion>1.0.0.7</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Images\thumb.png" />
