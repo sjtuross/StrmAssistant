@@ -1,0 +1,50 @@
+﻿<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>1.3</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PluginOptions_CatchupMode_Catch_up_Mode__Experimental_" xml:space="preserve">
+    <value>追更模式 (实验室)</value>
+  </data>
+  <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
+    <value>收藏的电影洗版或剧集有更新后实时提取媒体信息 (仅支持Strm)，默认关闭。</value>
+  </data>
+  <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
+    <value>包含附加内容</value>
+  </data>
+  <data name="PluginOptions_IncludeExtra_Include_media_extras_to_extract__Default_is_False_" xml:space="preserve">
+    <value>提取电影或剧集附加内容的媒体信息，默认关闭。</value>
+  </data>
+  <data name="PluginOptions_StrmOnly_Strm_Only" xml:space="preserve">
+    <value>仅包含Strm</value>
+  </data>
+  <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
+    <value>仅提取Strm文件的媒体信息，默认开启。</value>
+  </data>
+  <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count" xml:space="preserve">
+    <value>最大线程数</value>
+  </data>
+  <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
+    <value>最大并发提取媒体信息的线程数。必须在 1 至 10 之间。默认为 1。</value>
+  </data>
+  <data name="PluginOptions_EditorTitle_Strm_Extract" xml:space="preserve">
+    <value>媒体信息提取</value>
+  </data>
+  <data name="PluginOptions_LibraryScope_Library_Scope" xml:space="preserve">
+    <value>媒体库范围</value>
+  </data>
+  <data name="PluginOptions_LibraryScope_Library_scope_to_extract__Blank_includes_all_" xml:space="preserve">
+    <value>媒体库范围，留空包含所有。</value>
+  </data>
+  <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
+    <value>对缺失图片的视频做视频截图，默认关闭。</value>
+  </data>
+</root>
