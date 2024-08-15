@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -20,7 +20,7 @@ namespace StrmExtract
         private readonly IUserManager _userManager;
         private readonly ILogger _logger;
 
-        public static MetadataRefreshOptions refreshOptions;
+        public static MetadataRefreshOptions MediaInfoRefreshOptions;
         public static ExtraType[] extraType = new ExtraType[] { ExtraType.AdditionalPart,
                                                                 ExtraType.BehindTheScenes,
                                                                 ExtraType.Clip,
@@ -44,7 +44,7 @@ namespace StrmExtract
 
             FetchUsers();
 
-            refreshOptions = new MetadataRefreshOptions(_fileSystem)
+            MediaInfoRefreshOptions = new MetadataRefreshOptions(_fileSystem)
             {
                 EnableRemoteContentProbe = true,
                 ReplaceAllMetadata = true,

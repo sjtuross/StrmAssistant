@@ -41,21 +41,28 @@ namespace StrmExtract
 
                 await QueueManager.semaphore.WaitAsync(cancellationToken);
                 var taskIndex = ++index;
+                var itemName = item.Name;
+                var itemPath = item.Path;
                 var task = Task.Run(async () =>
                 {
                     try
                     {
-                        ItemUpdateType resp = await item.RefreshMetadata(LibraryUtility.refreshOptions, cancellationToken);
+                        ItemUpdateType resp = await item.RefreshMetadata(LibraryUtility.MediaInfoRefreshOptions,
+                            cancellationToken);
+                    }
+                    catch (TaskCanceledException)
+                    {
+                        _logger.Info("Item cancelled: " + itemName + " - " + itemPath);
                     }
                     catch
                     {
-                        _logger.Info("Item failed: " + item.Name + " - " + item.Path);
+                        _logger.Info("Item failed: " + itemName + " - " + itemPath);
                     }
                     finally
                     {
-                        current++;
+                        Interlocked.Increment(ref current);
                         progress.Report(current / total * 100);
-                        _logger.Info(current + "/" + total + " - " + "Task " + taskIndex + ": " + item.Path);
+                        _logger.Info(current + "/" + total + " - " + "Task " + taskIndex + ": " + itemPath);
                         QueueManager.semaphore.Release();
                     }
                 }, cancellationToken);

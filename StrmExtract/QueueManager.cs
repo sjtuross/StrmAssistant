@@ -56,16 +56,23 @@ namespace StrmExtract
 
                     foreach (BaseItem item in items)
                     {
+                        var itemName = item.Name;
+                        var itemPath = item.Path;
                         _taskQueue.Enqueue(async () =>
                         {
                             try
                             {
-                                ItemUpdateType resp = await item.RefreshMetadata(LibraryUtility.refreshOptions, cancellationToken);
-                                _logger.Debug("Item Processed: " + item.Name + " - " + item.Path + " - " + item.GetType() + " - " + item.GetMediaStreams().Count);
+                                ItemUpdateType resp = await item.RefreshMetadata(LibraryUtility.MediaInfoRefreshOptions,
+                                    cancellationToken);
+                                _logger.Info("Item Processed: " + itemName + " - " + itemPath);
+                            }
+                            catch (TaskCanceledException)
+                            {
+                                _logger.Info("Item Cancelled: " + itemName + " - " + itemPath);
                             }
                             catch
                             {
-                                _logger.Info("Item Failed: " + item.Name + " - " + item.Path);
+                                _logger.Info("Item Failed: " + itemName + " - " + itemPath);
                             }
                         });
 
