@@ -1,8 +1,5 @@
 {
   "profiles": {
-    "StrmExtract": {
-      "commandName": "Project"
-    },
     "EmbySever": {
       "commandName": "Executable",
       "executablePath": "%AppData%\\Emby-Server\\system\\EmbyServer.exe",
