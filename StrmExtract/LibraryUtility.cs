@@ -57,14 +57,16 @@ namespace StrmExtract
 
         public void FetchUsers()
         {
-            UserQuery userQuery = new UserQuery();
-            userQuery.IsDisabled = false;
+            UserQuery userQuery = new UserQuery
+            {
+                IsDisabled = false
+            };
             allUsers = _userManager.GetUserList(userQuery);
         }
 
         public List<BaseItem> FetchItems(List<BaseItem> items)
         {
-            var movies = items?.OfType<Movie>().Cast<BaseItem>();
+            var movies = items.OfType<Movie>().Cast<BaseItem>();
 
             InternalItemsQuery query = new InternalItemsQuery
             {
@@ -76,13 +78,13 @@ namespace StrmExtract
                         .Union(items?.OfType<Episode>().Select(e => e.SeriesId)).ToArray()
             };
 
-            var episodes = new BaseItem[0];
-            if (query.AncestorIds.Length>0)
+            var episodes = Array.Empty<BaseItem>();
+            if (query.AncestorIds != null && query.AncestorIds.Length>0)
             {
                 episodes = _libraryManager.GetItemList(query);
             }
 
-            var favorites = FilterByFavorites(movies.Concat(episodes));
+            var favorites = FilterByFavorites(movies.Concat(episodes)).ToList();
 
             bool includeExtra = Plugin.Instance.GetPluginOptions().IncludeExtra;
             _logger.Info("Include Extra: " + includeExtra);
@@ -94,46 +96,57 @@ namespace StrmExtract
 
         public List<BaseItem> FetchItems()
         {
-            InternalItemsQuery query = new InternalItemsQuery();
-            query.HasPath = true;
-            query.HasAudioStream = false;
-            query.MediaTypes = new string[] { MediaType.Video, MediaType.Audio };
-            query.OrderBy = new (string, SortOrder)[] { (ItemSortBy.PremiereDate, SortOrder.Descending) }; //PremiereDate refers to ReleaseDate
-            BaseItem[] results = new BaseItem[0];
-            
+            var libraryIds = Plugin.Instance.GetPluginOptions().LibraryScope?.Split(',');
+            var libraries = _libraryManager.GetVirtualFolders()
+                .Where(f => libraryIds != null && libraryIds.Contains(f.Id)).ToList();
+            _logger.Info("LibraryScope: " +
+                         (libraries.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
+
+            BaseItem[] results = Array.Empty<BaseItem>();
+
             bool includeExtra = Plugin.Instance.GetPluginOptions().IncludeExtra;
             _logger.Info("Include Extra: " + includeExtra);
 
-            results = _libraryManager.GetItemList(query);
+            var itemsMediaInfoQuery = new InternalItemsQuery
+            {
+                HasPath = true,
+                HasAudioStream = false,
+                MediaTypes = new [] { MediaType.Video, MediaType.Audio },
+                PathStartsWithAny = libraries.SelectMany(l => l.Locations).ToArray(),
+            };
+            var resultsMediaInfo = _libraryManager.GetItemList(itemsMediaInfoQuery);
+
+            results = resultsMediaInfo;
+
             if (includeExtra)
             {
-                query.ExtraTypes = extraType;
-                query.OrderBy = new (string, SortOrder)[] { (ItemSortBy.DateCreated, SortOrder.Descending) }; //PremiereDate is not available for extra
-                BaseItem[] extras = _libraryManager.GetItemList(query);
+                itemsMediaInfoQuery.ExtraTypes = extraType;
+                itemsMediaInfoQuery.OrderBy = new (string, SortOrder)[] { (ItemSortBy.DateCreated, SortOrder.Descending) }; //PremiereDate is not available for Extra
+                BaseItem[] extras = _libraryManager.GetItemList(itemsMediaInfoQuery);
                 Array.Resize(ref results, results.Length + extras.Length);
                 Array.Copy(extras, 0, results, results.Length - extras.Length, extras.Length);
             }
+
             return FilterUnprocessed(results.ToList());
         }
 
         private List<BaseItem> FilterUnprocessed(List<BaseItem> results)
         {
             _logger.Info("Number of items before: " + results.Count);
-            bool strmOnly = Plugin.Instance.GetPluginOptions().StrmOnly;
+            var strmOnly = Plugin.Instance.GetPluginOptions().StrmOnly;
             _logger.Info("Strm Only: " + strmOnly);
 
             List<BaseItem> items = new List<BaseItem>();
-            foreach (BaseItem item in results)
+            foreach (var item in results)
             {
-                if (!string.IsNullOrEmpty(item.Path) &&
-                    strmOnly ? item.IsShortcut : true &&
-                    item.GetMediaStreams().FindAll(i => i.Type == MediaStreamType.Video || i.Type == MediaStreamType.Audio).Count == 0)
+                if (strmOnly ? item.IsShortcut : true && 
+                        item.GetMediaStreams().FindAll(i => i.Type == MediaStreamType.Video || i.Type == MediaStreamType.Audio).Count == 0)
                 {
                     items.Add(item);
                 }
                 else
                 {
-                    _logger.Debug("Item dropped: " + item.Name + " - " + item.Path + " - " + item.GetType() + " - " + item.GetMediaStreams().Count);
+                    _logger.Debug("Item dropped: " + item.Name + " - " + item.Path);
                 }
             }
 

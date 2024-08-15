@@ -1,4 +1,5 @@
-﻿using MediaBrowser.Common;
+using Emby.Web.GenericEdit.Common;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -8,7 +9,9 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -97,7 +100,7 @@ namespace StrmExtract
 
         public override Guid Id => _id;
 
-        public override sealed string Name => "Strm Extract";
+        public sealed override string Name => "Strm Extract";
 
         public Stream GetThumbImage()
         {
@@ -151,7 +154,35 @@ namespace StrmExtract
                 }
             }
 
+            var libraryScope = string.Join(", ", options.LibraryScope
+                .Split(',')
+                .Select(v => options.LibraryList
+                    .FirstOrDefault(option => option.Value == v)?.Name));
+
+            logger.Info("LibraryScope is set to {0}", string.IsNullOrEmpty(libraryScope) ? "ALL" : libraryScope);
+
             base.OnOptionsSaved(options);
+        }
+
+        protected override PluginOptions OnBeforeShowUI(PluginOptions options)
+        {
+            var libraries = _libraryManager.GetVirtualFolders();
+
+            var list = new List<EditorSelectOption>();
+
+            foreach (var item in libraries)
+            {
+                list.Add(new EditorSelectOption
+                {
+                    Value = item.ItemId,
+                    Name = item.Name,
+                    IsEnabled = true,
+                });
+            }
+
+            options.LibraryList = list;
+
+            return base.OnBeforeShowUI(options);
         }
     }
 }

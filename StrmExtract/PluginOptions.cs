@@ -11,7 +11,6 @@ namespace StrmExtract
 {
     public class PluginOptions: EditableOptionsBase
     {
-
         [DisplayNameL("PluginOptions_EditorTitle_Strm_Extract", typeof(Resources))]
         public override string EditorTitle => Resources.PluginOptions_EditorTitle_Strm_Extract;
 
@@ -44,5 +43,14 @@ namespace StrmExtract
         [DescriptionL("PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_", typeof(Resources))]
         [MediaBrowser.Model.Attributes.Required]
         public bool CatchupMode { get; set; } = false;
+
+        [Browsable(false)]
+        public IEnumerable<EditorSelectOption> LibraryList { get; set; }
+
+        [DisplayNameL("PluginOptions_LibraryScope_Library_Scope", typeof(Resources))]
+        [DescriptionL("PluginOptions_LibraryScope_Library_scope_to_extract__Blank_includes_all_", typeof(Resources))]
+        [EditMultilSelect]
+        [SelectItemsSource(nameof(LibraryList))]
+        public string LibraryScope { get; set; }
     }
 }
