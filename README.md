@@ -1,15 +1,21 @@
-# StrmExtract
+# MediaInfo Extract
 
 ## [中文介绍](README.zh.md)
+
+## Purpose
+
+1. Improve initial playback start speed
+2. Solve potential no progress bar issue
 
 ## Update
 
 1. Support concurrent tasks (default is 1, max is 10)
-2. Add Strm Only option to support non-strm media imported with ffprobe blocked (default is True)
+2. Add Strm Only option (default is True) to support non-strm media imported with ffprobe blocked
 3. Include media extras (default is False)
 4. Process media items by release date in the descending order
 5. Add plugin config page with libraries selection
-6. Introduce catch-up mode (**experimental**, default is False)
+6. Enable image capture (**experimental**, default is False)
+7. Introduce catch-up mode (**experimental**, default is False)
    1. Extract media info once movies or series are added to favorites (both strm and non-strm supported)
    2. Extract media info once new items related to favorites are added (strm exclusive)
    3. Same applies to episode but its entire series is covered for processing

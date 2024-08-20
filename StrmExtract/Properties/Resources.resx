@@ -123,13 +123,16 @@
     <value>Max concurrent count of threads to extract media info. It must be between 1 to 10. Default is 1.</value>
   </data>
   <data name="PluginOptions_EditorTitle_Strm_Extract" xml:space="preserve">
-    <value>Media Info Extract</value>
+    <value>MediaInfo Extract</value>
   </data>
   <data name="PluginOptions_LibraryScope_Library_Scope" xml:space="preserve">
     <value>Library Scope</value>
   </data>
   <data name="PluginOptions_LibraryScope_Library_scope_to_extract__Blank_includes_all_" xml:space="preserve">
     <value>Library scope to extract. Blank includes all.</value>
+  </data>
+  <data name="PluginOptions_EnableImageCapture_Enable_Image_Capture" xml:space="preserve">
+    <value>Enable Image Capture</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
     <value>Perform image capture for videos without primary image. Default is False.</value>

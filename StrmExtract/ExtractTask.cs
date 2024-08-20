@@ -1,5 +1,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
@@ -22,7 +24,7 @@ namespace StrmExtract
         {
             _logger.Info("Scheduled Task Execute");
             _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().MaxConcurrentCount);
-
+            
             List<BaseItem> items = Plugin.LibraryUtility.FetchItems();
 
             double total = items.Count;
@@ -39,16 +41,28 @@ namespace StrmExtract
                     break;
                 }
 
-                await QueueManager.semaphore.WaitAsync(cancellationToken);
+                await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                
                 var taskIndex = ++index;
                 var itemName = item.Name;
                 var itemPath = item.Path;
+                var itemHasImage = item.HasImage(ImageType.Primary);
+                var itemMediaStreamCount = item.GetMediaStreams().Count;
+                MetadataRefreshOptions refreshOptions;
+                if (itemMediaStreamCount == 0 && itemHasImage)
+                {
+                    refreshOptions = LibraryUtility.MediaInfoRefreshOptions;
+                }
+                else
+                {
+                    refreshOptions = LibraryUtility.ImageCaptureRefreshOptions;
+                }
+                
                 var task = Task.Run(async () =>
                 {
                     try
                     {
-                        ItemUpdateType resp = await item.RefreshMetadata(LibraryUtility.MediaInfoRefreshOptions,
-                            cancellationToken);
+                        ItemUpdateType resp = await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
                     }
                     catch (TaskCanceledException)
                     {
@@ -63,7 +77,7 @@ namespace StrmExtract
                         Interlocked.Increment(ref current);
                         progress.Report(current / total * 100);
                         _logger.Info(current + "/" + total + " - " + "Task " + taskIndex + ": " + itemPath);
-                        QueueManager.semaphore.Release();
+                        QueueManager.SemaphoreMaster.Release();
                     }
                 }, cancellationToken);
                 tasks.Add(task);
@@ -81,17 +95,17 @@ namespace StrmExtract
 
         public string Key
         {
-            get { return "StrmExtractTask"; }
+            get { return "MediaInfoExtractTask"; }
         }
 
         public string Description
         {
-            get { return "Run Strm Media Info Extraction"; }
+            get { return "Extract media info from videos"; }
         }
 
         public string Name
         {
-            get { return "Process Strm targets"; }
+            get { return "Extract media info"; }
         }
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()

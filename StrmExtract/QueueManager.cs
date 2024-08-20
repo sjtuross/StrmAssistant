@@ -1,5 +1,7 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -12,15 +14,29 @@ namespace StrmExtract
     public static class QueueManager
     {
         private static readonly ILogger _logger = Plugin.Instance.logger;
-        private static ConcurrentQueue<Func<Task>> _taskQueue = new ConcurrentQueue<Func<Task>>();
+        private static readonly ConcurrentQueue<Func<Task>> _taskQueue = new();
         private static bool _isProcessing = false;
-        private static readonly object _lock = new object();
+        private static readonly object _lock = new();
         private static DateTime lastRunTime = DateTime.MinValue;
         private static readonly TimeSpan ThrottleInterval = TimeSpan.FromSeconds(30);
 
         public static CancellationTokenSource _cts;
-        public static SemaphoreSlim semaphore = new SemaphoreSlim(Plugin.Instance.GetPluginOptions().MaxConcurrentCount);
-        public static ConcurrentQueue<BaseItem> itemQueue = new ConcurrentQueue<BaseItem>();
+        public static SemaphoreSlim SemaphoreMaster;
+
+        public static ConcurrentQueue<BaseItem> ItemQueue = new();
+
+        public static void InitializeSemaphore(int maxConcurrentCount)
+        {
+            SemaphoreMaster = new SemaphoreSlim(maxConcurrentCount);
+        }
+
+        public static void UpdateSemaphore(int maxConcurrentCount)
+        {
+            var newSemaphoreMaster = new SemaphoreSlim(maxConcurrentCount);
+            var oldSemaphoreMaster = SemaphoreMaster;
+            SemaphoreMaster = newSemaphoreMaster;
+            oldSemaphoreMaster.Dispose();
+        }
 
         public static async Task ProcessItemQueueAsync()
         {
@@ -43,12 +59,11 @@ namespace StrmExtract
                     }                    
                 }
 
-                if (!itemQueue.IsEmpty)
+                if (!ItemQueue.IsEmpty)
                 {
                     _logger.Info("Clear Item Queue Started");
                     List<BaseItem> dequeueItems = new List<BaseItem>();
-                    BaseItem dequeueItem;
-                    while (itemQueue.TryDequeue(out dequeueItem))
+                    while (ItemQueue.TryDequeue(out var dequeueItem))
                     {
                         dequeueItems.Add(dequeueItem);
                     }
@@ -58,12 +73,23 @@ namespace StrmExtract
                     {
                         var itemName = item.Name;
                         var itemPath = item.Path;
+                        var itemHasImage = item.HasImage(ImageType.Primary);
+                        var itemMediaStreamCount = item.GetMediaStreams().Count;
+                        MetadataRefreshOptions refreshOptions;
+                        if (itemMediaStreamCount == 0 && itemHasImage)
+                        {
+                            refreshOptions = LibraryUtility.MediaInfoRefreshOptions;
+                        }
+                        else
+                        {
+                            refreshOptions = LibraryUtility.ImageCaptureRefreshOptions;
+                        }
                         _taskQueue.Enqueue(async () =>
                         {
                             try
                             {
-                                ItemUpdateType resp = await item.RefreshMetadata(LibraryUtility.MediaInfoRefreshOptions,
-                                    cancellationToken);
+                                ItemUpdateType resp = await item.RefreshMetadata(refreshOptions, cancellationToken)
+                                    .ConfigureAwait(false);
                                 _logger.Info("Item Processed: " + itemName + " - " + itemPath);
                             }
                             catch (TaskCanceledException)
@@ -75,21 +101,20 @@ namespace StrmExtract
                                 _logger.Info("Item Failed: " + itemName + " - " + itemPath);
                             }
                         });
-
-                        lock (_lock)
+                    }
+                    lock (_lock)
+                    {
+                        if (!_isProcessing)
                         {
-                            if (!_isProcessing)
-                            {
-                                _isProcessing = true;
-                                var task = Task.Run(() => ProcessTaskQueueAsync(cancellationToken));
-                            }
+                            _isProcessing = true;
+                            var task = Task.Run(() => ProcessTaskQueueAsync(cancellationToken));
                         }
                     }
                     _logger.Info("Clear Item Queue Stopped");
                 }
                 lastRunTime = DateTime.UtcNow;
             }
-            if (itemQueue.IsEmpty)
+            if (ItemQueue.IsEmpty)
             {
                 _logger.Info("ProcessItemQueueAsync Stopped");
             }
@@ -110,7 +135,7 @@ namespace StrmExtract
                 {
                     try
                     {
-                        await semaphore.WaitAsync(cancellationToken);
+                        await SemaphoreMaster.WaitAsync(cancellationToken);
                     }
                     catch
                     {
@@ -125,7 +150,7 @@ namespace StrmExtract
                         }
                         finally
                         {
-                            semaphore.Release();
+                            SemaphoreMaster.Release();
                         }
                     }, cancellationToken);
                 }

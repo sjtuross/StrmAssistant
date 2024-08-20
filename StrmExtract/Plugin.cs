@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace StrmExtract
@@ -29,8 +28,9 @@ namespace StrmExtract
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
 
+        private int _currentMaxConcurrentCount;
         private bool _currentCatchupMode;
-        private static Task processTask;
+        private static Task _processTask;
 
         public Plugin(IApplicationHost applicationHost,
             ILogManager logManager,
@@ -43,9 +43,14 @@ namespace StrmExtract
             logger = logManager.GetLogger(Name);
             logger.Info("Plugin is getting loaded.");
 
+            _currentMaxConcurrentCount = GetOptions().MaxConcurrentCount;
+            QueueManager.InitializeSemaphore(_currentMaxConcurrentCount);
+            Patch.Initialize();
+
             _libraryManager = libraryManager;
             _userManager = userManager;
             _userDataManager = userDataManager;
+            LibraryUtility = new LibraryUtility(libraryManager, fileSystem, userManager);
 
             _currentCatchupMode = GetOptions().CatchupMode;
             if (_currentCatchupMode)
@@ -54,12 +59,10 @@ namespace StrmExtract
                 _userDataManager.UserDataSaved += OnUserDataSaved;
                 _userManager.UserCreated += OnUserCreated;
                 _userManager.UserDeleted += OnUserDeleted;
-                processTask = Task.Run(() => QueueManager.ProcessItemQueueAsync());
+                _processTask = Task.Run(() => QueueManager.ProcessItemQueueAsync());
             }
-
-            LibraryUtility = new LibraryUtility(libraryManager, fileSystem, userManager);
         }
-
+        
         public void Dispose()
         {
             _libraryManager.ItemAdded -= OnItemAdded;
@@ -81,22 +84,22 @@ namespace StrmExtract
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item.IsShortcut) //Strm exclusive for real-time extract
+            if (e.Item.IsShortcut) //Strm only for real-time extract
             {
-                QueueManager.itemQueue.Enqueue(e.Item);
+                QueueManager.ItemQueue.Enqueue(e.Item);
             }
         }
 
         private void OnUserDataSaved(object sender, UserDataSaveEventArgs e)
         {
-            if (e.UserData.IsFavorite == true)
+            if (e.UserData.IsFavorite)
             {
-                QueueManager.itemQueue.Enqueue(e.Item);
+                QueueManager.ItemQueue.Enqueue(e.Item);
             }
         }
         public ImageFormat ThumbImageFormat => ImageFormat.Png;
 
-        public override string Description => "Extracts info from Strm targets";
+        public override string Description => "Extract media info from videos";
 
         public override Guid Id => _id;
 
@@ -116,14 +119,16 @@ namespace StrmExtract
         protected override void OnOptionsSaved(PluginOptions options)
         {
             logger.Info("MaxConcurrentCount is set to {0}", options.MaxConcurrentCount);
-            SemaphoreSlim newSemaphore = new SemaphoreSlim(options.MaxConcurrentCount);
-            SemaphoreSlim oldSemaphore = QueueManager.semaphore;
-            QueueManager.semaphore = newSemaphore;
-            oldSemaphore.Dispose();
+            if (_currentMaxConcurrentCount != options.MaxConcurrentCount)
+            {
+                _currentMaxConcurrentCount = options.MaxConcurrentCount;
+                QueueManager.UpdateSemaphore(_currentMaxConcurrentCount);
+                Patch.UpdateResourcePool(_currentMaxConcurrentCount);
+            }
 
             logger.Info("StrmOnly is set to {0}", options.StrmOnly);
             logger.Info("IncludeExtra is set to {0}", options.IncludeExtra);
-
+            logger.Info("EnableImageCapture is set to {0}", options.EnableImageCapture);
             logger.Info("CatchupMode is set to {0}", options.CatchupMode);
 
             if (_currentCatchupMode != options.CatchupMode)
@@ -142,9 +147,9 @@ namespace StrmExtract
                     _userManager.UserCreated += OnUserCreated;
                     _userManager.UserDeleted += OnUserDeleted;
 
-                    if (processTask == null || processTask.IsCompleted)
+                    if (_processTask == null || _processTask.IsCompleted)
                     {
-                        processTask = Task.Run(() => QueueManager.ProcessItemQueueAsync());
+                        _processTask = Task.Run(() => QueueManager.ProcessItemQueueAsync());
                         
                     }
                 }

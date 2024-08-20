@@ -1,8 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <AssemblyVersion>1.0.0.8</AssemblyVersion>
-    <FileVersion>1.0.0.8</FileVersion>
+    <TargetFrameworks>net6.0</TargetFrameworks>
+    <AssemblyVersion>1.0.0.9</AssemblyVersion>
+    <FileVersion>1.0.0.9</FileVersion>
+    <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Images\thumb.png" />
@@ -11,6 +12,12 @@
     <EmbeddedResource Include="Images\thumb.png" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="ILRepack" Version="2.0.34">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Lib.Harmony.Thin" Version="2.3.3">
+    </PackageReference>
     <PackageReference Include="mediabrowser.server.core" Version="4.8.0.80" />
     <PackageReference Include="Resource.Embedder" Version="2.2.0" />
     <PackageReference Include="System.Memory" Version="4.5.5" />
@@ -35,6 +42,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;$(TargetPath)&quot; &quot;%25AppData%25\Emby-Server\programdata\plugins\&quot; /y" />
+    <Exec Command="$(ILRepack) /out:%25AppData%25\Emby-Server\programdata\plugins\$(TargetFileName) $(TargetPath) $(TargetDir)0Harmony.dll $(TargetDir)Mono*.dll /lib:$(TargetDir) /wildcards" />
   </Target>
 </Project>

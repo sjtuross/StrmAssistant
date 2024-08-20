@@ -80,11 +80,20 @@ namespace StrmExtract.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Media Info Extract.
+        ///   Looks up a localized string similar to MediaInfo Extract.
         /// </summary>
         public static string PluginOptions_EditorTitle_Strm_Extract {
             get {
                 return ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Extract", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable Image Capture.
+        /// </summary>
+        public static string PluginOptions_EnableImageCapture_Enable_Image_Capture {
+            get {
+                return ResourceManager.GetString("PluginOptions_EnableImageCapture_Enable_Image_Capture", resourceCulture);
             }
         }
         
