@@ -6,6 +6,7 @@
 
 1. Improve initial playback start speed
 2. Solve potential no progress bar issue
+3. Capture image for video without poster
 
 ## Update
 

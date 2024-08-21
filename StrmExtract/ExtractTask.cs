@@ -24,7 +24,9 @@ namespace StrmExtract
         {
             _logger.Info("Scheduled Task Execute");
             _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().MaxConcurrentCount);
-            
+            bool enableImageCapture = Plugin.Instance.GetPluginOptions().EnableImageCapture;
+            _logger.Info("Enable Image Capture: " + enableImageCapture);
+
             List<BaseItem> items = Plugin.LibraryUtility.FetchItems();
 
             double total = items.Count;
@@ -44,39 +46,49 @@ namespace StrmExtract
                 await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
                 
                 var taskIndex = ++index;
-                var itemName = item.Name;
-                var itemPath = item.Path;
-                var itemHasImage = item.HasImage(ImageType.Primary);
-                var itemMediaStreamCount = item.GetMediaStreams().Count;
-                MetadataRefreshOptions refreshOptions;
-                if (itemMediaStreamCount == 0 && itemHasImage)
-                {
-                    refreshOptions = LibraryUtility.MediaInfoRefreshOptions;
-                }
-                else
-                {
-                    refreshOptions = LibraryUtility.ImageCaptureRefreshOptions;
-                }
-                
+                var taskItem = item;
                 var task = Task.Run(async () =>
                 {
+                    bool isPatched = false;
                     try
                     {
-                        ItemUpdateType resp = await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                        MetadataRefreshOptions refreshOptions;
+                        if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
+                        {
+                            refreshOptions = LibraryUtility.ImageCaptureRefreshOptions;
+                        }
+                        else
+                        {
+                            refreshOptions = LibraryUtility.MediaInfoRefreshOptions;
+                        }
+
+                        if (enableImageCapture && !taskItem.HasImage(ImageType.Primary) && taskItem.IsShortcut)
+                        {
+                            Patch.PatchInstanceIsShortcut(taskItem);
+                            isPatched=true;
+                        }
+
+                        ItemUpdateType resp = await taskItem.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
                     }
                     catch (TaskCanceledException)
                     {
-                        _logger.Info("Item cancelled: " + itemName + " - " + itemPath);
+                        _logger.Info("Item cancelled: " + taskItem.Name + " - " + taskItem.Path);
                     }
                     catch
                     {
-                        _logger.Info("Item failed: " + itemName + " - " + itemPath);
+                        _logger.Info("Item failed: " + taskItem.Name + " - " + taskItem.Path);
                     }
                     finally
                     {
                         Interlocked.Increment(ref current);
                         progress.Report(current / total * 100);
-                        _logger.Info(current + "/" + total + " - " + "Task " + taskIndex + ": " + itemPath);
+                        _logger.Info(current + "/" + total + " - " + "Task " + taskIndex + ": " + taskItem.Path);
+
+                        if (isPatched)
+                        {
+                            Patch.UnpatchInstanceIsShortcut(taskItem);
+                        }
+
                         QueueManager.SemaphoreMaster.Release();
                     }
                 }, cancellationToken);
@@ -88,25 +100,13 @@ namespace StrmExtract
             _logger.Info("Scheduled Task Complete");
         }
 
-        public string Category
-        {
-            get { return "Strm Extract"; }
-        }
+        public string Category => "Strm Extract";
 
-        public string Key
-        {
-            get { return "MediaInfoExtractTask"; }
-        }
+        public string Key => "MediaInfoExtractTask";
 
-        public string Description
-        {
-            get { return "Extract media info from videos"; }
-        }
+        public string Description => "Extract media info from videos";
 
-        public string Name
-        {
-            get { return "Extract media info"; }
-        }
+        public string Name => "Extract media info";
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

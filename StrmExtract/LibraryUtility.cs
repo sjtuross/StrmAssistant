@@ -155,7 +155,6 @@ namespace StrmExtract
 
             var itemsMediaInfoQuery = new InternalItemsQuery
             {
-                //IncludeItemTypes = new[] { "Movie", "Series", "Episode" },
                 HasPath = true,
                 HasAudioStream = false,
                 MediaTypes = new [] { MediaType.Video, MediaType.Audio },
@@ -163,6 +162,7 @@ namespace StrmExtract
             };
             var itemsImageCaptureQuery = new InternalItemsQuery
             {
+                IncludeItemTypes = new[] { "Movie", "Episode" },
                 HasPath = true,
                 MediaTypes = new[] { MediaType.Video },
                 PathStartsWithAny = librariesWithImageCapture.SelectMany(l => l.Locations).ToArray()
@@ -223,8 +223,6 @@ namespace StrmExtract
         {
             var strmOnly = Plugin.Instance.GetPluginOptions().StrmOnly;
             _logger.Info("Strm Only: " + strmOnly);
-            bool enableImageCapture = Plugin.Instance.GetPluginOptions().EnableImageCapture;
-            _logger.Info("Enable Image Capture: " + enableImageCapture);
 
             _logger.Info("Number of items before: " + results.Count);
             List<BaseItem> items = new List<BaseItem>();
@@ -245,11 +243,6 @@ namespace StrmExtract
                 else
                 {
                     _logger.Debug("Item dropped: " + item.Name + " - " + item.Path);
-                }
-
-                if (enableImageCapture && item.IsShortcut && !item.HasImage(ImageType.Primary))
-                {
-                    Patch.SetIsShortcutFalse(item);
                 }
             }
 

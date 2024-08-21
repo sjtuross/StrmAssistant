@@ -62,6 +62,9 @@ namespace StrmExtract
                 if (!ItemQueue.IsEmpty)
                 {
                     _logger.Info("Clear Item Queue Started");
+                    bool enableImageCapture = Plugin.Instance.GetPluginOptions().EnableImageCapture;
+                    _logger.Info("Enable Image Capture: " + enableImageCapture);
+
                     List<BaseItem> dequeueItems = new List<BaseItem>();
                     while (ItemQueue.TryDequeue(out var dequeueItem))
                     {
@@ -71,34 +74,46 @@ namespace StrmExtract
 
                     foreach (BaseItem item in items)
                     {
-                        var itemName = item.Name;
-                        var itemPath = item.Path;
-                        var itemHasImage = item.HasImage(ImageType.Primary);
-                        var itemMediaStreamCount = item.GetMediaStreams().Count;
-                        MetadataRefreshOptions refreshOptions;
-                        if (itemMediaStreamCount == 0 && itemHasImage)
-                        {
-                            refreshOptions = LibraryUtility.MediaInfoRefreshOptions;
-                        }
-                        else
-                        {
-                            refreshOptions = LibraryUtility.ImageCaptureRefreshOptions;
-                        }
+                        var taskItem = item;
                         _taskQueue.Enqueue(async () =>
                         {
+                            bool isPatched = false;
                             try
                             {
+                                MetadataRefreshOptions refreshOptions;
+                                if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
+                                {
+                                    refreshOptions = LibraryUtility.ImageCaptureRefreshOptions;
+                                }
+                                else
+                                {
+                                    refreshOptions = LibraryUtility.MediaInfoRefreshOptions;
+                                }
+
+                                if (enableImageCapture && !taskItem.HasImage(ImageType.Primary) && taskItem.IsShortcut)
+                                {
+                                    Patch.PatchInstanceIsShortcut(item);
+                                    isPatched = true;
+                                }
+
                                 ItemUpdateType resp = await item.RefreshMetadata(refreshOptions, cancellationToken)
                                     .ConfigureAwait(false);
-                                _logger.Info("Item Processed: " + itemName + " - " + itemPath);
+                                _logger.Info("Item Processed: " + taskItem.Name + " - " + taskItem.Path);
                             }
                             catch (TaskCanceledException)
                             {
-                                _logger.Info("Item Cancelled: " + itemName + " - " + itemPath);
+                                _logger.Info("Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
                             }
                             catch
                             {
-                                _logger.Info("Item Failed: " + itemName + " - " + itemPath);
+                                _logger.Info("Item Failed: " + taskItem.Name + " - " + taskItem.Path);
+                            }
+                            finally
+                            {
+                                if (isPatched)
+                                {
+                                    Patch.UnpatchInstanceIsShortcut(taskItem);
+                                }
                             }
                         });
                     }
