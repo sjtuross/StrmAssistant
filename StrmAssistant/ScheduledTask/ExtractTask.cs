@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmExtract
+namespace StrmAssistant
 {
     public class ExtractTask: IScheduledTask
     {
@@ -22,12 +22,12 @@ namespace StrmExtract
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            _logger.Info("Scheduled Task Execute");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().MaxConcurrentCount);
-            bool enableImageCapture = Plugin.Instance.GetPluginOptions().EnableImageCapture;
+            _logger.Info("MediaInfoExtract - Scheduled Task Execute");
+            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount);
+            bool enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
             _logger.Info("Enable Image Capture: " + enableImageCapture);
 
-            List<BaseItem> items = Plugin.LibraryUtility.FetchItems();
+            List<BaseItem> items = Plugin.LibraryApi.FetchExtractTaskItems();
 
             double total = items.Count;
             int index = 0;
@@ -39,7 +39,7 @@ namespace StrmExtract
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.Info("Scheduled Task Cancelled");
+                    _logger.Info("MediaInfoExtract - Scheduled Task Cancelled");
                     break;
                 }
 
@@ -55,11 +55,11 @@ namespace StrmExtract
                         MetadataRefreshOptions refreshOptions;
                         if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
                         {
-                            refreshOptions = LibraryUtility.ImageCaptureRefreshOptions;
+                            refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
                         }
                         else
                         {
-                            refreshOptions = LibraryUtility.MediaInfoRefreshOptions;
+                            refreshOptions = LibraryApi.MediaInfoRefreshOptions;
                         }
 
                         if (enableImageCapture && !taskItem.HasImage(ImageType.Primary) && taskItem.IsShortcut)
@@ -72,17 +72,18 @@ namespace StrmExtract
                     }
                     catch (TaskCanceledException)
                     {
-                        _logger.Info("Item cancelled: " + taskItem.Name + " - " + taskItem.Path);
+                        _logger.Info("MediaInfoExtract - Item cancelled: " + taskItem.Name + " - " + taskItem.Path);
                     }
                     catch
                     {
-                        _logger.Info("Item failed: " + taskItem.Name + " - " + taskItem.Path);
+                        _logger.Info("MediaInfoExtract - Item failed: " + taskItem.Name + " - " + taskItem.Path);
                     }
                     finally
                     {
                         Interlocked.Increment(ref current);
                         progress.Report(current / total * 100);
-                        _logger.Info(current + "/" + total + " - " + "Task " + taskIndex + ": " + taskItem.Path);
+                        _logger.Info("MediaInfoExtract - Scheduled Task " + current + "/" + total + " - " + "Task " + taskIndex + ": " +
+                                     taskItem.Path);
 
                         if (isPatched)
                         {
@@ -97,16 +98,16 @@ namespace StrmExtract
             await Task.WhenAll(tasks);
 
             progress.Report(100.0);
-            _logger.Info("Scheduled Task Complete");
+            _logger.Info("MediaInfoExtract - Scheduled Task Complete");
         }
 
-        public string Category => "Strm Extract";
+        public string Category => "Strm Assistant";
 
         public string Key => "MediaInfoExtractTask";
 
         public string Description => "Extract media info from videos";
 
-        public string Name => "Extract media info";
+        public string Name => "Extract MediaInfo";
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

@@ -18,7 +18,7 @@
     <value>追更模式 (實驗室)</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>收藏的電影洗版或劇集有更新後即時提取媒體資訊 (僅支援Strm)，預設為關閉。</value>
+    <value>最愛中的電影洗版或劇集有更新後即時提取媒體資訊 (僅支援Strm)，預設為關閉。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>包含附加內容</value>
@@ -39,15 +39,42 @@
     <value>最大並發提取媒體訊息的線程數。必須在 1 至 10 之間。預設為 1。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
-    <value>僅提取Strm檔案的媒體訊息，預設為開啟。</value>
+    <value>僅處理Strm，關閉後也會處理非Strm，預設為開啟。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Strm_Only" xml:space="preserve">
-    <value>僅包含Strm</value>
+    <value>僅處理Strm</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Enable_Image_Capture" xml:space="preserve">
     <value>啟用影片截圖 (實驗室)</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
     <value>對缺少封面元資料的影片做影片截圖，預設關閉。</value>
+  </data>
+  <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
+    <value>啟用跳片頭功能 (實驗室)</value>
+  </data>
+  <data name="PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__Default_is_False_" xml:space="preserve">
+    <value>基於播放行為的劇集片頭片尾探測，預設為關閉。</value>
+  </data>
+  <data name="IntroSkipOptions_MaxCreditsDurationSeconds" xml:space="preserve">
+    <value>最大片尾長度 (秒)</value>
+  </data>
+  <data name="IntroSkipOptions_MaxIntroDurationSeconds" xml:space="preserve">
+    <value>最大片頭長度 (秒)</value>
+  </data>
+  <data name="PluginOptions_IntroSkipOptions_Intro_Credits_Detection" xml:space="preserve">
+    <value>片頭片尾探測</value>
+  </data>
+  <data name="IntroSkipOptions_LibraryScope_Library_Scope" xml:space="preserve">
+    <value>媒體庫範圍</value>
+  </data>
+  <data name="IntroSkipOptions_LibraryScope_TV_shows_library_scope_to_detect__Blank_includes_all_" xml:space="preserve">
+    <value>劇集媒體庫範圍，留空包含所有劇集媒體庫。</value>
+  </data>
+  <data name="PluginOptions_EditorTitle_Strm_Assistant" xml:space="preserve">
+    <value>STRM 助手</value>
+  </data>
+  <data name="PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract" xml:space="preserve">
+    <value>請卸載衝突插件 StrmExtract.dll，然後重新啟動 Emby。</value>
   </data>
 </root>

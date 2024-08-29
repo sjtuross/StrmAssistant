@@ -1,15 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net6.0</TargetFrameworks>
-    <AssemblyVersion>1.0.0.10</AssemblyVersion>
-    <FileVersion>1.0.0.10</FileVersion>
+    <AssemblyVersion>1.0.0.11</AssemblyVersion>
+    <FileVersion>1.0.0.11</FileVersion>
     <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Images\thumb.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Images\thumb.png" />
+    <EmbeddedResource Include="Properties\thumb.png" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="ILRepack" Version="2.0.34">

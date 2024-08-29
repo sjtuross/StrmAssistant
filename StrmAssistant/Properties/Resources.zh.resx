@@ -15,7 +15,7 @@
     <value>追更模式 (实验室)</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>收藏的电影洗版或剧集有更新后实时提取媒体信息 (仅支持Strm)，默认关闭。</value>
+    <value>最爱中的电影洗版或剧集有更新后实时提取媒体信息 (仅支持Strm)，默认关闭。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>包含附加内容</value>
@@ -24,10 +24,10 @@
     <value>提取电影或剧集附加内容的媒体信息，默认关闭。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Strm_Only" xml:space="preserve">
-    <value>仅包含Strm</value>
+    <value>仅处理Strm</value>
   </data>
   <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
-    <value>仅提取Strm文件的媒体信息，默认开启。</value>
+    <value>仅处理Strm，关闭后也会处理非Strm，默认开启。</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count" xml:space="preserve">
     <value>最大线程数</value>
@@ -49,5 +49,32 @@
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
     <value>对缺失封面元数据的视频做视频截图，默认关闭。</value>
+  </data>
+  <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
+    <value>启用跳片头功能 (实验室)</value>
+  </data>
+  <data name="PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__Default_is_False_" xml:space="preserve">
+    <value>基于播放行为的剧集片头片尾探测，默认关闭。</value>
+  </data>
+  <data name="IntroSkipOptions_MaxCreditsDurationSeconds" xml:space="preserve">
+    <value>最大片尾时长 (秒)</value>
+  </data>
+  <data name="IntroSkipOptions_MaxIntroDurationSeconds" xml:space="preserve">
+    <value>最大片头时长 (秒)</value>
+  </data>
+  <data name="PluginOptions_IntroSkipOptions_Intro_Credits_Detection" xml:space="preserve">
+    <value>片头片尾探测</value>
+  </data>
+  <data name="IntroSkipOptions_LibraryScope_Library_Scope" xml:space="preserve">
+    <value>媒体库范围</value>
+  </data>
+  <data name="IntroSkipOptions_LibraryScope_TV_shows_library_scope_to_detect__Blank_includes_all_" xml:space="preserve">
+    <value>剧集媒体库范围，留空包含所有剧集媒体库。</value>
+  </data>
+  <data name="PluginOptions_EditorTitle_Strm_Assistant" xml:space="preserve">
+    <value>STRM 助手</value>
+  </data>
+  <data name="PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract" xml:space="preserve">
+    <value>请卸载冲突插件 StrmExtract.dll，然后重启 Emby。</value>
   </data>
 </root>

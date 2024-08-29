@@ -11,9 +11,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace StrmExtract
+namespace StrmAssistant
 {
-    public class LibraryUtility
+    public class LibraryApi
     {
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
@@ -33,9 +33,9 @@ namespace StrmExtract
                                                                 ExtraType.ThemeSong,
                                                                 ExtraType.ThemeVideo,
                                                                 ExtraType.Trailer };
-        public static User[] allUsers;
+        public static User[] AllUsers;
 
-        public LibraryUtility(ILibraryManager libraryManager,
+        public LibraryApi(ILibraryManager libraryManager,
             IFileSystem fileSystem,
             IUserManager userManager)
         {
@@ -83,14 +83,23 @@ namespace StrmExtract
             {
                 IsDisabled = false
             };
-            allUsers = _userManager.GetUserList(userQuery);
+            AllUsers = _userManager.GetUserList(userQuery);
         }
 
-        public List<BaseItem> FetchItems(List<BaseItem> items)
+        public bool HasMediaStream(BaseItem item)
         {
-            bool includeExtra = Plugin.Instance.GetPluginOptions().IncludeExtra;
+            var mediaStreamCount = item.GetMediaStreams()
+                .FindAll(i => i.Type is MediaStreamType.Video or MediaStreamType.Audio).Count;
+
+            return mediaStreamCount > 0;
+        }
+
+        public List<BaseItem> FetchExtractQueueItems(List<BaseItem> items)
+        {
+            bool includeExtra = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.IncludeExtra;
             _logger.Info("Include Extra: " + includeExtra);
-            bool enableImageCapture = Plugin.Instance.GetPluginOptions().EnableImageCapture;
+            bool enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
+            bool enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
 
             var movies = items.OfType<Movie>().Cast<BaseItem>();
 
@@ -121,8 +130,7 @@ namespace StrmExtract
                     };
                     var episodesImageCapture = _libraryManager.GetItemList(episodesImageCaptureQuery)
                         .Where(i => !i.HasImage(ImageType.Primary)).ToList();
-                    episodes = episodesMediaInfo.Concat(episodesImageCapture).GroupBy(i => i.InternalId)
-                        .Select(g => g.First()).ToArray();
+                    episodes = episodesMediaInfo.Concat(episodesImageCapture).DistinctBy(i => i.InternalId).ToArray();
                 }
                 else
                 {
@@ -130,8 +138,20 @@ namespace StrmExtract
                 }
             }
 
-            var favorites = FilterByFavorites(movies.Concat(episodes)).ToList();
-            var filtered = FilterUnprocessed(favorites
+            var favorites = FilterByFavorites(movies.Concat(episodes).ToList());
+
+            List<BaseItem> combined;
+            if (enableIntroSkip)
+            {
+                var episodesIntroSkip = Plugin.ChapterApi.SeasonHasIntroCredits(items.OfType<Episode>().ToList());
+                combined = favorites.Concat(episodesIntroSkip).DistinctBy(i => i.InternalId).ToList();
+            }
+            else
+            {
+                combined = favorites;
+            }
+
+            var filtered = FilterUnprocessed(combined
                 .Concat(includeExtra ? favorites.SelectMany(f => f.GetExtras(extraType)) : Enumerable.Empty<BaseItem>())
                 .ToList());
             var results = OrderUnprocessed(filtered);
@@ -139,19 +159,19 @@ namespace StrmExtract
             return results;
         }
 
-        public List<BaseItem> FetchItems()
+        public List<BaseItem> FetchExtractTaskItems()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().LibraryScope?.Split(',');
+            var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope?.Split(',');
             var libraries = _libraryManager.GetVirtualFolders()
                 .Where(f => libraryIds != null && libraryIds.Contains(f.Id)).ToList();
             var librariesWithImageCapture = libraries.Where(l =>
                 l.LibraryOptions.TypeOptions.Any(t => t.ImageFetchers.Contains("Image Capture"))).ToList();
-            _logger.Info("LibraryScope: " +
+            _logger.Info("MediaInfoExtract - LibraryScope: " +
                          (libraries.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
-            
-            bool includeExtra = Plugin.Instance.GetPluginOptions().IncludeExtra;
+
+            bool includeExtra = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.IncludeExtra;
             _logger.Info("Include Extra: " + includeExtra);
-            bool enableImageCapture = Plugin.Instance.GetPluginOptions().EnableImageCapture;
+            bool enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
 
             var itemsMediaInfoQuery = new InternalItemsQuery
             {
@@ -175,8 +195,7 @@ namespace StrmExtract
             {
                 var itemsImageCapture = _libraryManager.GetItemList(itemsImageCaptureQuery)
                     .Where(i => !i.HasImage(ImageType.Primary)).ToList();
-                items = itemsMediaInfo.Concat(itemsImageCapture).GroupBy(i => i.InternalId).Select(g => g.First())
-                    .ToArray();
+                items = itemsMediaInfo.Concat(itemsImageCapture).DistinctBy(i => i.InternalId).ToArray();
             }
             else
             {
@@ -193,8 +212,7 @@ namespace StrmExtract
                 {
                     itemsImageCaptureQuery.ExtraTypes = extraType;
                     var extrasImageCapture = _libraryManager.GetItemList(itemsImageCaptureQuery);
-                    extras = extrasImageCapture.Concat(extrasMediaInfo).GroupBy(i => i.InternalId)
-                        .Select(g => g.First()).ToArray();
+                    extras = extrasImageCapture.Concat(extrasMediaInfo).DistinctBy(i => i.InternalId).ToArray();
                 }
                 else
                 {
@@ -219,51 +237,47 @@ namespace StrmExtract
             return results;
         }
 
-        private List<BaseItem> FilterUnprocessed(List<BaseItem> results)
+        private List<BaseItem> FilterUnprocessed(List<BaseItem> items)
         {
             var strmOnly = Plugin.Instance.GetPluginOptions().StrmOnly;
             _logger.Info("Strm Only: " + strmOnly);
 
-            _logger.Info("Number of items before: " + results.Count);
-            List<BaseItem> items = new List<BaseItem>();
+            List<BaseItem> results = new List<BaseItem>();
 
-            foreach (var item in results)
+            foreach (var item in items)
             {
-                var mediaStreamCount = item.GetMediaStreams()
-                    .FindAll(i => i.Type == MediaStreamType.Video || i.Type == MediaStreamType.Audio).Count;
-
-                if (strmOnly ? item.IsShortcut : true && mediaStreamCount == 0)
+                if (strmOnly ? item.IsShortcut : true && !HasMediaStream(item))
                 {
-                    items.Add(item);
+                    results.Add(item);
                 }
                 else if (strmOnly ? item.IsShortcut : true && !item.HasImage(ImageType.Primary))
                 {
-                    items.Add(item);
+                    results.Add(item);
                 }
                 else
                 {
-                    _logger.Debug("Item dropped: " + item.Name + " - " + item.Path);
+                    _logger.Debug("MediaInfoExtract - Item dropped: " + item.Name + " - " + item.Path);
                 }
             }
+            _logger.Info("MediaInfoExtract - Number of items: " + results.Count);
 
-            _logger.Info("Number of items dropped: " + (results.Count - items.Count));
-            _logger.Info("Number of items after: " + items.Count);
-            return items;
+            return results;
         }
 
-        private IEnumerable<BaseItem> FilterByFavorites(IEnumerable<BaseItem> items)
+        private List<BaseItem> FilterByFavorites(List<BaseItem> items)
         {
-            var movies = allUsers
-                .SelectMany(u => items?.OfType<Movie>()
+            var movies = AllUsers
+                .SelectMany(u => items.OfType<Movie>()
                 .Where(i => i.IsFavoriteOrLiked(u)));
-            var episodes = allUsers
-                .SelectMany(u => items?.OfType<Episode>()
+            var episodes = AllUsers
+                .SelectMany(u => items.OfType<Episode>()
                 .GroupBy(e => e.SeriesId)
                 .Where(g => g.Any(i => i.IsFavoriteOrLiked(u)) || g.First().Series.IsFavoriteOrLiked(u))
                 .SelectMany(g => g)
                 );
             var results = movies.Cast<BaseItem>().Concat(episodes.Cast<BaseItem>())
-                .GroupBy(i => i.InternalId).Select(g => g.First());
+                .DistinctBy(i => i.InternalId).ToList();
+
             return results;
         }
     }

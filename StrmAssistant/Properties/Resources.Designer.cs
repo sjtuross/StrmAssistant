@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace StrmExtract.Properties {
+namespace StrmAssistant.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace StrmExtract.Properties {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("StrmExtract.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("StrmAssistant.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,6 +57,43 @@ namespace StrmExtract.Properties {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Library Scope.
+        /// </summary>
+        public static string IntroSkipOptions_LibraryScope_Library_Scope {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_LibraryScope_Library_Scope", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to TV shows library scope to detect. Blank includes all TV shows libraries..
+        /// </summary>
+        public static string IntroSkipOptions_LibraryScope_TV_shows_library_scope_to_detect__Blank_includes_all_ {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_LibraryScope_TV_shows_library_scope_to_detect__Blank_includes_al" +
+                        "l_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Max Credits Duration (Seconds).
+        /// </summary>
+        public static string IntroSkipOptions_MaxCreditsDurationSeconds {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_MaxCreditsDurationSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Max Intro Duration (Seconds).
+        /// </summary>
+        public static string IntroSkipOptions_MaxIntroDurationSeconds {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_MaxIntroDurationSeconds", resourceCulture);
             }
         }
         
@@ -80,6 +117,15 @@ namespace StrmExtract.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Strm Assistant.
+        /// </summary>
+        public static string PluginOptions_EditorTitle_Strm_Assistant {
+            get {
+                return ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to MediaInfo Extract.
         /// </summary>
         public static string PluginOptions_EditorTitle_Strm_Extract {
@@ -89,7 +135,7 @@ namespace StrmExtract.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable Image Capture.
+        ///   Looks up a localized string similar to Enable Image Capture (Experimental).
         /// </summary>
         public static string PluginOptions_EnableImageCapture_Enable_Image_Capture {
             get {
@@ -98,12 +144,31 @@ namespace StrmExtract.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Perform image capture for videos without primary image. Default is False..
+        ///   Looks up a localized string similar to Perform image capture for videos without primary image. Default is OFF..
         /// </summary>
         public static string PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_ {
             get {
                 return ResourceManager.GetString("PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary" +
                         "_image__Default_is_False_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable Intro Skip (Experimental).
+        /// </summary>
+        public static string PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_ {
+            get {
+                return ResourceManager.GetString("PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Playback behavior-based intro and credits detection for episodes. Default is OFF..
+        /// </summary>
+        public static string PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__Default_is_False_ {
+            get {
+                return ResourceManager.GetString("PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__De" +
+                        "fault_is_False_", resourceCulture);
             }
         }
         
@@ -122,6 +187,25 @@ namespace StrmExtract.Properties {
         public static string PluginOptions_IncludeExtra_Include_media_extras_to_extract__Default_is_False_ {
             get {
                 return ResourceManager.GetString("PluginOptions_IncludeExtra_Include_media_extras_to_extract__Default_is_False_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Please uninstall the conflict plugin StrmExtract.dll and then restart Emby..
+        /// </summary>
+        public static string PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract {
+            get {
+                return ResourceManager.GetString("PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extra" +
+                        "ct", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Intro and Credits Detection.
+        /// </summary>
+        public static string PluginOptions_IntroSkipOptions_Intro_Credits_Detection {
+            get {
+                return ResourceManager.GetString("PluginOptions_IntroSkipOptions_Intro_Credits_Detection", resourceCulture);
             }
         }
         
@@ -163,7 +247,7 @@ namespace StrmExtract.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extract media info of Strm only. Default is ON..
+        ///   Looks up a localized string similar to Include Strm only. Turn off to also include Non-Strm. Default is ON..
         /// </summary>
         public static string PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_ {
             get {

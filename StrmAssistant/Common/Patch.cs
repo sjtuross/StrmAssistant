@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
 
-namespace StrmExtract
+namespace StrmAssistant
 {
     public static class Patch
     {
@@ -59,8 +59,8 @@ namespace StrmExtract
                 _fallbackPatchApproach = PatchApproach.None;
             }
 
-            _enableImageCapture = Plugin.Instance.GetPluginOptions().EnableImageCapture;
-            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().MaxConcurrentCount;
+            _enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
+            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
             SemaphoreFFmpeg = new SemaphoreSlim(_currentMaxConcurrentCount);
 
             if (_enableImageCapture)
@@ -71,7 +71,7 @@ namespace StrmExtract
             }
 
             var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
-            Plugin.Instance.logger.Info("Current Resource Pool: " + resourcePool?.CurrentCount ?? String.Empty);
+            Plugin.Instance.logger.Info("Current FFmpeg ResourcePool: " + resourcePool?.CurrentCount ?? String.Empty);
         }
 
         private static bool IsPatched(MethodBase methodInfo)
@@ -100,12 +100,12 @@ namespace StrmExtract
                             //    transpiler: new HarmonyMethod(typeof(Patch).GetMethod("ResourcePoolTranspiler",
                             //        BindingFlags.Static | BindingFlags.NonPublic)));
 
-                            Plugin.Instance.logger.Debug("Patch ResourcePool Success by Harmony");
+                            Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Success by Harmony");
                         }
                     }
                     catch (Exception he)
                     {
-                        Plugin.Instance.logger.Debug("Patch ResourcePool Failed by Harmony");
+                        Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Harmony");
                         Plugin.Instance.logger.Debug(he.Message);
                         Plugin.Instance.logger.Debug(he.StackTrace);
                         _fallbackPatchApproach = PatchApproach.Reflection;
@@ -113,11 +113,11 @@ namespace StrmExtract
                         try
                         {
                             _resourcePoolField.SetValue(null, SemaphoreFFmpeg);
-                            Plugin.Instance.logger.Debug("Patch ResourcePool Success by Reflection");
+                            Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Success by Reflection");
                         }
                         catch (Exception re)
                         {
-                            Plugin.Instance.logger.Debug("Patch ResourcePool Failed by Reflection");
+                            Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
                             Plugin.Instance.logger.Debug(re.Message);
                             _fallbackPatchApproach = PatchApproach.None;
                         }
@@ -129,11 +129,11 @@ namespace StrmExtract
                     try
                     {
                         _resourcePoolField.SetValue(null, SemaphoreFFmpeg);
-                        Plugin.Instance.logger.Debug("Patch ResourcePool Success by Reflection");
+                        Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Success by Reflection");
                     }
                     catch (Exception re)
                     {
-                        Plugin.Instance.logger.Debug("Patch ResourcePool Failed by Reflection");
+                        Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
                         Plugin.Instance.logger.Debug(re.Message);
                         _fallbackPatchApproach = PatchApproach.None;
                     }
@@ -204,7 +204,7 @@ namespace StrmExtract
                         }
                         catch (Exception re)
                         {
-                            Plugin.Instance.logger.Debug("Patch ResourcePool Failed by Reflection");
+                            Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
                             Plugin.Instance.logger.Debug(re.Message);
                         }
                         break;
@@ -212,7 +212,7 @@ namespace StrmExtract
             }
 
             var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
-            Plugin.Instance.logger.Info("Current Resource Pool: " + resourcePool?.CurrentCount ?? String.Empty);
+            Plugin.Instance.logger.Info("Current FFmpeg ResourcePool: " + resourcePool?.CurrentCount ?? String.Empty);
         }
 
         public static void PatchInstanceIsShortcut(BaseItem item)
@@ -287,7 +287,8 @@ namespace StrmExtract
                 finally
                 {
                     var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
-                    Plugin.Instance.logger.Info("Current Resource Pool: " + resourcePool.CurrentCount);
+                    Plugin.Instance.logger.Info("Current FFmpeg Resource Pool: " + resourcePool?.CurrentCount ??
+                                                String.Empty);
                 }
             }
         }
@@ -330,11 +331,11 @@ namespace StrmExtract
                 if (codes[i].opcode == OpCodes.Ldc_I4_1)
                 {
                     codes[i] = new CodeInstruction(OpCodes.Ldc_I4_S,
-                        (sbyte)Plugin.Instance.GetPluginOptions().MaxConcurrentCount);
+                        (sbyte)Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount);
                     if (i + 1 < codes.Count && codes[i + 1].opcode == OpCodes.Ldc_I4_1)
                     {
                         codes[i + 1] = new CodeInstruction(OpCodes.Ldc_I4_S,
-                            (sbyte)Plugin.Instance.GetPluginOptions().MaxConcurrentCount);
+                            (sbyte)Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount);
                     }
                     break;
                 }
