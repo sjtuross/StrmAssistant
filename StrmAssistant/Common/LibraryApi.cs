@@ -89,7 +89,7 @@ namespace StrmAssistant
         public bool HasMediaStream(BaseItem item)
         {
             var mediaStreamCount = item.GetMediaStreams()
-                .FindAll(i => i.Type is MediaStreamType.Video or MediaStreamType.Audio).Count;
+                .FindAll(i => i.Type == MediaStreamType.Video || i.Type == MediaStreamType.Audio).Count;
 
             return mediaStreamCount > 0;
         }
@@ -130,7 +130,8 @@ namespace StrmAssistant
                     };
                     var episodesImageCapture = _libraryManager.GetItemList(episodesImageCaptureQuery)
                         .Where(i => !i.HasImage(ImageType.Primary)).ToList();
-                    episodes = episodesMediaInfo.Concat(episodesImageCapture).DistinctBy(i => i.InternalId).ToArray();
+                    episodes = episodesMediaInfo.Concat(episodesImageCapture).GroupBy(i => i.InternalId)
+                        .Select(g => g.First()).ToArray();
                 }
                 else
                 {
@@ -144,7 +145,8 @@ namespace StrmAssistant
             if (enableIntroSkip)
             {
                 var episodesIntroSkip = Plugin.ChapterApi.SeasonHasIntroCredits(items.OfType<Episode>().ToList());
-                combined = favorites.Concat(episodesIntroSkip).DistinctBy(i => i.InternalId).ToList();
+                combined = favorites.Concat(episodesIntroSkip).GroupBy(i => i.InternalId).Select(g => g.First())
+                    .ToList();
             }
             else
             {
@@ -195,7 +197,8 @@ namespace StrmAssistant
             {
                 var itemsImageCapture = _libraryManager.GetItemList(itemsImageCaptureQuery)
                     .Where(i => !i.HasImage(ImageType.Primary)).ToList();
-                items = itemsMediaInfo.Concat(itemsImageCapture).DistinctBy(i => i.InternalId).ToArray();
+                items = itemsMediaInfo.Concat(itemsImageCapture).GroupBy(i => i.InternalId).Select(g => g.First())
+                    .ToArray();
             }
             else
             {
@@ -212,7 +215,8 @@ namespace StrmAssistant
                 {
                     itemsImageCaptureQuery.ExtraTypes = extraType;
                     var extrasImageCapture = _libraryManager.GetItemList(itemsImageCaptureQuery);
-                    extras = extrasImageCapture.Concat(extrasMediaInfo).DistinctBy(i => i.InternalId).ToArray();
+                    extras = extrasImageCapture.Concat(extrasMediaInfo).GroupBy(i => i.InternalId)
+                        .Select(g => g.First()).ToArray();
                 }
                 else
                 {
@@ -276,7 +280,7 @@ namespace StrmAssistant
                 .SelectMany(g => g)
                 );
             var results = movies.Cast<BaseItem>().Concat(episodes.Cast<BaseItem>())
-                .DistinctBy(i => i.InternalId).ToList();
+                .GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
 
             return results;
         }

@@ -1,4 +1,4 @@
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -21,13 +21,13 @@ namespace StrmAssistant
         private readonly ILogger _logger;
 
         private readonly TimeSpan _updateInterval = TimeSpan.FromSeconds(10);
-        private readonly ConcurrentDictionary<string, PlaySessionData> _playSessionData = new();
-        private readonly ConcurrentDictionary<Episode, Task> _ongoingIntroUpdates = new();
-        private readonly ConcurrentDictionary<Episode, Task> _ongoingCreditsUpdates = new();
-        private readonly ConcurrentDictionary<Episode, DateTime> _lastIntroUpdateTimes = new();
-        private readonly ConcurrentDictionary<Episode, DateTime> _lastCreditsUpdateTimes = new();
-        private readonly object _introLock = new();
-        private readonly object _creditsLock = new();
+        private readonly ConcurrentDictionary<string, PlaySessionData> _playSessionData = new ConcurrentDictionary<string, PlaySessionData>();
+        private readonly ConcurrentDictionary<Episode, Task> _ongoingIntroUpdates = new ConcurrentDictionary<Episode, Task>();
+        private readonly ConcurrentDictionary<Episode, Task> _ongoingCreditsUpdates = new ConcurrentDictionary<Episode, Task>();
+        private readonly ConcurrentDictionary<Episode, DateTime> _lastIntroUpdateTimes = new ConcurrentDictionary<Episode, DateTime>();
+        private readonly ConcurrentDictionary<Episode, DateTime> _lastCreditsUpdateTimes = new ConcurrentDictionary<Episode, DateTime>();
+        private readonly object _introLock = new object();
+        private readonly object _creditsLock = new object();
 
         private static Task _introSkipProcessTask;
 
@@ -105,7 +105,7 @@ namespace StrmAssistant
 
         private void OnPlaybackProgress(object sender, PlaybackProgressEventArgs e)
         {
-            if (e.Item is null || e.EventName is not (ProgressEvent.TimeUpdate or ProgressEvent.Unpause) ||
+            if (e.Item == null || e.EventName != ProgressEvent.TimeUpdate && e.EventName != ProgressEvent.Unpause ||
                 !e.PlaybackPositionTicks.HasValue)
                 return;
 
@@ -177,13 +177,6 @@ namespace StrmAssistant
                     UpdateCreditsTask(e.Item as Episode, e.Session, e.Item.RunTimeTicks.Value - currentPositionTicks);
                 }
             }
-
-            //if (e.EventName == ProgressEvent.Unpause &&
-            //    currentPositionTicks > e.Item.RunTimeTicks - playSessionData.MaxCreditsDurationTicks &&
-            //    Plugin.ChapterUtility.HasIntro(e.Item))
-            //{
-            //    Plugin.ChapterUtility.ClearIntroCredits(e.Item as Episode, e.Session);
-            //}
         }
 
         private void OnPlaybackStopped(object sender, PlaybackStopEventArgs e)

@@ -27,7 +27,7 @@ namespace StrmAssistant
         public bool HasIntro(BaseItem item)
         {
             return _itemRepository.GetChapters(item)
-                .Any(c => c.MarkerType is MarkerType.IntroStart or MarkerType.IntroEnd);
+                .Any(c => c.MarkerType == MarkerType.IntroStart || c.MarkerType == MarkerType.IntroEnd);
         }
         public bool HasCredits(BaseItem item)
         {
@@ -44,7 +44,7 @@ namespace StrmAssistant
             {
                 var chapters = _itemRepository.GetChapters(episode);
 
-                chapters.RemoveAll(chapter => chapter.MarkerType is MarkerType.IntroStart or MarkerType.IntroEnd);
+                chapters.RemoveAll(c => c.MarkerType == MarkerType.IntroStart || c.MarkerType == MarkerType.IntroEnd);
 
                 var introStart = new ChapterInfo
                 {
@@ -185,7 +185,8 @@ namespace StrmAssistant
         {
             var chapters = _itemRepository.GetChapters(item);
             chapters.RemoveAll(c =>
-                c.MarkerType is MarkerType.IntroStart or MarkerType.IntroEnd or MarkerType.CreditsStart);
+                c.MarkerType == MarkerType.IntroStart || c.MarkerType == MarkerType.IntroEnd ||
+                c.MarkerType == MarkerType.CreditsStart);
             _itemRepository.SaveChapters(item.InternalId, chapters);
         }
 
@@ -215,7 +216,8 @@ namespace StrmAssistant
                 if (chapters != null && chapters.Any())
                 {
                     var hasMarkers = chapters.Any(c =>
-                        c.MarkerType is MarkerType.IntroStart or MarkerType.IntroEnd or MarkerType.CreditsStart &&
+                        (c.MarkerType == MarkerType.IntroStart || c.MarkerType == MarkerType.IntroEnd ||
+                         c.MarkerType == MarkerType.CreditsStart) &&
                         c.Name.EndsWith("#SA")); //only the items added by Strm Assistant
                     if (hasMarkers)
                     {

@@ -24,18 +24,20 @@ namespace StrmAssistant
 
         [DisplayNameL("PluginOptions_StrmOnly_Strm_Only", typeof(Resources))]
         [DescriptionL("PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_", typeof(Resources))]
+        [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
+        [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         [Required]
         public bool StrmOnly { get; set; } = true;
 
         [DisplayNameL("PluginOptions_EditorTitle_Strm_Extract", typeof(Resources))]
         [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
-        public MediaInfoExtractOptions MediaInfoExtractOptions { get; set; } = new();
+        public MediaInfoExtractOptions MediaInfoExtractOptions { get; set; } = new MediaInfoExtractOptions();
 
         [DisplayNameL("PluginOptions_IntroSkipOptions_Intro_Credits_Detection", typeof(Resources))]
         [VisibleCondition(nameof(IsConflictPluginLoaded),SimpleCondition.IsFalse)]
         [EnabledCondition(nameof(IsConflictPluginLoaded),SimpleCondition.IsFalse)]
-        public IntroSkipOptions IntroSkipOptions { get; set; } = new();
+        public IntroSkipOptions IntroSkipOptions { get; set; } = new IntroSkipOptions();
 
         [Browsable(false)]
         public bool IsConflictPluginLoaded { get; } =

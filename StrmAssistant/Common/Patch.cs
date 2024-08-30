@@ -18,16 +18,17 @@ namespace StrmAssistant
         private static MethodInfo _isShortcutGetter;
         private static PropertyInfo _isShortcutProperty;
 
-        private static AsyncLocal<BaseItem> CurrentItem { get; } = new();
+        private static AsyncLocal<BaseItem> CurrentItem { get; } = new AsyncLocal<BaseItem>();
         private static int _currentMaxConcurrentCount;
         private static bool _enableImageCapture;
 
         private enum PatchApproach
         {
-            Harmony = 0,
+            None = 0,
             Reflection = 1,
-            None = 2
-        };
+            Harmony = 2,
+        }
+
         private static PatchApproach _fallbackPatchApproach = PatchApproach.Harmony;
 
         public static SemaphoreSlim SemaphoreFFmpeg;
@@ -63,15 +64,19 @@ namespace StrmAssistant
             _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
             SemaphoreFFmpeg = new SemaphoreSlim(_currentMaxConcurrentCount);
 
-            if (_enableImageCapture)
+            if (_fallbackPatchApproach != PatchApproach.None)
             {
-                Mod = new Harmony("emby.mod");
-                PatchResourcePool();
-                PatchIsShortcut();
-            }
+                if (_enableImageCapture)
+                {
+                    Mod = new Harmony("emby.mod");
+                    PatchResourcePool();
+                    PatchIsShortcut();
+                }
 
-            var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
-            Plugin.Instance.logger.Info("Current FFmpeg ResourcePool: " + resourcePool?.CurrentCount ?? String.Empty);
+                var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
+                Plugin.Instance.logger.Info(
+                    "Current FFmpeg ResourcePool: " + resourcePool?.CurrentCount ?? String.Empty);
+            }
         }
 
         private static bool IsPatched(MethodBase methodInfo)

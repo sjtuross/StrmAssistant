@@ -1,4 +1,4 @@
-# MediaInfo Extract
+# Strm Assistant
 
 ## [中文介绍](README.zh.md)
 
@@ -16,9 +16,9 @@
 3. Include media extras (default is False)
 4. Process media items by release date in the descending order
 5. Add plugin config page with libraries selection
-6. Enable image capture (**experimental**, default is False), check Wiki for details.
-7. Introduce catch-up mode (**experimental**, default is False), check Wiki for details.
-8. Playback behavior-based intro and credits detection for episodes (**experimental**, default is False), check Wiki for details.
+6. Enable image capture (**experimental**, default is False), check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/视频截图-(Image-Capture)) for details.
+7. Introduce catch-up mode (**experimental**, default is False), check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/追更模式-(Catch‐up-Mode)) for details.
+8. Playback behavior-based intro and credits detection for episodes (**experimental**, default is False), check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/片头探测-(Intro-Detection)) for details.
 
 **Note**: The minimum required Emby version is 4.8.0.80.
 

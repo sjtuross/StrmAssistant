@@ -25,7 +25,7 @@ namespace StrmAssistant
         public static ChapterApi ChapterApi { get; private set; }
         public static PlaySessionMonitor PlaySessionMonitor { get; private set; }
 
-        private readonly Guid _id = new("63c322b7-a371-41a3-b11f-04f8418b37d8");
+        private readonly Guid _id = new Guid("63c322b7-a371-41a3-b11f-04f8418b37d8");
 
         public readonly ILogger logger;
         private readonly ILibraryManager _libraryManager;

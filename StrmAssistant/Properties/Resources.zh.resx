@@ -24,16 +24,16 @@
     <value>提取电影或剧集附加内容的媒体信息，默认关闭。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Strm_Only" xml:space="preserve">
-    <value>仅处理Strm</value>
+    <value>仅支持Strm</value>
   </data>
   <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
-    <value>仅处理Strm，关闭后也会处理非Strm，默认开启。</value>
+    <value>仅支持Strm，关闭后也支持非Strm，默认开启。</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count" xml:space="preserve">
     <value>最大线程数</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
-    <value>最大并发提取媒体信息的线程数。必须在 1 至 10 之间。默认为 1。</value>
+    <value>最大并发提取媒体信息的线程数。必须在 1 至 10 之间，默认为 1。</value>
   </data>
   <data name="PluginOptions_EditorTitle_Strm_Extract" xml:space="preserve">
     <value>媒体信息提取</value>

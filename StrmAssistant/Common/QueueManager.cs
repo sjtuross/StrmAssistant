@@ -15,9 +15,9 @@ namespace StrmAssistant
     public static class QueueManager
     {
         private static ILogger _logger;
-        private static readonly ConcurrentQueue<Func<Task>> _taskQueue = new();
+        private static readonly ConcurrentQueue<Func<Task>> _taskQueue = new ConcurrentQueue<Func<Task>>();
         private static bool _isProcessing = false;
-        private static readonly object _lock = new();
+        private static readonly object _lock = new object();
         private static DateTime _mediaInfoExtractLastRunTime = DateTime.MinValue;
         private static DateTime _introSkipLastRunTime = DateTime.MinValue;
         private static readonly TimeSpan ThrottleInterval = TimeSpan.FromSeconds(30);
@@ -26,8 +26,8 @@ namespace StrmAssistant
         public static CancellationTokenSource MediaInfoExtractTokenSource;
         public static CancellationTokenSource IntroSkipTokenSource;
         public static SemaphoreSlim SemaphoreMaster;
-        public static ConcurrentQueue<BaseItem> MediaInfoExtractItemQueue = new();
-        public static ConcurrentQueue<Episode> IntroSkipItemQueue = new();
+        public static ConcurrentQueue<BaseItem> MediaInfoExtractItemQueue = new ConcurrentQueue<BaseItem>();
+        public static ConcurrentQueue<Episode> IntroSkipItemQueue = new ConcurrentQueue<Episode>();
         public static Task MediaInfoExtractProcessTask;
 
         public static void Initialize()
@@ -84,7 +84,7 @@ namespace StrmAssistant
                         dequeueItems.Add(dequeueItem);
                     }
 
-                    var dedupQueueItems = dequeueItems.DistinctBy(i => i.InternalId).ToList();
+                    var dedupQueueItems = dequeueItems.GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
                     var items = Plugin.LibraryApi.FetchExtractQueueItems(dedupQueueItems);
 
                     foreach (var item in items)

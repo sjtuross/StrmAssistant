@@ -36,10 +36,10 @@
     <value>最大線程數</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
-    <value>最大並發提取媒體訊息的線程數。必須在 1 至 10 之間。預設為 1。</value>
+    <value>最大並發提取媒體訊息的線程數。必須在 1 至 10 之間，預設為 1。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
-    <value>僅處理Strm，關閉後也會處理非Strm，預設為開啟。</value>
+    <value>僅支援Strm，關閉後也支援非Strm，預設為開啟。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Strm_Only" xml:space="preserve">
     <value>僅處理Strm</value>
