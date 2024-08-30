@@ -111,15 +111,7 @@ namespace StrmAssistant
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
-            return new[]
-                {
-                    new TaskTriggerInfo
-                    {
-                        Type = TaskTriggerInfo.TriggerDaily,
-                        TimeOfDayTicks = TimeSpan.FromHours(3).Ticks,
-                        MaxRuntimeTicks = TimeSpan.FromHours(24).Ticks
-                    }
-                };
+            return Array.Empty<TaskTriggerInfo>();
         }
     }
 }
