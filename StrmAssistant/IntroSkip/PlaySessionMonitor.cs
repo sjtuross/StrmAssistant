@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -45,9 +45,12 @@ namespace StrmAssistant
 
         public void UpdateLibraryPaths()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope?.Split(',');
+            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope?.Split(',')
+                .Where(id => !string.IsNullOrWhiteSpace(id)).ToArray();
             LibraryPathsInScope = _libraryManager.GetVirtualFolders()
-                .Where(f => libraryIds != null && libraryIds.Contains(f.Id))
+                .Where(f => (libraryIds != null && libraryIds.Any()
+                    ? libraryIds.Contains(f.Id)
+                    : f.CollectionType == "tvshows"))
                 .SelectMany(l => l.Locations)
                 .ToList();
         }
