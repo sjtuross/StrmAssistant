@@ -163,13 +163,14 @@ namespace StrmAssistant
 
         public List<BaseItem> FetchExtractTaskItems()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope?.Split(',');
+            var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope?.Split(',')
+                .Where(id => !string.IsNullOrWhiteSpace(id)).ToArray();
             var libraries = _libraryManager.GetVirtualFolders()
-                .Where(f => libraryIds != null && libraryIds.Contains(f.Id)).ToList();
+                .Where(f => libraryIds == null || !libraryIds.Any() || libraryIds.Contains(f.Id)).ToList();
             var librariesWithImageCapture = libraries.Where(l =>
                 l.LibraryOptions.TypeOptions.Any(t => t.ImageFetchers.Contains("Image Capture"))).ToList();
             _logger.Info("MediaInfoExtract - LibraryScope: " +
-                         (libraries.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
+                         (libraryIds != null && libraryIds.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
 
             bool includeExtra = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.IncludeExtra;
             _logger.Info("Include Extra: " + includeExtra);
@@ -179,22 +180,28 @@ namespace StrmAssistant
             {
                 HasPath = true,
                 HasAudioStream = false,
-                MediaTypes = new [] { MediaType.Video, MediaType.Audio },
-                PathStartsWithAny = libraries.SelectMany(l => l.Locations).ToArray()
+                MediaTypes = new [] { MediaType.Video, MediaType.Audio }
             };
+            if (libraryIds != null && libraryIds.Any())
+            {
+                itemsMediaInfoQuery.PathStartsWithAny = libraries.SelectMany(l => l.Locations).ToArray();
+            }
+
             var itemsImageCaptureQuery = new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { "Movie", "Episode" },
                 HasPath = true,
                 MediaTypes = new[] { MediaType.Video },
-                PathStartsWithAny = librariesWithImageCapture.SelectMany(l => l.Locations).ToArray()
             };
 
             BaseItem[] items = Array.Empty<BaseItem>();
             var itemsMediaInfo = _libraryManager.GetItemList(itemsMediaInfoQuery);
 
-            if (enableImageCapture)
+            if (enableImageCapture && librariesWithImageCapture.Any())
             {
+                itemsImageCaptureQuery.PathStartsWithAny =
+                    librariesWithImageCapture.SelectMany(l => l.Locations).ToArray();
+
                 var itemsImageCapture = _libraryManager.GetItemList(itemsImageCaptureQuery)
                     .Where(i => !i.HasImage(ImageType.Primary)).ToList();
                 items = itemsMediaInfo.Concat(itemsImageCapture).GroupBy(i => i.InternalId).Select(g => g.First())
@@ -211,7 +218,7 @@ namespace StrmAssistant
                 itemsMediaInfoQuery.ExtraTypes = extraType;
                 var extrasMediaInfo = _libraryManager.GetItemList(itemsMediaInfoQuery);
 
-                if (enableImageCapture)
+                if (enableImageCapture && librariesWithImageCapture.Any())
                 {
                     itemsImageCaptureQuery.ExtraTypes = extraType;
                     var extrasImageCapture = _libraryManager.GetItemList(itemsImageCaptureQuery);

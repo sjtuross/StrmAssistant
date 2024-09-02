@@ -205,7 +205,9 @@ namespace StrmAssistant
                     : f.CollectionType == "tvshows" || f.CollectionType is null).ToList();
 
             _logger.Info("IntroSkip - LibraryScope: " +
-                         (libraries.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
+                         (libraryIds != null && libraryIds.Any()
+                             ? string.Join(", ", libraries.Select(l => l.Name))
+                             : "ALL"));
 
             var itemsIntroSkipQuery = new InternalItemsQuery
             {
