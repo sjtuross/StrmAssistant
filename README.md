@@ -1,5 +1,7 @@
 # Strm Assistant
 
+![logo](StrmAssistant/Properties/thumb.png "logo")
+
 ## [中文介绍](README.zh.md)
 
 ## Purpose
@@ -27,4 +29,3 @@
 1. Download `StrmAssistant.dll` to the `plugins` folder
 2. Restart Emby
 3. Go to the Plugins page and check the plugin version and settings
-4. Go to the Scheduled Tasks page to run

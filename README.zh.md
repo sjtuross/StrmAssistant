@@ -1,5 +1,7 @@
 # STRM 助手
 
+![logo](StrmAssistant/Properties/thumb.png "logo")
+
 ## 用途
 
 1. 提高首次播放的起播速度
@@ -25,4 +27,3 @@
 1. 下载 `StrmAssistant.dll` 放入配置目录中的 `plugins` 目录
 2. 重启Emby
 3. 至插件页面检查版本及设置
-4. 至计划任务页面运行
