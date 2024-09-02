@@ -28,11 +28,6 @@ namespace StrmAssistant
         [Required]
         public bool EnableImageCapture { get; set; } = false;
 
-        [DisplayNameL("PluginOptions_CatchupMode_Catch_up_Mode__Experimental_", typeof(Resources))]
-        [DescriptionL("PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_", typeof(Resources))]
-        [Required]
-        public bool CatchupMode { get; set; } = false;
-
         [Browsable(false)]
         public IEnumerable<EditorSelectOption> LibraryList { get; set; }
 

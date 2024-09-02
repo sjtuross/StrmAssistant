@@ -3,6 +3,7 @@ using MediaBrowser.Common;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
@@ -23,6 +24,7 @@ namespace StrmAssistant
         public static Plugin Instance { get; private set; }
         public static LibraryApi LibraryApi { get; private set; }
         public static ChapterApi ChapterApi { get; private set; }
+        public static NotificationApi NotificationApi { get; private set; }
         public static PlaySessionMonitor PlaySessionMonitor { get; private set; }
 
         private readonly Guid _id = new Guid("63c322b7-a371-41a3-b11f-04f8418b37d8");
@@ -42,6 +44,7 @@ namespace StrmAssistant
             ILibraryManager libraryManager,
             ISessionManager sessionManager,
             IItemRepository itemRepository,
+            INotificationManager notificationManager,
             IUserManager userManager,
             IUserDataManager userDataManager) : base(applicationHost)
         {
@@ -59,8 +62,9 @@ namespace StrmAssistant
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
+            NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
 
-            _currentCatchupMode = GetOptions().MediaInfoExtractOptions.CatchupMode;
+            _currentCatchupMode = GetOptions().GeneralOptions.CatchupMode;
             if (_currentCatchupMode)
             {
                 InitializeCatchupMode();
@@ -120,6 +124,8 @@ namespace StrmAssistant
             {
                 QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
             }
+
+            NotificationApi.CatchupUpdateSendNotification(e.Item);
         }
 
         private void OnUserDataSaved(object sender, UserDataSaveEventArgs e)
@@ -158,16 +164,16 @@ namespace StrmAssistant
                 Patch.UpdateResourcePool(_currentMaxConcurrentCount);
             }
 
-            logger.Info("StrmOnly is set to {0}", options.StrmOnly);
+            logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
             logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
             logger.Info("EnableImageCapture is set to {0}", options.MediaInfoExtractOptions.EnableImageCapture);
-            logger.Info("CatchupMode is set to {0}", options.MediaInfoExtractOptions.CatchupMode);
+            logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
 
-            if (_currentCatchupMode != options.MediaInfoExtractOptions.CatchupMode)
+            if (_currentCatchupMode != options.GeneralOptions.CatchupMode)
             {
-                _currentCatchupMode = options.MediaInfoExtractOptions.CatchupMode;
+                _currentCatchupMode = options.GeneralOptions.CatchupMode;
 
-                if (options.MediaInfoExtractOptions.CatchupMode)
+                if (options.GeneralOptions.CatchupMode)
                 {
                     InitializeCatchupMode();
                 }

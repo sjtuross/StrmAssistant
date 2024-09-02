@@ -61,6 +61,15 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to General.
+        /// </summary>
+        public static string GeneralOptions_EditorTitle_General_Options {
+            get {
+                return ResourceManager.GetString("GeneralOptions_EditorTitle_General_Options", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Library Scope.
         /// </summary>
         public static string IntroSkipOptions_LibraryScope_Library_Scope {
@@ -98,6 +107,69 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0}\n\n{1}&apos;s favorite.
+        /// </summary>
+        public static string Notification_CatchupUpdate_EventDescription {
+            get {
+                return ResourceManager.GetString("Notification_CatchupUpdate_EventDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Catch-up Update.
+        /// </summary>
+        public static string Notification_CatchupUpdate_EventName {
+            get {
+                return ResourceManager.GetString("Notification_CatchupUpdate_EventName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} - {1} - Credits marker updated\n\nCredits duration: {2}\n\nby {3}.
+        /// </summary>
+        public static string Notification_CreditsUpdate_Description {
+            get {
+                return ResourceManager.GetString("Notification_CreditsUpdate_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} - {1} - Credits marker updated.
+        /// </summary>
+        public static string Notification_CreditsUpdate_Message {
+            get {
+                return ResourceManager.GetString("Notification_CreditsUpdate_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IntroSkip Update.
+        /// </summary>
+        public static string Notification_IntroSkipUpdate_EventName {
+            get {
+                return ResourceManager.GetString("Notification_IntroSkipUpdate_EventName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} - {1} - Intro marker updated\n\nIntro start time: {2}\nIntro end time: {3}\n\nby {4}.
+        /// </summary>
+        public static string Notification_IntroUpdate_Description {
+            get {
+                return ResourceManager.GetString("Notification_IntroUpdate_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} - {1} - Intro marker updated.
+        /// </summary>
+        public static string Notification_IntroUpdate_Message {
+            get {
+                return ResourceManager.GetString("Notification_IntroUpdate_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Catch-up Mode (Experimental).
         /// </summary>
         public static string PluginOptions_CatchupMode_Catch_up_Mode__Experimental_ {
@@ -107,7 +179,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extract media info once new items are added for movies or series in favorites (Strm only). Default is OFF..
+        ///   Looks up a localized string similar to Extract media info once new items are added for favorites and sync intro and credits markers. Default is OFF..
         /// </summary>
         public static string PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_ {
             get {

@@ -243,7 +243,7 @@ namespace StrmAssistant
 
         private List<BaseItem> FilterUnprocessed(List<BaseItem> items)
         {
-            var strmOnly = Plugin.Instance.GetPluginOptions().StrmOnly;
+            var strmOnly = Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly;
             _logger.Info("Strm Only: " + strmOnly);
 
             List<BaseItem> results = new List<BaseItem>();
@@ -283,6 +283,16 @@ namespace StrmAssistant
                 .GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
 
             return results;
+        }
+        public List<User> GetUsersByFavorites(BaseItem item)
+        {
+            var users = AllUsers.Where(u =>
+                (item is Movie || item is Series) && item.IsFavoriteOrLiked(u) ||
+                item is Episode e && (e.IsFavoriteOrLiked(u) ||
+                                            (e.Series != null && e.Series.IsFavoriteOrLiked(u)))
+            ).ToList();
+
+            return users;
         }
     }
 }

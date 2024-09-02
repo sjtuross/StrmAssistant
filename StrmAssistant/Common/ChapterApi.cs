@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -19,9 +19,9 @@ namespace StrmAssistant
 
         public ChapterApi(ILibraryManager libraryManager, IItemRepository itemRepository)
         {
+            _logger = Plugin.Instance.logger;
             _libraryManager = libraryManager;
             _itemRepository = itemRepository;
-            _logger = Plugin.Instance.logger;
         }
 
         public bool HasIntro(BaseItem item)
@@ -68,8 +68,11 @@ namespace StrmAssistant
 
             _logger.Info("Intro marker updated by " + session.UserName + " for " +
                          item.FindSeriesName() + " - " + item.FindSeasonName() + " - " + item.Season.Path);
-            _logger.Info("Intro start time: " + new TimeSpan(introStartPositionTicks).ToString(@"hh\:mm\:ss\.fff"));
-            _logger.Info("Intro end time: " + new TimeSpan(introEndPositionTicks).ToString(@"hh\:mm\:ss\.fff"));
+            var introStartTime = new TimeSpan(introStartPositionTicks).ToString(@"hh\:mm\:ss\.fff");
+            _logger.Info("Intro start time: " + introStartTime);
+            var introEndTime = new TimeSpan(introEndPositionTicks).ToString(@"hh\:mm\:ss\.fff");
+            _logger.Info("Intro end time: " + introEndTime);
+            Plugin.NotificationApi.IntroUpdateSendNotification(item, session, introStartTime, introEndTime);
         }
 
         public void UpdateCredits(Episode item, SessionInfo session, long creditsDurationTicks)
@@ -102,7 +105,9 @@ namespace StrmAssistant
 
             _logger.Info("Credits marker updated by " + session.UserName + " for " +
                          item.FindSeriesName() + " - " + item.FindSeasonName() + " - " + item.Season.Path);
+            var creditsDuration = new TimeSpan(creditsDurationTicks).ToString(@"hh\:mm\:ss\.fff");
             _logger.Info("Credits duration: " + new TimeSpan(creditsDurationTicks).ToString(@"hh\:mm\:ss\.fff"));
+            Plugin.NotificationApi.CreditsUpdateSendNotification(item, session, creditsDuration);
         }
 
         public List<BaseItem> FetchEpisodes(BaseItem item, MarkerType markerType)

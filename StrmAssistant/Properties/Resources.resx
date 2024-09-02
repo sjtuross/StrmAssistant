@@ -102,7 +102,7 @@
     <value>Catch-up Mode (Experimental)</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>Extract media info once new items are added for movies or series in favorites (Strm only). Default is OFF.</value>
+    <value>Extract media info once new items are added for favorites and sync intro and credits markers. Default is OFF.</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>Include Extra</value>
@@ -163,5 +163,29 @@
   </data>
   <data name="PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract" xml:space="preserve">
     <value>Please uninstall the conflict plugin StrmExtract.dll and then restart Emby.</value>
+  </data>
+  <data name="Notification_CatchupUpdate_EventName" xml:space="preserve">
+    <value>Favorites Updated</value>
+  </data>
+  <data name="Notification_IntroSkipUpdate_EventName" xml:space="preserve">
+    <value>IntroSkip Updated</value>
+  </data>
+  <data name="Notification_CatchupUpdate_EventDescription" xml:space="preserve">
+    <value>Catch-up mode update - {0}\n\n{1}'s favorite</value>
+  </data>
+  <data name="Notification_IntroUpdate_Description" xml:space="preserve">
+    <value>{0} - {1} - Intro marker updated\n\nIntro start time: {2}\nIntro end time: {3}\n\nby {4}</value>
+  </data>
+  <data name="Notification_CreditsUpdate_Description" xml:space="preserve">
+    <value>{0} - {1} - Credits marker updated\n\nCredits duration: {2}\n\nby {3}</value>
+  </data>
+  <data name="Notification_IntroUpdate_Message" xml:space="preserve">
+    <value>{0} - {1} - Intro marker updated</value>
+  </data>
+  <data name="Notification_CreditsUpdate_Message" xml:space="preserve">
+    <value>{0} - {1} - Credits marker updated</value>
+  </data>
+  <data name="GeneralOptions_EditorTitle_General_Options" xml:space="preserve">
+    <value>General</value>
   </data>
 </root>

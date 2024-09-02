@@ -1,5 +1,4 @@
 ﻿using Emby.Web.GenericEdit;
-using Emby.Web.GenericEdit.Elements;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
 using StrmAssistant.Properties;
@@ -22,12 +21,10 @@ namespace StrmAssistant
         //public LabelItem IncompatibleMessage { get; set; } = IsConflictPluginLoaded?new(Resources
         //    .PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract): new LabelItem("");
 
-        [DisplayNameL("PluginOptions_StrmOnly_Strm_Only", typeof(Resources))]
-        [DescriptionL("PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_", typeof(Resources))]
+        [DisplayNameL("GeneralOptions_EditorTitle_General_Options", typeof(Resources))]
         [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
-        [Required]
-        public bool StrmOnly { get; set; } = true;
+        public GeneralOptions GeneralOptions { get; set; } = new GeneralOptions();
 
         [DisplayNameL("PluginOptions_EditorTitle_Strm_Extract", typeof(Resources))]
         [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]

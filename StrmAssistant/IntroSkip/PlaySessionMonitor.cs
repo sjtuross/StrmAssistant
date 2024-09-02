@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -217,7 +217,7 @@ namespace StrmAssistant
 
         public bool IsInScope(BaseItem item)
         {
-            bool isEnable = item is Episode && (Plugin.Instance.GetPluginOptions().StrmOnly ? item.IsShortcut : true);
+            bool isEnable = item is Episode && (Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly ? item.IsShortcut : true);
             if (!isEnable) return false;
             
             bool isInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));

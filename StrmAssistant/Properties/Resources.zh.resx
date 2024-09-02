@@ -15,7 +15,7 @@
     <value>追更模式 (实验室)</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>最爱中的电影洗版或剧集有更新后实时提取媒体信息 (仅支持Strm)，默认关闭。</value>
+    <value>最爱中的电影洗版或剧集有更新后实时提取媒体信息以及同步片头片尾标记，默认关闭。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>包含附加内容</value>
@@ -76,5 +76,29 @@
   </data>
   <data name="PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract" xml:space="preserve">
     <value>请卸载冲突插件 StrmExtract.dll，然后重启 Emby。</value>
+  </data>
+  <data name="Notification_CatchupUpdate_EventName" xml:space="preserve">
+    <value>最爱有更新</value>
+  </data>
+  <data name="Notification_IntroSkipUpdate_EventName" xml:space="preserve">
+    <value>片头片尾已更新</value>
+  </data>
+  <data name="Notification_CatchupUpdate_EventDescription" xml:space="preserve">
+    <value>追更模式更新 - {0}\n\n{1}的最爱</value>
+  </data>
+  <data name="Notification_IntroUpdate_Description" xml:space="preserve">
+    <value>{0} - {1} - 片头标记已更新\n\n片头开始: {2}\n片头结束: {3}\n\n由{4}更新</value>
+  </data>
+  <data name="Notification_CreditsUpdate_Description" xml:space="preserve">
+    <value>{0} - {1} - 片尾标记已更新\n\n片尾时长: {2}\n\n由{3}更新</value>
+  </data>
+  <data name="Notification_IntroUpdate_Message" xml:space="preserve">
+    <value>{0} - {1} - 片头标记已更新</value>
+  </data>
+  <data name="Notification_CreditsUpdate_Message" xml:space="preserve">
+    <value>{0} - {1} - 片尾标记已更新</value>
+  </data>
+  <data name="GeneralOptions_EditorTitle_General_Options" xml:space="preserve">
+    <value>通用</value>
   </data>
 </root>
