@@ -1,4 +1,4 @@
-using MediaBrowser.Controller.Entities;
+﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Persistence;
@@ -197,9 +197,12 @@ namespace StrmAssistant
 
         public List<BaseItem> FetchClearTaskItems()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope?.Split(',');
+            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope?.Split(',')
+                .Where(id => !string.IsNullOrWhiteSpace(id)).ToArray();
             var libraries = _libraryManager.GetVirtualFolders()
-                .Where(f => libraryIds != null && libraryIds.Contains(f.Id)).ToList();
+                .Where(f => libraryIds != null && libraryIds.Any()
+                    ? libraryIds.Contains(f.Id)
+                    : f.CollectionType == "tvshows" || f.CollectionType is null).ToList();
 
             _logger.Info("IntroSkip - LibraryScope: " +
                          (libraries.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));

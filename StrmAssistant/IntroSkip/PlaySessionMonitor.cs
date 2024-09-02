@@ -47,9 +47,9 @@ namespace StrmAssistant
             var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope?.Split(',')
                 .Where(id => !string.IsNullOrWhiteSpace(id)).ToArray();
             LibraryPathsInScope = _libraryManager.GetVirtualFolders()
-                .Where(f => (libraryIds != null && libraryIds.Any()
+                .Where(f => libraryIds != null && libraryIds.Any()
                     ? libraryIds.Contains(f.Id)
-                    : f.CollectionType == "tvshows"))
+                    : f.CollectionType == "tvshows" || f.CollectionType is null)
                 .SelectMany(l => l.Locations)
                 .ToList();
         }

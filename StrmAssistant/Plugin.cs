@@ -241,7 +241,7 @@ namespace StrmAssistant
 
                 list.Add(selectOption);
 
-                if (item.CollectionType == "tvshows")
+                if (item.CollectionType == "tvshows" || item.CollectionType is null) // null means mixed content library
                 {
                     listShows.Add(selectOption);
                 }
