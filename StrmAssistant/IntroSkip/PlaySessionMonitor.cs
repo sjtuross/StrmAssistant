@@ -100,6 +100,12 @@ namespace StrmAssistant
             playSessionData.PlaybackStartTicks = e.PlaybackPositionTicks.Value;
             playSessionData.PreviousPositionTicks = e.PlaybackPositionTicks.Value;
             playSessionData.PreviousEventTime = DateTime.UtcNow;
+            if (!Plugin.ChapterApi.HasIntro(e.Item))
+            {
+                _logger.Info("Playback start time: " +
+                             new TimeSpan(playSessionData.PlaybackStartTicks).ToString(@"hh\:mm\:ss\.fff"));
+                _logger.Info("IntroSkip - Detection Started");
+            }
         }
 
         private void OnPlaybackProgress(object sender, PlaybackProgressEventArgs e)
@@ -130,15 +136,19 @@ namespace StrmAssistant
                             : "Rewind {0} seconds by {1}.", positionTimeDiff - elapsedTime, e.Session.UserName);
 
                     if (!playSessionData.FirstJumpPositionTicks.HasValue &&
-                        playSessionData.PlaybackStartTicks == TimeSpan.TicksPerSecond / 10 &&
+                        TimeSpan.FromTicks(playSessionData.PlaybackStartTicks).TotalSeconds < 5 &&
                         positionTimeDiff > 0) //fast-forward only
                     {
                         playSessionData.FirstJumpPositionTicks = playSessionData.PreviousPositionTicks;
                         if (playSessionData.PreviousPositionTicks > 60 * TimeSpan.TicksPerSecond)
                         {
+                            _logger.Info("First jump start time: " +
+                                         new TimeSpan(playSessionData.FirstJumpPositionTicks.Value).ToString(
+                                             @"hh\:mm\:ss\.fff"));
                             playSessionData.MaxIntroDurationTicks += playSessionData.PreviousPositionTicks;
-                            _logger.Info("MaxIntroDurationSeconds is extended to: " +
-                                         TimeSpan.FromTicks(playSessionData.MaxIntroDurationTicks).TotalSeconds);
+                            _logger.Info("MaxIntroDurationSeconds is extended to: {0} ({1})",
+                                TimeSpan.FromTicks(playSessionData.MaxIntroDurationTicks).TotalSeconds
+                                , TimeSpan.FromTicks(playSessionData.MaxIntroDurationTicks).ToString(@"hh\:mm\:ss\.fff"));
                         }
                     }
 
