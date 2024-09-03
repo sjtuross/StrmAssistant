@@ -25,8 +25,13 @@ namespace StrmAssistant
 
         [DisplayNameL("PluginOptions_EnableImageCapture_Enable_Image_Capture", typeof(Resources))]
         [DescriptionL("PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_", typeof(Resources))]
+        [Browsable(false)]
         [Required]
-        public bool EnableImageCapture { get; set; } = false;
+        public bool EnableImageCapture
+        {
+            get => false;
+            set { }
+        }
 
         [Browsable(false)]
         public IEnumerable<EditorSelectOption> LibraryList { get; set; }

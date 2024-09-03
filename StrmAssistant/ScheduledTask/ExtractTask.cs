@@ -49,7 +49,6 @@ namespace StrmAssistant
                 var taskItem = item;
                 var task = Task.Run(async () =>
                 {
-                    bool isPatched = false;
                     try
                     {
                         MetadataRefreshOptions refreshOptions;
@@ -60,12 +59,6 @@ namespace StrmAssistant
                         else
                         {
                             refreshOptions = LibraryApi.MediaInfoRefreshOptions;
-                        }
-
-                        if (enableImageCapture && !taskItem.HasImage(ImageType.Primary) && taskItem.IsShortcut)
-                        {
-                            Patch.PatchInstanceIsShortcut(taskItem);
-                            isPatched=true;
                         }
 
                         ItemUpdateType resp = await taskItem.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
@@ -84,11 +77,6 @@ namespace StrmAssistant
                         progress.Report(current / total * 100);
                         _logger.Info("MediaInfoExtract - Scheduled Task " + current + "/" + total + " - " + "Task " + taskIndex + ": " +
                                      taskItem.Path);
-
-                        if (isPatched)
-                        {
-                            Patch.UnpatchInstanceIsShortcut(taskItem);
-                        }
 
                         QueueManager.SemaphoreMaster.Release();
                     }

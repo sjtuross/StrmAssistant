@@ -54,7 +54,6 @@ namespace StrmAssistant
 
             _currentMaxConcurrentCount = GetOptions().MediaInfoExtractOptions.MaxConcurrentCount;
             QueueManager.Initialize();
-            Patch.Initialize();
 
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -161,7 +160,6 @@ namespace StrmAssistant
             {
                 _currentMaxConcurrentCount = options.MediaInfoExtractOptions.MaxConcurrentCount;
                 QueueManager.UpdateSemaphore(_currentMaxConcurrentCount);
-                Patch.UpdateResourcePool(_currentMaxConcurrentCount);
             }
 
             logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
