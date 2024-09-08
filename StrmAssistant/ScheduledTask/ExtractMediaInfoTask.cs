@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
-    public class ExtractTask: IScheduledTask
+    public class ExtractMediaInfoTask: IScheduledTask
     {
         private readonly ILogger _logger;
 
-        public ExtractTask()
+        public ExtractMediaInfoTask()
         {
             _logger = Plugin.Instance.logger;
         }
@@ -101,11 +101,11 @@ namespace StrmAssistant
             _logger.Info("MediaInfoExtract - Scheduled Task Complete");
         }
 
-        public string Category => "Strm Assistant";
+        public string Category => Plugin.Instance.Name;
 
         public string Key => "MediaInfoExtractTask";
 
-        public string Description => "Extract media info from videos";
+        public string Description => "Extracts media info from videos";
 
         public string Name => "Extract MediaInfo";
 
