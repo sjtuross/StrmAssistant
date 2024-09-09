@@ -36,6 +36,11 @@ namespace StrmAssistant
         [EnabledCondition(nameof(IsConflictPluginLoaded),SimpleCondition.IsFalse)]
         public IntroSkipOptions IntroSkipOptions { get; set; } = new IntroSkipOptions();
 
+        [DisplayNameL("PluginOptions_ModOptions_Mod_Features", typeof(Resources))]
+        [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
+        [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
+        public ModOptions ModOptions { get; set; } = new ModOptions();
+
         [Browsable(false)]
         public bool IsConflictPluginLoaded { get; } =
             AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "StrmExtract");

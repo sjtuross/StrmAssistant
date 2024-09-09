@@ -2,6 +2,7 @@ using HarmonyLib;
 using MediaBrowser.Controller.Entities;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -18,9 +19,14 @@ namespace StrmAssistant
         private static MethodInfo _isShortcutGetter;
         private static PropertyInfo _isShortcutProperty;
 
+        private static Assembly _namingAssembly;
+        private static Type _videoListResolverType;
+        private static MethodInfo _isEligibleForMultiVersion;
+
         private static AsyncLocal<BaseItem> CurrentItem { get; } = new AsyncLocal<BaseItem>();
         private static int _currentMaxConcurrentCount;
         private static bool _enableImageCapture;
+        private static bool _mergeMultiVersion;
 
         private enum PatchApproach
         {
@@ -51,6 +57,11 @@ namespace StrmAssistant
                     .GetGetMethod();
                 _isShortcutProperty =
                     typeof(BaseItem).GetProperty("IsShortcut", BindingFlags.Instance | BindingFlags.Public);
+
+                _namingAssembly = Assembly.Load("Emby.Naming");
+                _videoListResolverType = _namingAssembly.GetType("Emby.Naming.Video.VideoListResolver");
+                _isEligibleForMultiVersion = _videoListResolverType.GetMethod("IsEligibleForMultiVersion",
+                    BindingFlags.Static | BindingFlags.NonPublic);
             }
             catch (Exception e)
             {
@@ -61,21 +72,28 @@ namespace StrmAssistant
             }
 
             _enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
+            _mergeMultiVersion = Plugin.Instance.GetPluginOptions().ModOptions.MergeMultiVersion;
             _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
             SemaphoreFFmpeg = new SemaphoreSlim(_currentMaxConcurrentCount);
 
             if (_fallbackPatchApproach != PatchApproach.None)
             {
+                Mod = new Harmony("emby.mod");
+                
                 if (_enableImageCapture)
                 {
-                    Mod = new Harmony("emby.mod");
                     PatchResourcePool();
                     PatchIsShortcut();
                 }
 
+                if (_mergeMultiVersion)
+                {
+                    PatchIsEligibleForMultiVersion();
+                }
+
                 var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
                 Plugin.Instance.logger.Info(
-                    "Current FFmpeg ResourcePool: " + resourcePool?.CurrentCount ?? String.Empty);
+                    "Current FFmpeg ResourcePool: " + resourcePool?.CurrentCount ?? string.Empty);
             }
         }
 
@@ -164,6 +182,31 @@ namespace StrmAssistant
                 catch (Exception he)
                 {
                     Plugin.Instance.logger.Debug("Patch IsShortcut Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    _fallbackPatchApproach = PatchApproach.Reflection;
+                }
+            }
+        }
+
+        public static void PatchIsEligibleForMultiVersion()
+        {
+            if (_fallbackPatchApproach == PatchApproach.Harmony)
+            {
+                try
+                {
+                    if (!IsPatched(_isEligibleForMultiVersion))
+                    {
+                        Mod.Patch(_isEligibleForMultiVersion,
+                            prefix: new HarmonyMethod(typeof(Patch).GetMethod("IsEligibleForMultiVersionPrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch IsEligibleForMultiVersion Success by Harmony");
+                    }
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Patch IsEligibleForMultiVersion Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                     _fallbackPatchApproach = PatchApproach.Reflection;
@@ -298,9 +341,30 @@ namespace StrmAssistant
             }
         }
 
-        public static void UnpatchIsShortcut()
+        public static void UnpatchIsEligibleForMultiVersion()
         {
             if (_fallbackPatchApproach== PatchApproach.Harmony)
+            {
+                try
+                {
+                    if (IsPatched(_isEligibleForMultiVersion))
+                    {
+                        Mod.Unpatch(_isEligibleForMultiVersion, HarmonyPatchType.Prefix);
+                        Plugin.Instance.logger.Debug("Unpatch IsEligibleForMultiVersion Success by Harmony");
+                    }
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Unpatch IsEligibleForMultiVersion Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
+                }
+            }
+        }
+
+        public static void UnpatchIsShortcut()
+        {
+            if (_fallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
@@ -357,6 +421,14 @@ namespace StrmAssistant
                 return false;
             }
 
+            return true;
+        }
+
+        [HarmonyPrefix]
+        private static bool IsEligibleForMultiVersionPrefix(ref string testFilename)
+        {
+            testFilename = Path.GetFileName(Path.GetDirectoryName(testFilename));
+            
             return true;
         }
     }

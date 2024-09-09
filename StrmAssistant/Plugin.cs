@@ -37,6 +37,7 @@ namespace StrmAssistant
         private int _currentMaxConcurrentCount;
         private bool _currentCatchupMode;
         private bool _currentEnableIntroSkip;
+        private bool _currentMergeMultiVersion;
 
         public Plugin(IApplicationHost applicationHost,
             ILogManager logManager,
@@ -54,6 +55,8 @@ namespace StrmAssistant
 
             _currentMaxConcurrentCount = GetOptions().MediaInfoExtractOptions.MaxConcurrentCount;
             QueueManager.Initialize();
+
+            _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
             Patch.Initialize();
 
             _libraryManager = libraryManager;
@@ -167,8 +170,23 @@ namespace StrmAssistant
             logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
             logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
             logger.Info("EnableImageCapture is set to {0}", options.MediaInfoExtractOptions.EnableImageCapture);
-            logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
 
+            logger.Info("MergeMultiVersion is set to {0}", options.ModOptions.MergeMultiVersion);
+            if (_currentMergeMultiVersion!= GetOptions().ModOptions.MergeMultiVersion)
+            {
+                _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
+
+                if (_currentMergeMultiVersion)
+                {
+                    Patch.PatchIsEligibleForMultiVersion();
+                }
+                else
+                {
+                    Patch.UnpatchIsEligibleForMultiVersion();
+                }
+            }
+
+            logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
             if (_currentCatchupMode != options.GeneralOptions.CatchupMode)
             {
                 _currentCatchupMode = options.GeneralOptions.CatchupMode;
