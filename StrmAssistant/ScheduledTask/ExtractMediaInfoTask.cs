@@ -64,7 +64,7 @@ namespace StrmAssistant
 
                         if (enableImageCapture && !taskItem.HasImage(ImageType.Primary) && taskItem.IsShortcut)
                         {
-                            Patch.PatchInstanceIsShortcut(taskItem);
+                            EnableImageCapture.PatchInstanceIsShortcut(taskItem);
                             isPatched=true;
                         }
 
@@ -87,7 +87,7 @@ namespace StrmAssistant
 
                         if (isPatched)
                         {
-                            Patch.UnpatchInstanceIsShortcut(taskItem);
+                            EnableImageCapture.UnpatchInstanceIsShortcut(taskItem);
                         }
 
                         QueueManager.SemaphoreMaster.Release();

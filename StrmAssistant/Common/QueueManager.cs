@@ -107,7 +107,7 @@ namespace StrmAssistant
 
                                 if (enableImageCapture && !taskItem.HasImage(ImageType.Primary) && taskItem.IsShortcut)
                                 {
-                                    Patch.PatchInstanceIsShortcut(item);
+                                    EnableImageCapture.PatchInstanceIsShortcut(item);
                                     isPatched = true;
                                 }
 
@@ -132,7 +132,7 @@ namespace StrmAssistant
                             {
                                 if (isPatched)
                                 {
-                                    Patch.UnpatchInstanceIsShortcut(taskItem);
+                                    EnableImageCapture.UnpatchInstanceIsShortcut(taskItem);
                                 }
                             }
                         });

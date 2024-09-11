@@ -38,6 +38,7 @@ namespace StrmAssistant
         private bool _currentCatchupMode;
         private bool _currentEnableIntroSkip;
         private bool _currentMergeMultiVersion;
+        private bool _currentChineseMovieDb;
 
         public Plugin(IApplicationHost applicationHost,
             ILogManager logManager,
@@ -57,7 +58,8 @@ namespace StrmAssistant
             QueueManager.Initialize();
 
             _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
-            Patch.Initialize();
+            _currentChineseMovieDb = GetOptions().ModOptions.ChineseMovieDb;
+            PatchManager.Initialize();
 
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -164,7 +166,7 @@ namespace StrmAssistant
             {
                 _currentMaxConcurrentCount = options.MediaInfoExtractOptions.MaxConcurrentCount;
                 QueueManager.UpdateSemaphore(_currentMaxConcurrentCount);
-                Patch.UpdateResourcePool(_currentMaxConcurrentCount);
+                EnableImageCapture.UpdateResourcePool(_currentMaxConcurrentCount);
             }
 
             logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
@@ -178,11 +180,26 @@ namespace StrmAssistant
 
                 if (_currentMergeMultiVersion)
                 {
-                    Patch.PatchIsEligibleForMultiVersion();
+                    MergeMultiVersion.Patch();
                 }
                 else
                 {
-                    Patch.UnpatchIsEligibleForMultiVersion();
+                    MergeMultiVersion.Unpatch();
+                }
+            }
+
+            logger.Info("ChineseMovieDb is set to {0}", options.ModOptions.ChineseMovieDb);
+            if (_currentChineseMovieDb != GetOptions().ModOptions.ChineseMovieDb)
+            {
+                _currentChineseMovieDb = GetOptions().ModOptions.ChineseMovieDb;
+
+                if (_currentChineseMovieDb)
+                {
+                    ChineseMovieDb.Patch();
+                }
+                else
+                {
+                    ChineseMovieDb.Unpatch();
                 }
             }
 

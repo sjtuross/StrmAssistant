@@ -99,7 +99,7 @@
 		<value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
 	</resheader>
   <data name="PluginOptions_CatchupMode_Catch_up_Mode__Experimental_" xml:space="preserve">
-    <value>Catch-up Mode (Experimental)</value>
+    <value>Catch-up Mode</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
     <value>Extract media info once new items are added for favorites and sync intro and credits markers. Default is OFF.</value>
@@ -132,13 +132,13 @@
     <value>Library scope to extract. Blank includes all.</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Enable_Image_Capture" xml:space="preserve">
-    <value>Enable Image Capture (Experimental)</value>
+    <value>Enable Image Capture</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
     <value>Perform image capture for videos without primary image. Default is OFF.</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
-    <value>Enable Intro Skip (Experimental)</value>
+    <value>Enable Intro Skip</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__Default_is_False_" xml:space="preserve">
     <value>Playback behavior-based intro and credits detection for episodes. Default is OFF.</value>
@@ -189,12 +189,24 @@
     <value>General</value>
   </data>
   <data name="GeneralOptions_MergeMultiVersion_Merge_Multiple_Versions" xml:space="preserve">
-    <value>Multi-version Merge (Experimental)</value>
+    <value>Merge Multi-version</value>
   </data>
   <data name="GeneralOptions_MergeMultiVersion_Auto_merge_multiple_versions_if_in_the_same_folder_" xml:space="preserve">
-    <value>Auto merge multiple versions stored in the same folder.</value>
+    <value>Auto merge multiple versions stored in the same folder. Default is OFF.</value>
   </data>
   <data name="PluginOptions_ModOptions_Mod_Features" xml:space="preserve">
     <value>Mod</value>
+  </data>
+  <data name="ModOptions_ChineseMovieDb_Chinese_MovieDb" xml:space="preserve">
+    <value>Chinese MovieDb</value>
+  </data>
+  <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
+    <value>Try to get Chinese metadata from MovieDb. Default is OFF.</value>
+  </data>
+  <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
+    <value>Fallback Languages</value>
+  </data>
+  <data name="ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_" xml:space="preserve">
+    <value>Fallback metadata languages.</value>
   </data>
 </root>

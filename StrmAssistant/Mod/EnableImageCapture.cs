@@ -1,16 +1,16 @@
-using HarmonyLib;
+﻿using HarmonyLib;
 using MediaBrowser.Controller.Entities;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
+using static StrmAssistant.PatchManager;
 
 namespace StrmAssistant
 {
-    public static class Patch
+    public static class EnableImageCapture
     {
         private static Assembly _mediaEncodingAssembly;
         private static Type _imageExtractorBaseType;
@@ -19,29 +19,15 @@ namespace StrmAssistant
         private static MethodInfo _isShortcutGetter;
         private static PropertyInfo _isShortcutProperty;
 
-        private static Assembly _namingAssembly;
-        private static Type _videoListResolverType;
-        private static MethodInfo _isEligibleForMultiVersion;
-
         private static AsyncLocal<BaseItem> CurrentItem { get; } = new AsyncLocal<BaseItem>();
         private static int _currentMaxConcurrentCount;
-        private static bool _enableImageCapture;
-        private static bool _mergeMultiVersion;
 
-        private enum PatchApproach
-        {
-            None = 0,
-            Reflection = 1,
-            Harmony = 2,
-        }
-
-        private static PatchApproach _fallbackPatchApproach = PatchApproach.Harmony;
-
-        public static SemaphoreSlim SemaphoreFFmpeg;
-        public static Harmony Mod;
+        private static SemaphoreSlim SemaphoreFFmpeg;
 
         public static void Initialize()
         {
+            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
+
             try
             {
                 _mediaEncodingAssembly = Assembly.Load("Emby.Server.MediaEncoding");
@@ -57,39 +43,22 @@ namespace StrmAssistant
                     .GetGetMethod();
                 _isShortcutProperty =
                     typeof(BaseItem).GetProperty("IsShortcut", BindingFlags.Instance | BindingFlags.Public);
-
-                _namingAssembly = Assembly.Load("Emby.Naming");
-                _videoListResolverType = _namingAssembly.GetType("Emby.Naming.Video.VideoListResolver");
-                _isEligibleForMultiVersion = _videoListResolverType.GetMethod("IsEligibleForMultiVersion",
-                    BindingFlags.Static | BindingFlags.NonPublic);
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("Patch Init Failed");
+                Plugin.Instance.logger.Warn("EnableImageCapture - Patch Init Failed");
                 Plugin.Instance.logger.Debug(e.Message);
                 Plugin.Instance.logger.Debug(e.StackTrace);
-                _fallbackPatchApproach = PatchApproach.None;
+                FallbackPatchApproach = PatchApproach.None;
             }
 
-            _enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
-            _mergeMultiVersion = Plugin.Instance.GetPluginOptions().ModOptions.MergeMultiVersion;
-            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
-            SemaphoreFFmpeg = new SemaphoreSlim(_currentMaxConcurrentCount);
-
-            if (_fallbackPatchApproach != PatchApproach.None)
+            if (FallbackPatchApproach != PatchApproach.None &&
+                Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture)
             {
-                Mod = new Harmony("emby.mod");
-                
-                if (_enableImageCapture)
-                {
-                    PatchResourcePool();
-                    PatchIsShortcut();
-                }
+                SemaphoreFFmpeg = new SemaphoreSlim(_currentMaxConcurrentCount);
 
-                if (_mergeMultiVersion)
-                {
-                    PatchIsEligibleForMultiVersion();
-                }
+                PatchResourcePool();
+                PatchIsShortcut();
 
                 var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
                 Plugin.Instance.logger.Info(
@@ -97,19 +66,9 @@ namespace StrmAssistant
             }
         }
 
-        private static bool IsPatched(MethodBase methodInfo)
-        {
-            var patchedMethods = Harmony.GetAllPatchedMethods();
-            if (!patchedMethods.Contains(methodInfo)) return false;
-            var patchInfo = Harmony.GetPatchInfo(methodInfo);
-
-            return patchInfo.Prefixes.Any(p => p.owner == Mod.Id) ||
-                   patchInfo.Transpilers.Any(p => p.owner == Mod.Id);
-        }
-
         private static void PatchResourcePool()
         {
-            switch (_fallbackPatchApproach)
+            switch (FallbackPatchApproach)
             {
                 case PatchApproach.Harmony:
                     try
@@ -117,10 +76,10 @@ namespace StrmAssistant
                         if (!IsPatched(_staticConstructor))
                         {
                             Mod.Patch(_staticConstructor,
-                                prefix: new HarmonyMethod(typeof(Patch).GetMethod("ResourcePoolPrefix",
+                                prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("ResourcePoolPrefix",
                                     BindingFlags.Static | BindingFlags.NonPublic)));
                             //Mod.Patch(_staticConstructor,
-                            //    transpiler: new HarmonyMethod(typeof(Patch).GetMethod("ResourcePoolTranspiler",
+                            //    transpiler: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("ResourcePoolTranspiler",
                             //        BindingFlags.Static | BindingFlags.NonPublic)));
 
                             Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Success by Harmony");
@@ -131,7 +90,7 @@ namespace StrmAssistant
                         Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Harmony");
                         Plugin.Instance.logger.Debug(he.Message);
                         Plugin.Instance.logger.Debug(he.StackTrace);
-                        _fallbackPatchApproach = PatchApproach.Reflection;
+                        FallbackPatchApproach = PatchApproach.Reflection;
 
                         try
                         {
@@ -142,7 +101,7 @@ namespace StrmAssistant
                         {
                             Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
                             Plugin.Instance.logger.Debug(re.Message);
-                            _fallbackPatchApproach = PatchApproach.None;
+                            FallbackPatchApproach = PatchApproach.None;
                         }
                     }
 
@@ -158,7 +117,7 @@ namespace StrmAssistant
                     {
                         Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
                         Plugin.Instance.logger.Debug(re.Message);
-                        _fallbackPatchApproach = PatchApproach.None;
+                        FallbackPatchApproach = PatchApproach.None;
                     }
                     break;
             }
@@ -166,14 +125,14 @@ namespace StrmAssistant
 
         private static void PatchIsShortcut()
         {
-            if (_fallbackPatchApproach == PatchApproach.Harmony)
+            if (FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
                     if (!IsPatched(_isShortcutGetter))
                     {
                         Mod.Patch(_isShortcutGetter,
-                            prefix: new HarmonyMethod(typeof(Patch).GetMethod("IsShortcutPrefix",
+                            prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("IsShortcutPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.logger.Debug(
                             "Patch IsShortcut Success by Harmony");
@@ -184,32 +143,7 @@ namespace StrmAssistant
                     Plugin.Instance.logger.Debug("Patch IsShortcut Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
-                    _fallbackPatchApproach = PatchApproach.Reflection;
-                }
-            }
-        }
-
-        public static void PatchIsEligibleForMultiVersion()
-        {
-            if (_fallbackPatchApproach == PatchApproach.Harmony)
-            {
-                try
-                {
-                    if (!IsPatched(_isEligibleForMultiVersion))
-                    {
-                        Mod.Patch(_isEligibleForMultiVersion,
-                            prefix: new HarmonyMethod(typeof(Patch).GetMethod("IsEligibleForMultiVersionPrefix",
-                                BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
-                            "Patch IsEligibleForMultiVersion Success by Harmony");
-                    }
-                }
-                catch (Exception he)
-                {
-                    Plugin.Instance.logger.Debug("Patch IsEligibleForMultiVersion Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
-                    _fallbackPatchApproach = PatchApproach.Reflection;
+                    FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
         }
@@ -222,7 +156,7 @@ namespace StrmAssistant
                 SemaphoreSlim newSemaphoreFFmpeg;
                 SemaphoreSlim oldSemaphoreFFmpeg;
 
-                switch (_fallbackPatchApproach)
+                switch (FallbackPatchApproach)
                 {
                     case PatchApproach.Harmony:
                         /* un-patch and re-patch don't work for readonly static field
@@ -247,7 +181,7 @@ namespace StrmAssistant
                             SemaphoreFFmpeg = newSemaphoreFFmpeg;
 
                             _resourcePoolField.SetValue(null, SemaphoreFFmpeg); //works only with modded Emby.Server.MediaEncoding.dll
-                            
+
                             oldSemaphoreFFmpeg.Dispose();
                         }
                         catch (Exception re)
@@ -265,7 +199,7 @@ namespace StrmAssistant
 
         public static void PatchInstanceIsShortcut(BaseItem item)
         {
-            switch (_fallbackPatchApproach)
+            switch (FallbackPatchApproach)
             {
                 case PatchApproach.Harmony:
                     CurrentItem.Value = item;
@@ -282,7 +216,7 @@ namespace StrmAssistant
                     {
                         Plugin.Instance.logger.Debug("Patch IsShortcut Failed by Reflection");
                         Plugin.Instance.logger.Debug(re.Message);
-                        _fallbackPatchApproach = PatchApproach.None;
+                        FallbackPatchApproach = PatchApproach.None;
                     }
                     break;
             }
@@ -290,7 +224,7 @@ namespace StrmAssistant
 
         public static void UnpatchInstanceIsShortcut(BaseItem item)
         {
-            switch (_fallbackPatchApproach)
+            switch (FallbackPatchApproach)
             {
                 case PatchApproach.Harmony:
                     CurrentItem.Value = null;
@@ -307,7 +241,7 @@ namespace StrmAssistant
                     {
                         Plugin.Instance.logger.Debug("Unpatch IsShortcut Failed by Reflection");
                         Plugin.Instance.logger.Debug(re.Message);
-                        _fallbackPatchApproach = PatchApproach.None;
+                        FallbackPatchApproach = PatchApproach.None;
                     }
                     break;
             }
@@ -315,7 +249,7 @@ namespace StrmAssistant
 
         public static void UnpatchResourcePool()
         {
-            if (_fallbackPatchApproach== PatchApproach.Harmony)
+            if (FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
@@ -330,7 +264,7 @@ namespace StrmAssistant
                     Plugin.Instance.logger.Debug("Unpatch IsShortcut Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
-                    _fallbackPatchApproach = PatchApproach.Reflection;
+                    FallbackPatchApproach = PatchApproach.Reflection;
                 }
                 finally
                 {
@@ -341,30 +275,9 @@ namespace StrmAssistant
             }
         }
 
-        public static void UnpatchIsEligibleForMultiVersion()
-        {
-            if (_fallbackPatchApproach== PatchApproach.Harmony)
-            {
-                try
-                {
-                    if (IsPatched(_isEligibleForMultiVersion))
-                    {
-                        Mod.Unpatch(_isEligibleForMultiVersion, HarmonyPatchType.Prefix);
-                        Plugin.Instance.logger.Debug("Unpatch IsEligibleForMultiVersion Success by Harmony");
-                    }
-                }
-                catch (Exception he)
-                {
-                    Plugin.Instance.logger.Debug("Unpatch IsEligibleForMultiVersion Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
-                }
-            }
-        }
-
         public static void UnpatchIsShortcut()
         {
-            if (_fallbackPatchApproach == PatchApproach.Harmony)
+            if (FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
@@ -379,6 +292,7 @@ namespace StrmAssistant
                     Plugin.Instance.logger.Debug("Unpatch IsShortcut Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
+                    FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
         }
@@ -421,14 +335,6 @@ namespace StrmAssistant
                 return false;
             }
 
-            return true;
-        }
-
-        [HarmonyPrefix]
-        private static bool IsEligibleForMultiVersionPrefix(ref string testFilename)
-        {
-            testFilename = Path.GetFileName(Path.GetDirectoryName(testFilename));
-            
             return true;
         }
     }
