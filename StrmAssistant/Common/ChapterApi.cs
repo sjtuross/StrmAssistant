@@ -7,6 +7,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace StrmAssistant
@@ -197,8 +198,8 @@ namespace StrmAssistant
 
         public List<BaseItem> FetchClearTaskItems()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope?.Split(',')
-                .Where(id => !string.IsNullOrWhiteSpace(id)).ToArray();
+            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope
+                ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var libraries = _libraryManager.GetVirtualFolders()
                 .Where(f => libraryIds != null && libraryIds.Any()
                     ? libraryIds.Contains(f.Id)
@@ -214,7 +215,10 @@ namespace StrmAssistant
                 IncludeItemTypes = new[] { "Episode" },
                 HasPath = true,
                 MediaTypes = new[] { MediaType.Video },
-                PathStartsWithAny = libraries.SelectMany(l => l.Locations).ToArray()
+                PathStartsWithAny = libraries.SelectMany(l => l.Locations).Select(ls =>
+                    ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                        ? ls
+                        : ls + Path.DirectorySeparatorChar).ToArray()
             };
 
             BaseItem[] results = _libraryManager.GetItemList(itemsIntroSkipQuery);

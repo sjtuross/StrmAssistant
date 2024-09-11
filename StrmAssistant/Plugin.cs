@@ -224,13 +224,14 @@ namespace StrmAssistant
             }
 
             var libraryScope = string.Join(", ",
-                options.MediaInfoExtractOptions.LibraryScope.Split(',')
-                    .Select(v => options.MediaInfoExtractOptions.LibraryList.FirstOrDefault(option => option.Value == v)?.Name));
+                options.MediaInfoExtractOptions.LibraryScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(v =>
+                        options.MediaInfoExtractOptions.LibraryList.FirstOrDefault(option => option.Value == v)?.Name));
             logger.Info("MediaInfoExtract - LibraryScope is set to {0}",
                 string.IsNullOrEmpty(libraryScope) ? "ALL" : libraryScope);
 
             var intoSkipLibraryScope = string.Join(", ",
-                options.IntroSkipOptions.LibraryScope.Split(',')
+                options.IntroSkipOptions.LibraryScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(v => options.IntroSkipOptions.LibraryList
                         .FirstOrDefault(option => option.Value == v)
                         ?.Name));

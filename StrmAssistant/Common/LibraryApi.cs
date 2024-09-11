@@ -9,6 +9,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace StrmAssistant
@@ -23,7 +24,7 @@ namespace StrmAssistant
         public static MetadataRefreshOptions MediaInfoRefreshOptions;
         public static MetadataRefreshOptions ImageCaptureRefreshOptions;
         public static MetadataRefreshOptions FullRefreshOptions;
-        public static ExtraType[] extraType = new ExtraType[] { ExtraType.AdditionalPart,
+        public static ExtraType[] extraType = new[] { ExtraType.AdditionalPart,
                                                                 ExtraType.BehindTheScenes,
                                                                 ExtraType.Clip,
                                                                 ExtraType.DeletedScene,
@@ -163,8 +164,8 @@ namespace StrmAssistant
 
         public List<BaseItem> FetchExtractTaskItems()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope?.Split(',')
-                .Where(id => !string.IsNullOrWhiteSpace(id)).ToArray();
+            var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope
+                ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var libraries = _libraryManager.GetVirtualFolders()
                 .Where(f => libraryIds == null || !libraryIds.Any() || libraryIds.Contains(f.Id)).ToList();
             var librariesWithImageCapture = libraries.Where(l =>
@@ -184,7 +185,10 @@ namespace StrmAssistant
             };
             if (libraryIds != null && libraryIds.Any())
             {
-                itemsMediaInfoQuery.PathStartsWithAny = libraries.SelectMany(l => l.Locations).ToArray();
+                itemsMediaInfoQuery.PathStartsWithAny = libraries.SelectMany(l => l.Locations).Select(ls =>
+                    ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                        ? ls
+                        : ls + Path.DirectorySeparatorChar).ToArray();
             }
 
             var itemsImageCaptureQuery = new InternalItemsQuery
@@ -200,7 +204,10 @@ namespace StrmAssistant
             if (enableImageCapture && librariesWithImageCapture.Any())
             {
                 itemsImageCaptureQuery.PathStartsWithAny =
-                    librariesWithImageCapture.SelectMany(l => l.Locations).ToArray();
+                    librariesWithImageCapture.SelectMany(l => l.Locations).Select(ls =>
+                        ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                            ? ls
+                            : ls + Path.DirectorySeparatorChar).ToArray();
 
                 var itemsImageCapture = _libraryManager.GetItemList(itemsImageCaptureQuery)
                     .Where(i => !i.HasImage(ImageType.Primary)).ToList();

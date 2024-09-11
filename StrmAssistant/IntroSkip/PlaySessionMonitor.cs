@@ -8,6 +8,7 @@ using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -44,13 +45,16 @@ namespace StrmAssistant
 
         public void UpdateLibraryPaths()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope?.Split(',')
-                .Where(id => !string.IsNullOrWhiteSpace(id)).ToArray();
+            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope
+                ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             LibraryPathsInScope = _libraryManager.GetVirtualFolders()
                 .Where(f => libraryIds != null && libraryIds.Any()
                     ? libraryIds.Contains(f.Id)
                     : f.CollectionType == "tvshows" || f.CollectionType is null)
                 .SelectMany(l => l.Locations)
+                .Select(ls => ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                    ? ls
+                    : ls + Path.DirectorySeparatorChar)
                 .ToList();
         }
 
@@ -105,6 +109,10 @@ namespace StrmAssistant
                 _logger.Info("Playback start time: " +
                              new TimeSpan(playSessionData.PlaybackStartTicks).ToString(@"hh\:mm\:ss\.fff"));
                 _logger.Info("IntroSkip - Detection Started");
+            }
+            else
+            {
+                _logger.Info("IntroSkip - Intro marker already exists");
             }
         }
 
@@ -206,6 +214,10 @@ namespace StrmAssistant
                             e.Item.RunTimeTicks.Value - currentPositionTicks);
                     }
                 }
+            }
+            else
+            {
+                _logger.Info("IntroSkip - Credits marker already exists");
             }
             _playSessionData.TryRemove(e.PlaySessionId, out _);
         }
