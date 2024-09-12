@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
@@ -20,10 +21,18 @@ namespace StrmAssistant
 
         private static Type _movieDbProviderBase;
         private static MethodInfo _getMovieDbMetadataLanguages;
+        private static MethodInfo _mapLanguageToProviderLanguage;
         private static MethodInfo _getImageLanguagesParam;
+
         private static MethodInfo _movieDbSeriesProviderIsComplete;
         private static MethodInfo _movieDbSeriesProviderImportData;
-        
+
+        private static MethodInfo _movieDbSeasonProviderIsComplete;
+        private static MethodInfo _movieDbSeasonProviderImportData;
+
+        private static MethodInfo _movieDbEpisodeProviderIsComplete;
+        private static MethodInfo _movieDbEpisodeProviderImportData;
+
         public static void Initialize()
         {
             try
@@ -51,6 +60,8 @@ namespace StrmAssistant
                     _movieDbProviderBase = movieDbAssembly.GetType("MovieDb.MovieDbProviderBase");
                     _getMovieDbMetadataLanguages = _movieDbProviderBase.GetMethod("GetMovieDbMetadataLanguages",
                         BindingFlags.Public | BindingFlags.Instance);
+                    _mapLanguageToProviderLanguage = _movieDbProviderBase.GetMethod("MapLanguageToProviderLanguage",
+                        BindingFlags.NonPublic | BindingFlags.Instance);
                     _getImageLanguagesParam = _movieDbProviderBase.GetMethod("GetImageLanguagesParam",
                         BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(string[]) }, null);
 
@@ -59,6 +70,18 @@ namespace StrmAssistant
                         movieDbSeriesProvider.GetMethod("IsComplete", BindingFlags.NonPublic | BindingFlags.Instance);
                     _movieDbSeriesProviderImportData =
                         movieDbSeriesProvider.GetMethod("ImportData", BindingFlags.NonPublic | BindingFlags.Instance);
+                    
+                    var movieDbSeasonProvider = movieDbAssembly.GetType("MovieDb.MovieDbSeasonProvider");
+                    _movieDbSeasonProviderIsComplete =
+                        movieDbSeasonProvider.GetMethod("IsComplete", BindingFlags.NonPublic | BindingFlags.Instance);
+                    _movieDbSeasonProviderImportData =
+                        movieDbSeasonProvider.GetMethod("ImportData", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    var movieDbEpisodeProvider = movieDbAssembly.GetType("MovieDb.MovieDbEpisodeProvider");
+                    _movieDbEpisodeProviderIsComplete =
+                        movieDbEpisodeProvider.GetMethod("IsComplete", BindingFlags.NonPublic | BindingFlags.Instance);
+                    _movieDbEpisodeProviderImportData =
+                        movieDbEpisodeProvider.GetMethod("ImportData", BindingFlags.NonPublic | BindingFlags.Instance);
                 }
                 else
                 {
@@ -93,7 +116,7 @@ namespace StrmAssistant
                         {
                             Mod.Patch(_genericMovieDbInfoIsCompleteMovie,
                                 prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
-                                    "GenericIsCompleteMoviePrefix",
+                                    "IsCompletePrefix",
                                     BindingFlags.Static | BindingFlags.NonPublic)));
                             Plugin.Instance.logger.Debug(
                                 "Patch GenericMovieDbInfo.IsComplete for Movie Success by Harmony");
@@ -115,7 +138,7 @@ namespace StrmAssistant
                         {
                             Mod.Patch(_genericMovieDbInfoIsCompleteSeries,
                                 prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
-                                    "GenericIsCompleteSeriesPrefix",
+                                    "IsCompletePrefix",
                                     BindingFlags.Static | BindingFlags.NonPublic)));
                             Plugin.Instance.logger.Debug(
                                 "Patch GenericMovieDbInfo.IsComplete for Series Success by Harmony");
@@ -155,7 +178,7 @@ namespace StrmAssistant
                         {
                             Mod.Patch(_movieDbSeriesProviderIsComplete,
                                 prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
-                                    "SeriesIsCompletePrefix",
+                                    "IsCompletePrefix",
                                     BindingFlags.Static | BindingFlags.NonPublic)));
                             Plugin.Instance.logger.Debug(
                                 "Patch MovieDbSeriesProvider.IsComplete Success by Harmony");
@@ -164,10 +187,48 @@ namespace StrmAssistant
                         if (!IsPatched(_movieDbSeriesProviderImportData))
                         {
                             Mod.Patch(_movieDbSeriesProviderImportData,
-                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("ImportDataPrefix",
+                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("SeriesImportDataPrefix",
                                     BindingFlags.Static | BindingFlags.NonPublic)));
                             Plugin.Instance.logger.Debug(
                                 "Patch MovieDbSeriesProvider.ImportData Success by Harmony");
+                        }
+
+                        if (!IsPatched(_movieDbSeasonProviderIsComplete))
+                        {
+                            Mod.Patch(_movieDbSeasonProviderIsComplete,
+                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
+                                    "IsCompletePrefix",
+                                    BindingFlags.Static | BindingFlags.NonPublic)));
+                            Plugin.Instance.logger.Debug(
+                                "Patch MovieDbSeasonProvider.IsComplete Success by Harmony");
+                        }
+
+                        if (!IsPatched(_movieDbSeasonProviderImportData))
+                        {
+                            Mod.Patch(_movieDbSeasonProviderImportData,
+                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("SeasonImportDataPrefix",
+                                    BindingFlags.Static | BindingFlags.NonPublic)));
+                            Plugin.Instance.logger.Debug(
+                                "Patch MovieDbSeasonProvider.ImportData Success by Harmony");
+                        }
+
+                        if (!IsPatched(_movieDbEpisodeProviderIsComplete))
+                        {
+                            Mod.Patch(_movieDbEpisodeProviderIsComplete,
+                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
+                                    "IsCompletePrefix",
+                                    BindingFlags.Static | BindingFlags.NonPublic)));
+                            Plugin.Instance.logger.Debug(
+                                "Patch MovieDbEpisodeProvider.IsComplete Success by Harmony");
+                        }
+
+                        if (!IsPatched(_movieDbEpisodeProviderImportData))
+                        {
+                            Mod.Patch(_movieDbEpisodeProviderImportData,
+                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("EpisodeImportDataPrefix",
+                                    BindingFlags.Static | BindingFlags.NonPublic)));
+                            Plugin.Instance.logger.Debug(
+                                "Patch MovieDbEpisodeProvider.ImportData Success by Harmony");
                         }
                     }
                 }
@@ -234,6 +295,30 @@ namespace StrmAssistant
                         Mod.Unpatch(_movieDbSeriesProviderImportData, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch MovieDbSeriesProvider.ImportData Success by Harmony");
                     }
+
+                    if (IsPatched(_movieDbSeasonProviderIsComplete))
+                    {
+                        Mod.Unpatch(_movieDbSeasonProviderIsComplete, HarmonyPatchType.Prefix);
+                        Plugin.Instance.logger.Debug("Unpatch MovieDbSeasonProvider.IsComplete Success by Harmony");
+                    }
+
+                    if (IsPatched(_movieDbSeasonProviderImportData))
+                    {
+                        Mod.Unpatch(_movieDbSeasonProviderImportData, HarmonyPatchType.Prefix);
+                        Plugin.Instance.logger.Debug("Unpatch MovieDbSeasonProvider.ImportData Success by Harmony");
+                    }
+
+                    if (IsPatched(_movieDbEpisodeProviderIsComplete))
+                    {
+                        Mod.Unpatch(_movieDbEpisodeProviderIsComplete, HarmonyPatchType.Prefix);
+                        Plugin.Instance.logger.Debug("Unpatch MovieDbEpisodeProvider.IsComplete Success by Harmony");
+                    }
+
+                    if (IsPatched(_movieDbEpisodeProviderImportData))
+                    {
+                        Mod.Unpatch(_movieDbEpisodeProviderImportData, HarmonyPatchType.Prefix);
+                        Plugin.Instance.logger.Debug("Unpatch MovieDbEpisodeProvider.ImportData Success by Harmony");
+                    }
                 }
                 catch (Exception he)
                 {
@@ -245,18 +330,27 @@ namespace StrmAssistant
             }
         }
 
-        private static bool IsChinese(string title) => new Regex(@"[\u4e00-\u9fff]").IsMatch(title);
+        private static bool IsChinese(string title) => new Regex(@"[\u4E00-\u9FFF]").IsMatch(title);
 
-        [HarmonyPrefix]
-        private static bool GenericIsCompleteMoviePrefix(Movie item, ref bool __result)
+        private static bool IsJapanese(string title) => new Regex(@"[\u3040-\u309F\u30A0-\u30FF]").IsMatch(title);
+
+        private static bool IsDefaultChineseEpisodeName(string name) => new Regex(@"第\s*\d+\s*集").IsMatch(name);
+
+        private static bool IsUpdateNeeded(string name, bool isEpisode)
         {
-            if (!IsChinese(item.Name))
-            {
-                __result = false;
-                return false;
-            }
+            var isJapaneseFallback = GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase);
 
-            return true;
+            return string.IsNullOrEmpty(name) || !isJapaneseFallback && !IsChinese(name) ||
+                   isJapaneseFallback && !(IsChinese(name) && (!isEpisode || !IsDefaultChineseEpisodeName(name)) ||
+                                           IsJapanese(name));
+        }
+
+        private static List<string> GetFallbackLanguages()
+        {
+            var currentFallbackLanguages = Plugin.Instance.GetPluginOptions().ModOptions.FallbackLanguages
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            return currentFallbackLanguages;
         }
 
         [HarmonyPrefix]
@@ -265,13 +359,12 @@ namespace StrmAssistant
         {
             var item = resultItem.Item;
 
-            if (string.IsNullOrEmpty(item.Name) || !IsChinese(item.Name))
+            if (IsUpdateNeeded(item.Name, false))
             {
                 var getTitleMethod = movieData.GetType().GetMethod("GetTitle");
                 if (getTitleMethod != null)
                 {
-                    var newTitle = getTitleMethod.Invoke(movieData, null);
-                    item.Name = newTitle as string;
+                    item.Name = getTitleMethod.Invoke(movieData, null) as string;
                 }
             }
 
@@ -279,12 +372,26 @@ namespace StrmAssistant
         }
 
         [HarmonyPrefix]
-        private static bool GenericIsCompleteSeriesPrefix(Series item, ref bool __result)
+        private static bool IsCompletePrefix(BaseItem item, ref bool __result)
         {
-            if (!IsChinese(item.Name))
+            if (!GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase))
             {
+                if (!IsChinese(item.Name))
+                {
+                    __result = false;
+                    return false;
+                }
+            }
+            else
+            {
+                if (IsChinese(item.Name) || IsJapanese(item.Name))
+                {
+                    return true;
+                }
+
                 __result = false;
                 return false;
+
             }
 
             return true;
@@ -296,13 +403,30 @@ namespace StrmAssistant
         {
             var item = resultItem.Item;
 
-            if (string.IsNullOrEmpty(item.Name) || !IsChinese(item.Name))
+            if (IsUpdateNeeded(item.Name, false))
             {
                 var getTitleMethod = movieData.GetType().GetMethod("GetTitle");
                 if (getTitleMethod != null)
                 {
-                    var newTitle = getTitleMethod.Invoke(movieData, null);
-                    item.Name = newTitle as string;
+                    item.Name = getTitleMethod.Invoke(movieData, null) as string;
+                }
+            }
+
+            return true;
+        }
+        
+        [HarmonyPrefix]
+        private static bool SeriesImportDataPrefix(MetadataResult<Series> seriesResult, object seriesInfo,
+            string preferredCountryCode, object settings, bool isFirstLanguage)
+        {
+            var item = seriesResult.Item;
+
+            if (IsUpdateNeeded(item.Name, false))
+            {
+                var getTitleMethod = seriesInfo.GetType().GetMethod("GetTitle");
+                if (getTitleMethod != null)
+                {
+                    item.Name = getTitleMethod.Invoke(seriesInfo, null) as string;
                 }
             }
 
@@ -310,30 +434,33 @@ namespace StrmAssistant
         }
 
         [HarmonyPrefix]
-        private static bool SeriesIsCompletePrefix(Series item, ref bool __result)
+        private static bool SeasonImportDataPrefix(Season item, object seasonInfo, string name, int seasonNumber,
+            bool isFirstLanguage)
         {
-            if (!IsChinese(item.Name))
+            if (IsUpdateNeeded(item.Name, false))
             {
-                __result = false;
-                return false;
+                var nameProperty = seasonInfo.GetType().GetProperty("name");
+                if (nameProperty != null)
+                {
+                    item.Name = nameProperty.GetValue(seasonInfo) as string;
+                }
             }
 
             return true;
         }
-        
-        [HarmonyPrefix]
-        private static bool ImportDataPrefix(MetadataResult<Series> seriesResult, object seriesInfo,
-            string preferredCountryCode, object settings, bool isFirstLanguage)
-        {
-            var item = seriesResult.Item;
 
-            if (string.IsNullOrEmpty(item.Name) || !IsChinese(item.Name))
+        [HarmonyPrefix]
+        private static bool EpisodeImportDataPrefix(MetadataResult<Episode> result, EpisodeInfo info, object response,
+            object settings, bool isFirstLanguage)
+        {
+            var item = result.Item;
+
+            if (IsUpdateNeeded(item.Name, true))
             {
-                var getTitleMethod = seriesInfo.GetType().GetMethod("GetTitle");
-                if (getTitleMethod != null)
+                var nameProperty = response.GetType().GetProperty("name");
+                if (nameProperty != null)
                 {
-                    var newTitle = getTitleMethod.Invoke(seriesInfo, null);
-                    item.Name = newTitle as string;
+                    item.Name = nameProperty.GetValue(response) as string;
                 }
             }
 
@@ -344,40 +471,32 @@ namespace StrmAssistant
         private static void MetadataLanguagesPostfix(object __instance, ItemLookupInfo searchInfo,
             string[] providerLanguages, ref string[] __result)
         {
-            List<string> list = __result.ToList();
+            var list = __result.ToList();
 
             if (list.Any(l => l.StartsWith("zh", StringComparison.OrdinalIgnoreCase)))
             {
-                int index = list.FindIndex(l => string.Equals(l, "en", StringComparison.OrdinalIgnoreCase) ||
+                var index = list.FindIndex(l => string.Equals(l, "en", StringComparison.OrdinalIgnoreCase) ||
                                                 string.Equals(l, "en-us", StringComparison.OrdinalIgnoreCase));
 
-                var currentFallbackLanguages = Plugin.Instance.GetPluginOptions().ModOptions.FallbackLanguages
-                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                var currentFallbackLanguages = GetFallbackLanguages();
 
                 foreach (var fallbackLanguage in currentFallbackLanguages)
                 {
                     if (!list.Contains(fallbackLanguage, StringComparer.OrdinalIgnoreCase))
                     {
-                        MethodInfo mapLanguageToProviderLanguage = _movieDbProviderBase.GetMethod(
-                            "MapLanguageToProviderLanguage",
-                            BindingFlags.NonPublic | BindingFlags.Instance);
+                        var mappedLanguage = (string)_mapLanguageToProviderLanguage.Invoke(__instance,
+                            new object[] { fallbackLanguage, null, false, providerLanguages });
 
-                        if (mapLanguageToProviderLanguage != null)
+                        if (!string.IsNullOrEmpty(mappedLanguage))
                         {
-                            string mappedLanguage = (string)mapLanguageToProviderLanguage.Invoke(__instance,
-                                new object[] { fallbackLanguage, null, false, providerLanguages });
-
-                            if (!string.IsNullOrEmpty(mappedLanguage))
+                            if (index >= 0)
                             {
-                                if (index >= 0)
-                                {
-                                    list.Insert(index, mappedLanguage);
-                                    index++;
-                                }
-                                else
-                                {
-                                    list.Add(mappedLanguage);
-                                }
+                                list.Insert(index, mappedLanguage);
+                                index++;
+                            }
+                            else
+                            {
+                                list.Add(mappedLanguage);
                             }
                         }
                     }

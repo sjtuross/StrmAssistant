@@ -189,7 +189,7 @@
     <value>General</value>
   </data>
   <data name="GeneralOptions_MergeMultiVersion_Merge_Multiple_Versions" xml:space="preserve">
-    <value>Merge Multi-version</value>
+    <value>Auto Merge Multi-version</value>
   </data>
   <data name="GeneralOptions_MergeMultiVersion_Auto_merge_multiple_versions_if_in_the_same_folder_" xml:space="preserve">
     <value>Auto merge multiple versions stored in the same folder. Default is OFF.</value>
@@ -198,10 +198,10 @@
     <value>Mod</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Chinese_MovieDb" xml:space="preserve">
-    <value>Chinese MovieDb</value>
+    <value>Customize MovieDb Fallback Language</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
-    <value>Try to get Chinese metadata from MovieDb. Default is OFF.</value>
+    <value>Try to get Chinese or Japanese metadata from MovieDb. Default is OFF.</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
     <value>Fallback Languages</value>

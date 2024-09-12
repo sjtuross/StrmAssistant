@@ -286,6 +286,41 @@ namespace StrmAssistant
             options.MediaInfoExtractOptions.LibraryList = list;
             options.IntroSkipOptions.LibraryList = listShows;
 
+            var languageList = new List<EditorSelectOption>
+            {
+                new EditorSelectOption
+                {
+                    Value = "zh-cn",
+                    Name = "zh-CN",
+                    IsEnabled = true
+                },
+                new EditorSelectOption
+                {
+                    Value = "zh-sg",
+                    Name = "zh-SG",
+                    IsEnabled = true
+                },
+                new EditorSelectOption
+                {
+                    Value = "zh-hk",
+                    Name = "zh-HK",
+                    IsEnabled = true
+                },
+                new EditorSelectOption
+                {
+                    Value = "zh-tw",
+                    Name = "zh-TW",
+                    IsEnabled = true
+                },
+                new EditorSelectOption
+                {
+                    Value = "ja-jp",
+                    Name = "ja-JP",
+                    IsEnabled = true
+                }
+            };
+            options.ModOptions.LanguageList = languageList;
+
             return base.OnBeforeShowUI(options);
         }
     }

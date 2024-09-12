@@ -12,32 +12,6 @@ namespace StrmAssistant
 {
     public class ModOptions: EditableOptionsBase
     {
-        public ModOptions()
-        {
-            var languageList = new List<EditorSelectOption>
-            {
-                new EditorSelectOption
-                {
-                    Value = "zh-sg",
-                    Name = "zh-SG",
-                    IsEnabled = true
-                },
-                new EditorSelectOption
-                {
-                    Value = "zh-hk",
-                    Name = "zh-HK",
-                    IsEnabled = true
-                },
-                new EditorSelectOption
-                {
-                    Value = "zh-tw",
-                    Name = "zh-TW",
-                    IsEnabled = true
-                }
-            };
-            LanguageList = languageList;
-        }
-
         [DisplayNameL("PluginOptions_ModOptions_Mod_Features", typeof(Resources))]
         public override string EditorTitle => Resources.PluginOptions_ModOptions_Mod_Features;
 

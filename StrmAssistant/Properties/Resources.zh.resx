@@ -102,7 +102,7 @@
     <value>通用</value>
   </data>
   <data name="GeneralOptions_MergeMultiVersion_Merge_Multiple_Versions" xml:space="preserve">
-    <value>合并多版本</value>
+    <value>自动合并多版本</value>
   </data>
   <data name="GeneralOptions_MergeMultiVersion_Auto_merge_multiple_versions_if_in_the_same_folder_" xml:space="preserve">
     <value>自动合并同目录视频为多版本，不需符合官方严格的命名要求，默认关闭。</value>
@@ -111,10 +111,10 @@
     <value>魔改</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Chinese_MovieDb" xml:space="preserve">
-    <value>中文化 TMDB</value>
+    <value>自定义 TMDB 备选语言</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
-    <value>尽可能从 TMDB 获取中文元数据，默认关闭。</value>
+    <value>尽可能从 TMDB 获取中文或日文元数据，默认关闭。</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
     <value>备选语言</value>
