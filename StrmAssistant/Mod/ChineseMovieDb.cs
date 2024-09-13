@@ -376,22 +376,43 @@ namespace StrmAssistant
         {
             if (!GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase))
             {
-                if (!IsChinese(item.Name))
+                if (item is Season || item is Episode)
                 {
-                    __result = false;
-                    return false;
+                    if (!IsChinese(item.Name) || !IsChinese(item.Overview))
+                    {
+                        __result = false;
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!IsChinese(item.Name))
+                    {
+                        __result = false;
+                        return false;
+                    }
                 }
             }
             else
             {
-                if (IsChinese(item.Name) || IsJapanese(item.Name))
+                if (item is Season || item is Episode)
                 {
-                    return true;
+                    if (IsChinese(item.Name) && IsChinese(item.Overview) ||
+                        IsJapanese(item.Name) && IsJapanese(item.Overview))
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (IsChinese(item.Name) || IsJapanese(item.Name))
+                    {
+                        return true;
+                    }
                 }
 
                 __result = false;
                 return false;
-
             }
 
             return true;
@@ -446,6 +467,15 @@ namespace StrmAssistant
                 }
             }
 
+            if (IsUpdateNeeded(item.Overview, false))
+            {
+                var overviewProperty = seasonInfo.GetType().GetProperty("overview");
+                if (overviewProperty != null)
+                {
+                    item.Overview = overviewProperty.GetValue(seasonInfo) as string;
+                }
+            }
+
             return true;
         }
 
@@ -461,6 +491,15 @@ namespace StrmAssistant
                 if (nameProperty != null)
                 {
                     item.Name = nameProperty.GetValue(response) as string;
+                }
+            }
+
+            if (IsUpdateNeeded(item.Overview, true))
+            {
+                var overviewProperty = response.GetType().GetProperty("overview");
+                if (overviewProperty != null)
+                {
+                    item.Overview = overviewProperty.GetValue(response) as string;
                 }
             }
 

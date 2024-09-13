@@ -11,7 +11,7 @@
 3. 对缺失封面元数据的视频做视频截图
 4. 基于播放行为探测片头片尾
 5. 自动合并同目录视频为多版本
-6. 尽可能从`TMDB`获得中文元数据
+6. 自定义`TMDB`备选语言
 
 ## 更新
 
@@ -24,7 +24,7 @@
 7. 追更模式 (默认关闭), 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/追更模式-(Catch‐up-Mode))
 8. 基于播放行为的剧集片头片尾探测 (默认关闭), 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/片头探测-(Intro-Detection))
 9. 自动合并同目录视频为多版本, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/自动合并同目录多版本)
-10. 尽可能从`TMDB`获取中文元数据, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文化-TMDB-元数据)
+10. 尽可能从`TMDB`获取中文或日文元数据, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/自定义-TMDB-备选语言)
 
 **注意**: Emby最低版本要求 `4.8.0.80`
 
