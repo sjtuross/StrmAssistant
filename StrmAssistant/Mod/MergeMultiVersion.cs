@@ -76,7 +76,6 @@ namespace StrmAssistant
                     Plugin.Instance.logger.Debug("Unpatch IsEligibleForMultiVersion Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
-                    FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
         }

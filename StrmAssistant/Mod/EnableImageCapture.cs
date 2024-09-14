@@ -1,23 +1,25 @@
 ﻿using HarmonyLib;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
+using MediaBrowser.Common;
 using static StrmAssistant.PatchManager;
 
 namespace StrmAssistant
 {
     public static class EnableImageCapture
     {
-        private static Assembly _mediaEncodingAssembly;
-        private static Type _imageExtractorBaseType;
         private static ConstructorInfo _staticConstructor;
         private static FieldInfo _resourcePoolField;
         private static MethodInfo _isShortcutGetter;
         private static PropertyInfo _isShortcutProperty;
+        private static MethodInfo _getImage;
 
         private static AsyncLocal<BaseItem> CurrentItem { get; } = new AsyncLocal<BaseItem>();
         private static int _currentMaxConcurrentCount;
@@ -30,8 +32,8 @@ namespace StrmAssistant
 
             try
             {
-                _mediaEncodingAssembly = Assembly.Load("Emby.Server.MediaEncoding");
-                _imageExtractorBaseType =
+                var _mediaEncodingAssembly = Assembly.Load("Emby.Server.MediaEncoding");
+                var _imageExtractorBaseType =
                     _mediaEncodingAssembly.GetType("Emby.Server.MediaEncoding.ImageExtraction.ImageExtractorBase");
                 _staticConstructor =
                     _imageExtractorBaseType.GetConstructor(BindingFlags.Static | BindingFlags.NonPublic, null,
@@ -43,6 +45,10 @@ namespace StrmAssistant
                     .GetGetMethod();
                 _isShortcutProperty =
                     typeof(BaseItem).GetProperty("IsShortcut", BindingFlags.Instance | BindingFlags.Public);
+
+                var _embyProvidersAssemby = Assembly.Load("Emby.Providers");
+                var _videoImageProvider = _embyProvidersAssemby.GetType("Emby.Providers.MediaInfo.VideoImageProvider");
+                _getImage = _videoImageProvider.GetMethod("GetImage", BindingFlags.Public | BindingFlags.Instance);
             }
             catch (Exception e)
             {
@@ -58,6 +64,7 @@ namespace StrmAssistant
                 SemaphoreFFmpeg = new SemaphoreSlim(_currentMaxConcurrentCount);
 
                 PatchResourcePool();
+                PatchGetImage();
                 PatchIsShortcut();
 
                 var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
@@ -123,6 +130,31 @@ namespace StrmAssistant
             }
         }
 
+        private static void PatchGetImage()
+        {
+            if (FallbackPatchApproach == PatchApproach.Harmony)
+            {
+                try
+                {
+                    if (!IsPatched(_getImage))
+                    {
+                        Mod.Patch(_getImage,
+                            prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("GetImagePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch VideoImageProvider.GetImage Success by Harmony");
+                    }
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Patch VideoImageProvider.GetImage Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    FallbackPatchApproach = PatchApproach.Reflection;
+                }
+            }
+        }
+
         private static void PatchIsShortcut()
         {
             if (FallbackPatchApproach == PatchApproach.Harmony)
@@ -148,7 +180,7 @@ namespace StrmAssistant
             }
         }
 
-        public static void UpdateResourcePool(int maxConcurrentCount)
+        public static void UpdateResourcePool(int maxConcurrentCount, IApplicationHost applicationHost)
         {
             if (_currentMaxConcurrentCount != maxConcurrentCount)
             {
@@ -159,6 +191,8 @@ namespace StrmAssistant
                 switch (FallbackPatchApproach)
                 {
                     case PatchApproach.Harmony:
+                        applicationHost.NotifyPendingRestart();
+
                         /* un-patch and re-patch don't work for readonly static field
                         UnpatchResourcePool();
 
@@ -241,7 +275,6 @@ namespace StrmAssistant
                     {
                         Plugin.Instance.logger.Debug("Unpatch IsShortcut Failed by Reflection");
                         Plugin.Instance.logger.Debug(re.Message);
-                        FallbackPatchApproach = PatchApproach.None;
                     }
                     break;
             }
@@ -292,7 +325,27 @@ namespace StrmAssistant
                     Plugin.Instance.logger.Debug("Unpatch IsShortcut Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
-                    FallbackPatchApproach = PatchApproach.Reflection;
+                }
+            }
+        }
+
+        public static void UnpatchGetImage()
+        {
+            if (FallbackPatchApproach == PatchApproach.Harmony)
+            {
+                try
+                {
+                    if (IsPatched(_getImage))
+                    {
+                        Mod.Unpatch(_getImage, HarmonyPatchType.Prefix);
+                        Plugin.Instance.logger.Debug("Unpatch VideoImageProvider.GetImage Success by Harmony");
+                    }
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Unpatch VideoImageProvider.GetImage Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
                 }
             }
         }
@@ -333,6 +386,19 @@ namespace StrmAssistant
             {
                 __result = false;
                 return false;
+            }
+
+            return true;
+        }
+        
+        [HarmonyPrefix]
+        private static bool GetImagePrefix(ref BaseMetadataResult itemResult)
+        {
+            if (itemResult != null && itemResult.MediaStreams != null)
+            {
+                itemResult.MediaStreams = itemResult.MediaStreams
+                    .Where(ms => ms.Type != MediaStreamType.EmbeddedImage)
+                    .ToArray();
             }
 
             return true;

@@ -39,7 +39,7 @@ namespace StrmAssistant
 
         public string Name => "Update Plugin";
 
-        public string Description => $"Updates {Plugin.Instance.Name} plugin to the latest version.";
+        public string Description => $"Updates {Plugin.Instance.Name} plugin to the latest version";
 
         public string Category => Plugin.Instance.Name;
 

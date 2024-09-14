@@ -30,6 +30,7 @@ namespace StrmAssistant
         private readonly Guid _id = new Guid("63c322b7-a371-41a3-b11f-04f8418b37d8");
 
         public readonly ILogger logger;
+        private readonly IApplicationHost _applicationHost;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
@@ -53,6 +54,7 @@ namespace StrmAssistant
             Instance = this;
             logger = logManager.GetLogger(Name);
             logger.Info("Plugin is getting loaded.");
+            _applicationHost = applicationHost;
 
             _currentMaxConcurrentCount = GetOptions().MediaInfoExtractOptions.MaxConcurrentCount;
             QueueManager.Initialize();
@@ -166,7 +168,10 @@ namespace StrmAssistant
             {
                 _currentMaxConcurrentCount = options.MediaInfoExtractOptions.MaxConcurrentCount;
                 QueueManager.UpdateSemaphore(_currentMaxConcurrentCount);
-                EnableImageCapture.UpdateResourcePool(_currentMaxConcurrentCount);
+                if (options.MediaInfoExtractOptions.EnableImageCapture)
+                {
+                    EnableImageCapture.UpdateResourcePool(_currentMaxConcurrentCount, _applicationHost);
+                }
             }
 
             logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);

@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace StrmAssistant
 {
@@ -18,6 +19,7 @@ namespace StrmAssistant
         [DisplayNameL("GeneralOptions_MergeMultiVersion_Merge_Multiple_Versions", typeof(Resources))]
         [DescriptionL("GeneralOptions_MergeMultiVersion_Auto_merge_multiple_versions_if_in_the_same_folder_", typeof(Resources))]
         [Required]
+        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool MergeMultiVersion { get; set; } = false;
 
         [DisplayNameL("ModOptions_ChineseMovieDb_Chinese_MovieDb", typeof(Resources))]
@@ -38,6 +40,10 @@ namespace StrmAssistant
 
         [Browsable(false)]
         public bool IsMovieDbPluginLoaded { get; } =
-            AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "MovieDb");
+            AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "MovieDb") &&
+            RuntimeInformation.ProcessArchitecture == Architecture.X64;
+
+        [Browsable(false)]
+        public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;
     }
 }
