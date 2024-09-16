@@ -18,7 +18,9 @@
     </PackageReference>
     <PackageReference Include="mediabrowser.server.core" Version="4.8.0.80" />
     <PackageReference Include="Resource.Embedder" Version="2.2.0" />
-    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="System.Memory" Version="4.5.5">
+      <Aliases>SystemMemory</Aliases>
+    </PackageReference>
     <PackageReference Include="System.Text.Json" Version="6.0.9" />
   </ItemGroup>
   <ItemGroup>

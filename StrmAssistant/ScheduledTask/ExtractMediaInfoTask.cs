@@ -24,18 +24,18 @@ namespace StrmAssistant
         {
             _logger.Info("MediaInfoExtract - Scheduled Task Execute");
             _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount);
-            bool enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
+            var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
             _logger.Info("Enable Image Capture: " + enableImageCapture);
 
-            List<BaseItem> items = Plugin.LibraryApi.FetchExtractTaskItems();
+            var items = Plugin.LibraryApi.FetchExtractTaskItems();
 
             double total = items.Count;
-            int index = 0;
-            int current = 0;
+            var index = 0;
+            var current = 0;
             
-            List<Task> tasks = new List<Task>();
+            var tasks = new List<Task>();
 
-            foreach (BaseItem item in items)
+            foreach (var item in items)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -49,26 +49,23 @@ namespace StrmAssistant
                 var taskItem = item;
                 var task = Task.Run(async () =>
                 {
-                    bool isPatched = false;
+                    var isPatched = false;
                     try
                     {
-                        MetadataRefreshOptions refreshOptions;
                         if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
                         {
-                            refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
+                            if (taskItem.IsShortcut)
+                            {
+                                EnableImageCapture.PatchInstanceIsShortcut(taskItem);
+                                isPatched = true;
+                            }
+                            var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
+                            await taskItem.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
                         }
                         else
                         {
-                            refreshOptions = LibraryApi.MediaInfoRefreshOptions;
+                            await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken).ConfigureAwait(false);
                         }
-
-                        if (enableImageCapture && !taskItem.HasImage(ImageType.Primary) && taskItem.IsShortcut)
-                        {
-                            EnableImageCapture.PatchInstanceIsShortcut(taskItem);
-                            isPatched=true;
-                        }
-
-                        ItemUpdateType resp = await taskItem.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
                     }
                     catch (TaskCanceledException)
                     {

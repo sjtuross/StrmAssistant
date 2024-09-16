@@ -50,6 +50,7 @@ namespace StrmAssistant
             ISessionManager sessionManager,
             IItemRepository itemRepository,
             INotificationManager notificationManager,
+            IMediaSourceManager mediaSourceManager,
             IUserManager userManager,
             IUserDataManager userDataManager) : base(applicationHost)
         {
@@ -69,7 +70,7 @@ namespace StrmAssistant
             _userManager = userManager;
             _userDataManager = userDataManager;
 
-            LibraryApi = new LibraryApi(libraryManager, fileSystem, userManager);
+            LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
             NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
 

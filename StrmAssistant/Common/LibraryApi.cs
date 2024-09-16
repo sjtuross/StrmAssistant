@@ -1,8 +1,10 @@
-﻿using MediaBrowser.Controller.Entities;
+﻿extern alias SystemMemory;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Dlna;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -11,6 +13,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
@@ -19,12 +23,13 @@ namespace StrmAssistant
         private readonly ILibraryManager _libraryManager;
         private readonly IFileSystem _fileSystem;
         private readonly IUserManager _userManager;
+        private readonly IMediaSourceManager _mediaSourceManager;
         private readonly ILogger _logger;
 
         public static MetadataRefreshOptions MediaInfoRefreshOptions;
         public static MetadataRefreshOptions ImageCaptureRefreshOptions;
         public static MetadataRefreshOptions FullRefreshOptions;
-        public static ExtraType[] extraType = new[] { ExtraType.AdditionalPart,
+        public static ExtraType[] extraType = { ExtraType.AdditionalPart,
                                                                 ExtraType.BehindTheScenes,
                                                                 ExtraType.Clip,
                                                                 ExtraType.DeletedScene,
@@ -38,12 +43,14 @@ namespace StrmAssistant
 
         public LibraryApi(ILibraryManager libraryManager,
             IFileSystem fileSystem,
+            IMediaSourceManager mediaSourceManager,
             IUserManager userManager)
         {
             _libraryManager = libraryManager;
             _logger = Plugin.Instance.logger;
             _fileSystem = fileSystem;
             _userManager = userManager;
+            _mediaSourceManager = mediaSourceManager;
 
             FetchUsers();
 
@@ -52,6 +59,7 @@ namespace StrmAssistant
                 EnableRemoteContentProbe = true,
                 ReplaceAllMetadata = true,
                 EnableThumbnailImageExtraction = false,
+                EnableSubtitleDownloading = false,
                 ImageRefreshMode = MetadataRefreshMode.ValidationOnly,
                 MetadataRefreshMode = MetadataRefreshMode.ValidationOnly,
                 ReplaceAllImages = false
@@ -61,7 +69,8 @@ namespace StrmAssistant
             {
                 EnableRemoteContentProbe = true,
                 ReplaceAllMetadata = true,
-                EnableThumbnailImageExtraction = true,
+                EnableThumbnailImageExtraction = false,
+                EnableSubtitleDownloading = false,
                 ImageRefreshMode = MetadataRefreshMode.Default,
                 MetadataRefreshMode = MetadataRefreshMode.Default,
                 ReplaceAllImages = true
@@ -71,7 +80,8 @@ namespace StrmAssistant
             {
                 EnableRemoteContentProbe = true,
                 ReplaceAllMetadata = true,
-                EnableThumbnailImageExtraction = true,
+                EnableThumbnailImageExtraction = false,
+                EnableSubtitleDownloading = false,
                 ImageRefreshMode = MetadataRefreshMode.FullRefresh,
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                 ReplaceAllImages = true
@@ -307,6 +317,20 @@ namespace StrmAssistant
             ).ToList();
 
             return users;
+        }
+
+        public async Task ProbeMediaInfo(BaseItem item, CancellationToken cancellationToken)
+        {
+            var mediaSources = (await _mediaSourceManager
+                .GetPlayackMediaSources(item, null, true, true, cancellationToken)
+                .ConfigureAwait(false)).ToArray();
+
+            foreach (var mediaSource in mediaSources)
+            {
+                mediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(
+                    SystemMemory::System.MemoryExtensions.AsSpan(mediaSource.Container),
+                    SystemMemory::System.MemoryExtensions.AsSpan(mediaSource.Path), null, DlnaProfileType.Video);
+            }
         }
     }
 }

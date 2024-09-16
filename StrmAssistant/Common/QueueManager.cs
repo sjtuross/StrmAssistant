@@ -95,24 +95,22 @@ namespace StrmAssistant
                             var isPatched = false;
                             try
                             {
-                                MetadataRefreshOptions refreshOptions;
                                 if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
                                 {
-                                    refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
+                                    if (taskItem.IsShortcut)
+                                    {
+                                        EnableImageCapture.PatchInstanceIsShortcut(item);
+                                        isPatched = true;
+                                    }
+                                    var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
+                                    await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
                                 }
                                 else
                                 {
-                                    refreshOptions = LibraryApi.MediaInfoRefreshOptions;
+                                    await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken)
+                                        .ConfigureAwait(false);
                                 }
 
-                                if (enableImageCapture && !taskItem.HasImage(ImageType.Primary) && taskItem.IsShortcut)
-                                {
-                                    EnableImageCapture.PatchInstanceIsShortcut(item);
-                                    isPatched = true;
-                                }
-
-                                var resp = await item.RefreshMetadata(refreshOptions, cancellationToken)
-                                    .ConfigureAwait(false);
                                 _logger.Info("MediaInfoExtract - Item Processed: " + taskItem.Name + " - " + taskItem.Path);
 
                                 if (enableIntroSkip && taskItem is Episode episode)
