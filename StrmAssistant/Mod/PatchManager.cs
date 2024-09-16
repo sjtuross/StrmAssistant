@@ -2,6 +2,7 @@ using HarmonyLib;
 using System;
 using System.Linq;
 using System.Reflection;
+using MediaBrowser.Common;
 
 namespace StrmAssistant
 {
@@ -17,9 +18,12 @@ namespace StrmAssistant
         public static PatchApproach FallbackPatchApproach { get; set; } = PatchApproach.Harmony;
 
         public static Harmony Mod;
+        public static IApplicationHost ApplicationHost;
 
-        public static void Initialize()
+        public static void Initialize(IApplicationHost applicationHost)
         {
+            ApplicationHost = applicationHost;
+
             try
             {
                 Mod = new Harmony("emby.mod");

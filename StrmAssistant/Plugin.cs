@@ -30,12 +30,12 @@ namespace StrmAssistant
         private readonly Guid _id = new Guid("63c322b7-a371-41a3-b11f-04f8418b37d8");
 
         public readonly ILogger logger;
-        private readonly IApplicationHost _applicationHost;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
 
         private int _currentMaxConcurrentCount;
+        private bool _currentEnableImageCapture;
         private bool _currentCatchupMode;
         private bool _currentEnableIntroSkip;
         private bool _currentMergeMultiVersion;
@@ -54,14 +54,14 @@ namespace StrmAssistant
             Instance = this;
             logger = logManager.GetLogger(Name);
             logger.Info("Plugin is getting loaded.");
-            _applicationHost = applicationHost;
 
             _currentMaxConcurrentCount = GetOptions().MediaInfoExtractOptions.MaxConcurrentCount;
             QueueManager.Initialize();
 
+            _currentEnableImageCapture= GetOptions().MediaInfoExtractOptions.EnableImageCapture;
             _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
             _currentChineseMovieDb = GetOptions().ModOptions.ChineseMovieDb;
-            PatchManager.Initialize();
+            PatchManager.Initialize(applicationHost);
 
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -158,25 +158,39 @@ namespace StrmAssistant
 
         public PluginOptions GetPluginOptions()
         {
-            return this.GetOptions();
+            return GetOptions();
         }
 
         protected override void OnOptionsSaved(PluginOptions options)
         {
+            logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
+            logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
+
             logger.Info("MaxConcurrentCount is set to {0}", options.MediaInfoExtractOptions.MaxConcurrentCount);
             if (_currentMaxConcurrentCount != options.MediaInfoExtractOptions.MaxConcurrentCount)
             {
                 _currentMaxConcurrentCount = options.MediaInfoExtractOptions.MaxConcurrentCount;
+
                 QueueManager.UpdateSemaphore(_currentMaxConcurrentCount);
+
                 if (options.MediaInfoExtractOptions.EnableImageCapture)
-                {
-                    EnableImageCapture.UpdateResourcePool(_currentMaxConcurrentCount, _applicationHost);
-                }
+                    EnableImageCapture.UpdateResourcePool(_currentMaxConcurrentCount);
             }
 
-            logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
-            logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
             logger.Info("EnableImageCapture is set to {0}", options.MediaInfoExtractOptions.EnableImageCapture);
+            if (_currentEnableImageCapture != options.MediaInfoExtractOptions.EnableImageCapture)
+            {
+                _currentEnableImageCapture = options.MediaInfoExtractOptions.EnableImageCapture;
+
+                if (_currentEnableImageCapture)
+                {
+                    EnableImageCapture.Patch();
+                }
+                else
+                {
+                    EnableImageCapture.Unpatch();
+                }
+            }
 
             logger.Info("MergeMultiVersion is set to {0}", options.ModOptions.MergeMultiVersion);
             if (_currentMergeMultiVersion!= GetOptions().ModOptions.MergeMultiVersion)

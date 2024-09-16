@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
-using MediaBrowser.Common;
 using static StrmAssistant.PatchManager;
 
 namespace StrmAssistant
@@ -58,19 +57,31 @@ namespace StrmAssistant
                 FallbackPatchApproach = PatchApproach.None;
             }
 
-            if (FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture)
+            if (FallbackPatchApproach != PatchApproach.None)
             {
                 SemaphoreFFmpeg = new SemaphoreSlim(_currentMaxConcurrentCount);
-
                 PatchResourcePool();
-                PatchGetImage();
-                PatchIsShortcut();
-
                 var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
                 Plugin.Instance.logger.Info(
                     "Current FFmpeg ResourcePool: " + resourcePool?.CurrentCount ?? string.Empty);
+
+                if (Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture)
+                {
+                    Patch();
+                }
             }
+        }
+
+        public static void Patch()
+        {
+            PatchIsShortcut();
+            PatchGetImage();
+        }
+
+        public static void Unpatch()
+        {
+            UnpatchIsShortcut();
+            UnpatchGetImage();
         }
 
         private static void PatchResourcePool()
@@ -180,7 +191,7 @@ namespace StrmAssistant
             }
         }
 
-        public static void UpdateResourcePool(int maxConcurrentCount, IApplicationHost applicationHost)
+        public static void UpdateResourcePool(int maxConcurrentCount)
         {
             if (_currentMaxConcurrentCount != maxConcurrentCount)
             {
@@ -191,7 +202,7 @@ namespace StrmAssistant
                 switch (FallbackPatchApproach)
                 {
                     case PatchApproach.Harmony:
-                        applicationHost.NotifyPendingRestart();
+                        ApplicationHost.NotifyPendingRestart();
 
                         /* un-patch and re-patch don't work for readonly static field
                         UnpatchResourcePool();
@@ -297,7 +308,6 @@ namespace StrmAssistant
                     Plugin.Instance.logger.Debug("Unpatch IsShortcut Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
-                    FallbackPatchApproach = PatchApproach.Reflection;
                 }
                 finally
                 {
