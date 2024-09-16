@@ -11,6 +11,8 @@ using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Plugins;
+using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -341,6 +343,14 @@ namespace StrmAssistant
             options.ModOptions.LanguageList = languageList;
 
             return base.OnBeforeShowUI(options);
+        }
+
+        protected override void OnCreatePageInfo(PluginPageInfo pageInfo)
+        {
+            pageInfo.Name = Resources.PluginOptions_EditorTitle_Strm_Assistant;
+            pageInfo.EnableInMainMenu = true;
+
+            base.OnCreatePageInfo(pageInfo);
         }
     }
 }
