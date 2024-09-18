@@ -2,12 +2,13 @@
 using System;
 using System.IO;
 using System.Reflection;
-using static StrmAssistant.PatchManager;
+using static StrmAssistant.Mod.PatchManager;
 
-namespace StrmAssistant
+namespace StrmAssistant.Mod
 {
     public static class MergeMultiVersion
     {
+        private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
         private static MethodInfo _isEligibleForMultiVersion;
 
         public static void Initialize()
@@ -24,10 +25,15 @@ namespace StrmAssistant
                 Plugin.Instance.logger.Warn("MergeMultiVersion - Patch Init Failed");
                 Plugin.Instance.logger.Debug(e.Message);
                 Plugin.Instance.logger.Debug(e.StackTrace);
-                FallbackPatchApproach = PatchApproach.None;
+                PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
-            if (FallbackPatchApproach != PatchApproach.None &&
+            if (HarmonyMod == null)
+            {
+                PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
+            }
+
+            if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
                 Plugin.Instance.GetPluginOptions().ModOptions.MergeMultiVersion)
             {
                 Patch();
@@ -36,13 +42,13 @@ namespace StrmAssistant
 
         public static void Patch()
         {
-            if (FallbackPatchApproach == PatchApproach.Harmony)
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
                     if (!IsPatched(_isEligibleForMultiVersion))
                     {
-                        Mod.Patch(_isEligibleForMultiVersion,
+                        HarmonyMod.Patch(_isEligibleForMultiVersion,
                             prefix: new HarmonyMethod(typeof(MergeMultiVersion).GetMethod("IsEligibleForMultiVersionPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.logger.Debug(
@@ -54,20 +60,20 @@ namespace StrmAssistant
                     Plugin.Instance.logger.Debug("Patch IsEligibleForMultiVersion Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
-                    FallbackPatchApproach = PatchApproach.Reflection;
+                    PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
         }
 
         public static void Unpatch()
         {
-            if (FallbackPatchApproach == PatchApproach.Harmony)
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
                     if (IsPatched(_isEligibleForMultiVersion))
                     {
-                        Mod.Unpatch(_isEligibleForMultiVersion, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_isEligibleForMultiVersion, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch IsEligibleForMultiVersion Success by Harmony");
                     }
                 }

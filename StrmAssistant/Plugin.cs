@@ -12,6 +12,7 @@ using MediaBrowser.Model.Events;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
+using StrmAssistant.Mod;
 using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;

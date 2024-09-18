@@ -8,12 +8,14 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
-using static StrmAssistant.PatchManager;
+using static StrmAssistant.Mod.PatchManager;
 
-namespace StrmAssistant
+namespace StrmAssistant.Mod
 {
     public static class EnableImageCapture
     {
+        private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
+
         private static ConstructorInfo _staticConstructor;
         private static FieldInfo _resourcePoolField;
         private static MethodInfo _isShortcutGetter;
@@ -54,10 +56,15 @@ namespace StrmAssistant
                 Plugin.Instance.logger.Warn("EnableImageCapture - Patch Init Failed");
                 Plugin.Instance.logger.Debug(e.Message);
                 Plugin.Instance.logger.Debug(e.StackTrace);
-                FallbackPatchApproach = PatchApproach.None;
+                PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
-            if (FallbackPatchApproach != PatchApproach.None)
+            if (HarmonyMod == null)
+            {
+                PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
+            }
+
+            if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None)
             {
                 SemaphoreFFmpeg = new SemaphoreSlim(_currentMaxConcurrentCount);
                 PatchResourcePool();
@@ -86,17 +93,17 @@ namespace StrmAssistant
 
         private static void PatchResourcePool()
         {
-            switch (FallbackPatchApproach)
+            switch (PatchApproachTracker.FallbackPatchApproach)
             {
                 case PatchApproach.Harmony:
                     try
                     {
                         if (!IsPatched(_staticConstructor))
                         {
-                            Mod.Patch(_staticConstructor,
+                            HarmonyMod.Patch(_staticConstructor,
                                 prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("ResourcePoolPrefix",
                                     BindingFlags.Static | BindingFlags.NonPublic)));
-                            //Mod.Patch(_staticConstructor,
+                            //HarmonyMod.Patch(_staticConstructor,
                             //    transpiler: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("ResourcePoolTranspiler",
                             //        BindingFlags.Static | BindingFlags.NonPublic)));
 
@@ -108,7 +115,7 @@ namespace StrmAssistant
                         Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Harmony");
                         Plugin.Instance.logger.Debug(he.Message);
                         Plugin.Instance.logger.Debug(he.StackTrace);
-                        FallbackPatchApproach = PatchApproach.Reflection;
+                        PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
                         try
                         {
@@ -119,7 +126,7 @@ namespace StrmAssistant
                         {
                             Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
                             Plugin.Instance.logger.Debug(re.Message);
-                            FallbackPatchApproach = PatchApproach.None;
+                            PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
                         }
                     }
 
@@ -135,7 +142,7 @@ namespace StrmAssistant
                     {
                         Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
                         Plugin.Instance.logger.Debug(re.Message);
-                        FallbackPatchApproach = PatchApproach.None;
+                        PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
                     }
                     break;
             }
@@ -143,13 +150,13 @@ namespace StrmAssistant
 
         private static void PatchGetImage()
         {
-            if (FallbackPatchApproach == PatchApproach.Harmony)
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
                     if (!IsPatched(_getImage))
                     {
-                        Mod.Patch(_getImage,
+                        HarmonyMod.Patch(_getImage,
                             prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("GetImagePrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.logger.Debug(
@@ -161,20 +168,20 @@ namespace StrmAssistant
                     Plugin.Instance.logger.Debug("Patch VideoImageProvider.GetImage Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
-                    FallbackPatchApproach = PatchApproach.Reflection;
+                    PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
         }
 
         private static void PatchIsShortcut()
         {
-            if (FallbackPatchApproach == PatchApproach.Harmony)
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
                     if (!IsPatched(_isShortcutGetter))
                     {
-                        Mod.Patch(_isShortcutGetter,
+                        HarmonyMod.Patch(_isShortcutGetter,
                             prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("IsShortcutPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.logger.Debug(
@@ -186,7 +193,7 @@ namespace StrmAssistant
                     Plugin.Instance.logger.Debug("Patch IsShortcut Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
-                    FallbackPatchApproach = PatchApproach.Reflection;
+                    PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
         }
@@ -199,7 +206,7 @@ namespace StrmAssistant
                 SemaphoreSlim newSemaphoreFFmpeg;
                 SemaphoreSlim oldSemaphoreFFmpeg;
 
-                switch (FallbackPatchApproach)
+                switch (PatchApproachTracker.FallbackPatchApproach)
                 {
                     case PatchApproach.Harmony:
                         ApplicationHost.NotifyPendingRestart();
@@ -244,7 +251,7 @@ namespace StrmAssistant
 
         public static void PatchInstanceIsShortcut(BaseItem item)
         {
-            switch (FallbackPatchApproach)
+            switch (PatchApproachTracker.FallbackPatchApproach)
             {
                 case PatchApproach.Harmony:
                     CurrentItem.Value = item;
@@ -261,7 +268,7 @@ namespace StrmAssistant
                     {
                         Plugin.Instance.logger.Debug("Patch IsShortcut Failed by Reflection");
                         Plugin.Instance.logger.Debug(re.Message);
-                        FallbackPatchApproach = PatchApproach.None;
+                        PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
                     }
                     break;
             }
@@ -269,7 +276,7 @@ namespace StrmAssistant
 
         public static void UnpatchInstanceIsShortcut(BaseItem item)
         {
-            switch (FallbackPatchApproach)
+            switch (PatchApproachTracker.FallbackPatchApproach)
             {
                 case PatchApproach.Harmony:
                     CurrentItem.Value = null;
@@ -293,13 +300,13 @@ namespace StrmAssistant
 
         public static void UnpatchResourcePool()
         {
-            if (FallbackPatchApproach == PatchApproach.Harmony)
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
                     if (IsPatched(_staticConstructor))
                     {
-                        Mod.Unpatch(_staticConstructor, HarmonyPatchType.All);
+                        HarmonyMod.Unpatch(_staticConstructor, HarmonyPatchType.All);
                         Plugin.Instance.logger.Debug("Unpatch IsShortcut Success by Harmony");
                     }
                 }
@@ -320,13 +327,13 @@ namespace StrmAssistant
 
         public static void UnpatchIsShortcut()
         {
-            if (FallbackPatchApproach == PatchApproach.Harmony)
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
                     if (IsPatched(_isShortcutGetter))
                     {
-                        Mod.Unpatch(_isShortcutGetter, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_isShortcutGetter, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch IsShortcut Success by Harmony");
                     }
                 }
@@ -341,13 +348,13 @@ namespace StrmAssistant
 
         public static void UnpatchGetImage()
         {
-            if (FallbackPatchApproach == PatchApproach.Harmony)
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
                     if (IsPatched(_getImage))
                     {
-                        Mod.Unpatch(_getImage, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_getImage, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch VideoImageProvider.GetImage Success by Harmony");
                     }
                 }

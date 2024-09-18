@@ -1,8 +1,8 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using StrmAssistant.Mod;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
