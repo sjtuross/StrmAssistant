@@ -15,7 +15,7 @@
     <value>追更模式</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>最爱中的电影洗版或剧集有更新后实时提取媒体信息以及同步片头片尾标记，默认关闭。</value>
+    <value>电影洗版或剧集有更新后实时提取媒体信息以及同步片头片尾标记，默认关闭。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>包含附加内容</value>
@@ -124,5 +124,11 @@
   </data>
   <data name="Favorites" xml:space="preserve">
     <value>❤️最爱</value>
+  </data>
+  <data name="ModOptions_ExclusiveExtract_Exclusive_Extract" xml:space="preserve">
+    <value>独占提取媒体信息</value>
+  </data>
+  <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
+    <value>仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg)</value>
   </data>
 </root>

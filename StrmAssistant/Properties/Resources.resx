@@ -102,7 +102,7 @@
     <value>Catch-up Mode</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>Extract media info once new items are added for favorites and sync intro and credits markers. Default is OFF.</value>
+    <value>Extract media info for newly added items and sync intro and credits markers. Default is OFF.</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>Include Extra</value>
@@ -211,5 +211,11 @@
   </data>
   <data name="Favorites" xml:space="preserve">
     <value>❤️Favorites</value>
+  </data>
+  <data name="ModOptions_ExclusiveExtract_Exclusive_Extract" xml:space="preserve">
+    <value>Exclusive Extract MediaInfo</value>
+  </data>
+  <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
+    <value>Only allow this plugin to extract media info (ffprobe) and capture image (ffmpeg). Default is OFF.</value>
   </data>
 </root>

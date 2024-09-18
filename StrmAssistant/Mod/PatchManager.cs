@@ -29,6 +29,7 @@ namespace StrmAssistant.Mod
             EnableImageCapture.Initialize();
             MergeMultiVersion.Initialize();
             ChineseMovieDb.Initialize();
+            ExclusiveExtract.Initialize();
         }
 
         public static bool IsPatched(MethodBase methodInfo)

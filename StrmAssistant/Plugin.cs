@@ -43,6 +43,7 @@ namespace StrmAssistant
         private bool _currentEnableIntroSkip;
         private bool _currentMergeMultiVersion;
         private bool _currentChineseMovieDb;
+        private bool _currentExclusiveExtract;
 
         public Plugin(IApplicationHost applicationHost,
             ILogManager logManager,
@@ -65,6 +66,7 @@ namespace StrmAssistant
             _currentEnableImageCapture= GetOptions().MediaInfoExtractOptions.EnableImageCapture;
             _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
             _currentChineseMovieDb = GetOptions().ModOptions.ChineseMovieDb;
+            _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
             PatchManager.Initialize(applicationHost);
 
             _libraryManager = libraryManager;
@@ -131,7 +133,7 @@ namespace StrmAssistant
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item.IsShortcut) //Strm only for real-time extract
+            if (_currentExclusiveExtract || e.Item.IsShortcut)
             {
                 QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
             }
@@ -224,6 +226,21 @@ namespace StrmAssistant
                 else
                 {
                     ChineseMovieDb.Unpatch();
+                }
+            }
+
+            logger.Info("ExclusiveExtract is set to {0}", options.ModOptions.ExclusiveExtract);
+            if (_currentExclusiveExtract != GetOptions().ModOptions.ExclusiveExtract)
+            {
+                _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
+
+                if (_currentExclusiveExtract)
+                {
+                    ExclusiveExtract.Patch();
+                }
+                else
+                {
+                    ExclusiveExtract.Unpatch();
                 }
             }
 

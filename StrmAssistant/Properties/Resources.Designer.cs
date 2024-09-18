@@ -61,7 +61,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to ❤️Favorites.
         /// </summary>
         public static string Favorites {
             get {
@@ -149,6 +149,25 @@ namespace StrmAssistant.Properties {
         public static string ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_ {
             get {
                 return ResourceManager.GetString("ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Exclusive Extract MediaInfo.
+        /// </summary>
+        public static string ModOptions_ExclusiveExtract_Exclusive_Extract {
+            get {
+                return ResourceManager.GetString("ModOptions_ExclusiveExtract_Exclusive_Extract", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only allow this plugin to extract media info (ffprobe) and capture image (ffmpeg). Default is OFF..
+        /// </summary>
+        public static string ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe" +
+                        "__and_capture_image__ffmpeg___Default_is_OFF_", resourceCulture);
             }
         }
         

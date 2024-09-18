@@ -25,6 +25,7 @@ namespace StrmAssistant
             _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount);
             var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
             _logger.Info("Enable Image Capture: " + enableImageCapture);
+            var exclusiveExtract = Plugin.Instance.GetPluginOptions().ModOptions.ExclusiveExtract;
 
             var items = Plugin.LibraryApi.FetchExtractTaskItems();
 
@@ -48,15 +49,22 @@ namespace StrmAssistant
                 var taskItem = item;
                 var task = Task.Run(async () =>
                 {
-                    var isPatched = false;
+                    var isShortcutPatched = false;
+                    var isExtractAllowed = false;
                     try
                     {
+                        if (exclusiveExtract)
+                        {
+                            ExclusiveExtract.AllowExtractInstance(taskItem);
+                            isExtractAllowed = true;
+                        }
+
                         if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
                         {
                             if (taskItem.IsShortcut)
                             {
                                 EnableImageCapture.PatchInstanceIsShortcut(taskItem);
-                                isPatched = true;
+                                isShortcutPatched = true;
                             }
                             var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
                             await taskItem.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
@@ -81,10 +89,8 @@ namespace StrmAssistant
                         _logger.Info("MediaInfoExtract - Scheduled Task " + current + "/" + total + " - " + "Task " + taskIndex + ": " +
                                      taskItem.Path);
 
-                        if (isPatched)
-                        {
-                            EnableImageCapture.UnpatchInstanceIsShortcut(taskItem);
-                        }
+                        if (isShortcutPatched) EnableImageCapture.UnpatchInstanceIsShortcut(taskItem);
+                        if (isExtractAllowed) ExclusiveExtract.DisallowExtractInstance(taskItem);
 
                         QueueManager.SemaphoreMaster.Release();
                     }

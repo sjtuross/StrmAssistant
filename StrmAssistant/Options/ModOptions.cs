@@ -38,6 +38,12 @@ namespace StrmAssistant
         [VisibleCondition(nameof(ChineseMovieDb), SimpleCondition.IsTrue)]
         public string FallbackLanguages { get; set; }
 
+        [DisplayNameL("ModOptions_ExclusiveExtract_Exclusive_Extract", typeof(Resources))]
+        [DescriptionL("ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_", typeof(Resources))]
+        [Required]
+        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
+        public bool ExclusiveExtract { get; set; } = false;
+
         [Browsable(false)]
         public bool IsMovieDbPluginLoaded { get; } =
             AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "MovieDb") &&

@@ -75,6 +75,7 @@ namespace StrmAssistant
                     _logger.Info("MediaInfoExtract - Clear Item Queue Started");
                     var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
                     _logger.Info("Image Capture Enabled: " + enableImageCapture);
+                    var exclusiveExtract = Plugin.Instance.GetPluginOptions().ModOptions.ExclusiveExtract;
                     var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
                     _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
 
@@ -92,15 +93,23 @@ namespace StrmAssistant
                         var taskItem = item;
                         _taskQueue.Enqueue(async () =>
                         {
-                            var isPatched = false;
+                            var isShortcutPatched = false;
+                            var isExtractAllowed = false;
+
                             try
                             {
+                                if (exclusiveExtract)
+                                {
+                                    ExclusiveExtract.AllowExtractInstance(taskItem);
+                                    isExtractAllowed = true;
+                                }
+
                                 if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
                                 {
                                     if (taskItem.IsShortcut)
                                     {
-                                        EnableImageCapture.PatchInstanceIsShortcut(item);
-                                        isPatched = true;
+                                        EnableImageCapture.PatchInstanceIsShortcut(taskItem);
+                                        isShortcutPatched = true;
                                     }
                                     var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
                                     await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
@@ -128,10 +137,8 @@ namespace StrmAssistant
                             }
                             finally
                             {
-                                if (isPatched)
-                                {
-                                    EnableImageCapture.UnpatchInstanceIsShortcut(taskItem);
-                                }
+                                if (isShortcutPatched) EnableImageCapture.UnpatchInstanceIsShortcut(taskItem);
+                                if (isExtractAllowed) ExclusiveExtract.DisallowExtractInstance(taskItem);
                             }
                         });
                     }

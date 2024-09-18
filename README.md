@@ -12,6 +12,7 @@
 4. 基于播放行为探测片头片尾
 5. 自动合并同目录视频为多版本
 6. 自定义`TMDB`备选语言
+7. 独占模式提取媒体信息
 
 ## 更新
 
@@ -25,6 +26,7 @@
 8. 基于播放行为的剧集片头片尾探测 (默认关闭), 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/片头探测-(Intro-Detection))
 9. 自动合并同目录视频为多版本, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/自动合并同目录多版本)
 10. 尽可能从`TMDB`获取中文或日文元数据, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/自定义-TMDB-备选语言)
+11. 仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg), 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/变相多线程入库)
 
 **注意**: Emby最低版本要求 `4.8.0.80`
 

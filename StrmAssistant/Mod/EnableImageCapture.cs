@@ -399,7 +399,7 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool IsShortcutPrefix(BaseItem __instance, ref bool __result)
         {
-            if (__instance == CurrentItem.Value)
+            if (CurrentItem.Value != null && __instance.InternalId == CurrentItem.Value.InternalId)
             {
                 __result = false;
                 return false;
