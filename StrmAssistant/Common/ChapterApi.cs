@@ -272,7 +272,11 @@ namespace StrmAssistant
 
         public List<Episode> SeasonHasIntroCredits(List<Episode> episodes)
         {
-            var seasonIds = episodes.Select(e => e.ParentId).Distinct().ToArray();
+            var episodesInScope = episodes
+                .Where(e => PlaySessionMonitor.LibraryPathsInScope.Any(p => e.ContainingFolderPath.StartsWith(p)))
+                .ToList();
+
+            var seasonIds = episodesInScope.Select(e => e.ParentId).Distinct().ToArray();
 
             var episodesQuery = new InternalItemsQuery
             {
@@ -284,7 +288,7 @@ namespace StrmAssistant
 
             var groupedBySeason = _libraryManager.GetItemList(episodesQuery)
                 .OfType<Episode>()
-                .Where(ep => !episodes.Select(e => e.InternalId).Contains(ep.InternalId))
+                .Where(ep => !episodesInScope.Select(e => e.InternalId).Contains(ep.InternalId))
                 .GroupBy(ep => ep.ParentId);
 
             var resultEpisodes = new List<Episode>();
@@ -306,8 +310,8 @@ namespace StrmAssistant
 
                 if (hasMarkers)
                 {
-                    var episodesWithMarkers = episodes.Where(e => e.ParentId == seasonGroup.Key).ToList();
-                    resultEpisodes.AddRange(episodesWithMarkers);
+                    var episodesCanMarkers = episodesInScope.Where(e => e.ParentId == seasonGroup.Key).ToList();
+                    resultEpisodes.AddRange(episodesCanMarkers);
                 }
             }
 

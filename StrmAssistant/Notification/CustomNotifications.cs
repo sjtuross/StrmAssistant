@@ -17,7 +17,7 @@ namespace StrmAssistant
             {
                 new NotificationTypeInfo
                 {
-                    Id = "catchup.update",
+                    Id = "favorites.update",
                     Name = Resources.Notification_CatchupUpdate_EventName,
                     CategoryId = "strm.assistant",
                     CategoryName = Resources.PluginOptions_EditorTitle_Strm_Assistant

@@ -135,7 +135,7 @@ namespace StrmAssistant
                 QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
             }
 
-            NotificationApi.CatchupUpdateSendNotification(e.Item);
+            NotificationApi.FavoritesUpdateSendNotification(e.Item);
         }
 
         private void OnUserDataSaved(object sender, UserDataSaveEventArgs e)
@@ -145,6 +145,7 @@ namespace StrmAssistant
                 QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
             }
         }
+
         public ImageFormat ThumbImageFormat => ImageFormat.Png;
 
         public override string Description => "Extract MediaInfo and Enable IntroSkip";
@@ -287,6 +288,13 @@ namespace StrmAssistant
 
             var list = new List<EditorSelectOption>();
             var listShows = new List<EditorSelectOption>();
+
+            list.Add(new EditorSelectOption
+            {
+                Value = "-1",
+                Name = Resources.Favorites,
+                IsEnabled = true
+            });
 
             foreach (var item in libraries)
             {

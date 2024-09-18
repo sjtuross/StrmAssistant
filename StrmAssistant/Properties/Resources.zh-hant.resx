@@ -122,4 +122,7 @@
   <data name="ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_" xml:space="preserve">
     <value>備選元資料語言，可多選</value>
   </data>
+  <data name="Favorites" xml:space="preserve">
+    <value>❤️最愛</value>
+  </data>
 </root>

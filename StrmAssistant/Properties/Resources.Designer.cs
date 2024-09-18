@@ -61,6 +61,15 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string Favorites {
+            get {
+                return ResourceManager.GetString("Favorites", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to General.
         /// </summary>
         public static string GeneralOptions_EditorTitle_General_Options {
@@ -70,7 +79,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Auto merge multiple versions stored in the same folder..
+        ///   Looks up a localized string similar to Auto merge multiple versions stored in the same folder. Default is OFF..
         /// </summary>
         public static string GeneralOptions_MergeMultiVersion_Auto_merge_multiple_versions_if_in_the_same_folder_ {
             get {
@@ -80,7 +89,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multi-version Merge (Experimental).
+        ///   Looks up a localized string similar to Auto Merge Multi-version.
         /// </summary>
         public static string GeneralOptions_MergeMultiVersion_Merge_Multiple_Versions {
             get {
@@ -126,7 +135,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Chinese MovieDb (Experimental).
+        ///   Looks up a localized string similar to Customize MovieDb Fallback Language.
         /// </summary>
         public static string ModOptions_ChineseMovieDb_Chinese_MovieDb {
             get {
@@ -135,7 +144,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Optimize MovieDb for Chinese metadata. Default is OFF..
+        ///   Looks up a localized string similar to Try to get Chinese or Japanese metadata from MovieDb. Default is OFF..
         /// </summary>
         public static string ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_ {
             get {
@@ -153,7 +162,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Fallback languages. Default is zh-SG..
+        ///   Looks up a localized string similar to Fallback metadata languages..
         /// </summary>
         public static string ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_ {
             get {
@@ -225,7 +234,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Catch-up Mode (Experimental).
+        ///   Looks up a localized string similar to Catch-up Mode.
         /// </summary>
         public static string PluginOptions_CatchupMode_Catch_up_Mode__Experimental_ {
             get {
@@ -262,7 +271,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable Image Capture (Experimental).
+        ///   Looks up a localized string similar to Enable Image Capture.
         /// </summary>
         public static string PluginOptions_EnableImageCapture_Enable_Image_Capture {
             get {
@@ -281,7 +290,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable Intro Skip (Experimental).
+        ///   Looks up a localized string similar to Enable Intro Skip.
         /// </summary>
         public static string PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_ {
             get {
