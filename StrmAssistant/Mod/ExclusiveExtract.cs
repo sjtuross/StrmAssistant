@@ -1,9 +1,10 @@
 ﻿using HarmonyLib;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Configuration;
 using System;
-using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using static StrmAssistant.Mod.PatchManager;
@@ -14,7 +15,10 @@ namespace StrmAssistant.Mod
     {
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
 
-        private static MethodInfo _refreshWithProviders;
+        private static Assembly _mediaEncodingAssembly;
+        private static MethodInfo _canRefresh;
+        private static MethodInfo _runFfProcess;
+
         private static AsyncLocal<BaseItem> CurrentItem { get; } = new AsyncLocal<BaseItem>();
 
         public static void Initialize()
@@ -22,13 +26,15 @@ namespace StrmAssistant.Mod
             try
             {
                 var embyProvidersManager = Assembly.Load("Emby.Providers");
-                var genericMetadataService = embyProvidersManager.GetType("Emby.Providers.Manager.MetadataService`2");
-                var genericMetadataServiceEpisode =
-                    genericMetadataService.MakeGenericType(typeof(Episode), typeof(ItemLookupInfo));
-                _refreshWithProviders = genericMetadataServiceEpisode.GetMethod("RefreshWithProviders",
-                    BindingFlags.NonPublic | BindingFlags.Instance);
-
-                Patch();
+                var providerManager = embyProvidersManager.GetType("Emby.Providers.Manager.ProviderManager");
+                _canRefresh =
+                    providerManager.GetMethod("CanRefresh", BindingFlags.Static | BindingFlags.NonPublic);
+                
+                _mediaEncodingAssembly = Assembly.Load("Emby.Server.MediaEncoding");
+                var mediaProbeManager =
+                    _mediaEncodingAssembly.GetType("Emby.Server.MediaEncoding.Probing.MediaProbeManager");
+                _runFfProcess =
+                    mediaProbeManager.GetMethod("RunFfProcess", BindingFlags.Instance | BindingFlags.NonPublic);
             }
             catch (Exception e)
             {
@@ -38,15 +44,57 @@ namespace StrmAssistant.Mod
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
-            if (HarmonyMod == null)
-            {
-                PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
-            }
+            if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
                 Plugin.Instance.GetPluginOptions().ModOptions.ExclusiveExtract)
             {
                 Patch();
+            }
+        }
+
+        public static void PatchFFProbeTimeout()
+        {
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
+            {
+                try
+                {
+                    if (!IsPatched(_runFfProcess))
+                    {
+                        HarmonyMod.Patch(_runFfProcess,
+                            prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("RunFfProcessPrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch RunFfProcess Success by Harmony");
+                    }
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Patch RunFfProcess Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
+                }
+            }
+        }
+
+        public static void UnpatchFFProbeTimeout()
+        {
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
+            {
+                try
+                {
+                    if (IsPatched(_runFfProcess))
+                    {
+                        HarmonyMod.Unpatch(_runFfProcess, HarmonyPatchType.Prefix);
+                        Plugin.Instance.logger.Debug("Unpatch RunFfProcess Success by Harmony");
+                    }
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Unpatch RunFfProcess Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
+                }
             }
         }
 
@@ -56,18 +104,18 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (!IsPatched(_refreshWithProviders))
+                    if (!IsPatched(_canRefresh))
                     {
-                        HarmonyMod.Patch(_refreshWithProviders,
-                            prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("RefreshWithProvidersPrefix",
+                        HarmonyMod.Patch(_canRefresh,
+                            prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("CanRefreshPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.logger.Debug(
-                            "Patch RefreshWithProviders Success by Harmony");
+                            "Patch CanRefresh Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch RefreshWithProviders Failed by Harmony");
+                    Plugin.Instance.logger.Debug("Patch CanRefresh Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
@@ -81,15 +129,15 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (IsPatched(_refreshWithProviders))
+                    if (IsPatched(_canRefresh))
                     {
-                        HarmonyMod.Unpatch(_refreshWithProviders, HarmonyPatchType.Prefix);
-                        Plugin.Instance.logger.Debug("Unpatch RefreshWithProviders Success by Harmony");
+                        HarmonyMod.Unpatch(_canRefresh, HarmonyPatchType.Prefix);
+                        Plugin.Instance.logger.Debug("Unpatch CanRefresh Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch RefreshWithProviders Failed by Harmony");
+                    Plugin.Instance.logger.Debug("Unpatch CanRefresh Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                 }
@@ -113,15 +161,28 @@ namespace StrmAssistant.Mod
         }
 
         [HarmonyPrefix]
-        private static bool RefreshWithProvidersPrefix(MetadataResult<BaseItem> metadata, ref List<IMetadataProvider> providers)
+        private static void RunFfProcessPrefix(ref int timeoutMs)
         {
-            if (CurrentItem.Value != null && metadata.BaseItem.InternalId == CurrentItem.Value.InternalId)
-            {
-                return true;
-            }
+            timeoutMs = 60000 * Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
+        }
 
-            providers.RemoveAll(p =>
-                p is IPreRefreshProvider && p is ICustomMetadataProvider<Video>);
+        [HarmonyPostfix]
+        private static bool CanRefreshPrefix(IMetadataProvider provider, BaseItem item, LibraryOptions libraryOptions,
+            bool includeDisabled, bool forceEnableInternetMetadata, bool ignoreMetadataLock)
+        {
+            if (item.IsShortcut)
+                return true;
+
+            if (CurrentItem.Value != null && item.InternalId == CurrentItem.Value.InternalId)
+                return true;
+
+            var stackFrames = new StackTrace(1, false).GetFrames();
+            if (stackFrames != null && stackFrames.Select(f => f.GetMethod()).Any(m =>
+                    m?.DeclaringType?.Assembly == _mediaEncodingAssembly && m?.Name == "GetPlaybackInfo"))
+                return true;
+
+            if (provider is IPreRefreshProvider && provider is ICustomMetadataProvider<Video>)
+                return false;
 
             return true;
         }

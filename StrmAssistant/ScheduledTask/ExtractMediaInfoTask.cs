@@ -29,6 +29,8 @@ namespace StrmAssistant
 
             var items = Plugin.LibraryApi.FetchExtractTaskItems();
 
+            if (items.Count > 0) ExclusiveExtract.PatchFFProbeTimeout();
+
             double total = items.Count;
             var index = 0;
             var current = 0;
@@ -98,6 +100,8 @@ namespace StrmAssistant
                 tasks.Add(task);
             }
             await Task.WhenAll(tasks);
+
+            if (items.Count > 0) ExclusiveExtract.UnpatchFFProbeTimeout();
 
             progress.Report(100.0);
             _logger.Info("MediaInfoExtract - Scheduled Task Complete");

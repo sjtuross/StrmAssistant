@@ -129,6 +129,6 @@
     <value>獨佔擷取媒體訊息</value>
   </data>
   <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
-    <value>僅允許本插件提取媒體資訊 (ffprobe) 以及影片截圖 (ffmpeg)</value>
+    <value>僅允許本插件提取媒體資訊 (ffprobe) 以及影片截圖 (ffmpeg)，預設為關閉。</value>
   </data>
 </root>
