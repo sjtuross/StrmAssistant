@@ -373,16 +373,21 @@ namespace StrmAssistant
 
         public async Task ProbeMediaInfo(BaseItem item, CancellationToken cancellationToken)
         {
-            var mediaSources = (await _mediaSourceManager
-                .GetPlayackMediaSources(item, null, true, true, cancellationToken)
-                .ConfigureAwait(false)).ToArray();
+            var probeMediaSources = item.GetMediaSources(true, true, _libraryManager.GetLibraryOptions(item));
 
-            foreach (var mediaSource in mediaSources)
+            await Task.WhenAll(probeMediaSources.Select(async probeMediaSource =>
             {
-                mediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(
-                    SystemMemory::System.MemoryExtensions.AsSpan(mediaSource.Container),
-                    SystemMemory::System.MemoryExtensions.AsSpan(mediaSource.Path), null, DlnaProfileType.Video);
-            }
+                var resultMediaSources = (await _mediaSourceManager
+                    .GetPlayackMediaSources(item, null, true, probeMediaSource.Id, true, cancellationToken)
+                    .ConfigureAwait(false)).ToArray();
+
+                foreach (var resultMediaSource in resultMediaSources)
+                {
+                    resultMediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(
+                        SystemMemory::System.MemoryExtensions.AsSpan(resultMediaSource.Container),
+                        SystemMemory::System.MemoryExtensions.AsSpan(resultMediaSource.Path), null, DlnaProfileType.Video);
+                }
+            }));
         }
     }
 }
