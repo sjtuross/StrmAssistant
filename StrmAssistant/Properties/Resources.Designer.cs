@@ -61,6 +61,15 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to About.
+        /// </summary>
+        public static string AboutOptions_EditorTitle_About {
+            get {
+                return ResourceManager.GetString("AboutOptions_EditorTitle_About", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ❤️Favorites.
         /// </summary>
         public static string Favorites {
@@ -153,7 +162,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Exclusive Extract MediaInfo.
+        ///   Looks up a localized string similar to Exclusive MediaInfo Extract.
         /// </summary>
         public static string ModOptions_ExclusiveExtract_Exclusive_Extract {
             get {
@@ -262,7 +271,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extract media info once new items are added for favorites and sync intro and credits markers. Default is OFF..
+        ///   Looks up a localized string similar to Extract media info for newly added items and sync intro and credits markers. Default is OFF..
         /// </summary>
         public static string PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_ {
             get {
@@ -425,6 +434,24 @@ namespace StrmAssistant.Properties {
         public static string PluginOptions_StrmOnly_Strm_Only {
             get {
                 return ResourceManager.GetString("PluginOptions_StrmOnly_Strm_Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Repo Link.
+        /// </summary>
+        public static string Repo_Link {
+            get {
+                return ResourceManager.GetString("Repo_Link", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wiki Link.
+        /// </summary>
+        public static string Wiki_Link {
+            get {
+                return ResourceManager.GetString("Wiki_Link", resourceCulture);
             }
         }
     }

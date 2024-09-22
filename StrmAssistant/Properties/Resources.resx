@@ -213,9 +213,18 @@
     <value>❤️Favorites</value>
   </data>
   <data name="ModOptions_ExclusiveExtract_Exclusive_Extract" xml:space="preserve">
-    <value>Exclusive Extract MediaInfo</value>
+    <value>Exclusive MediaInfo Extract</value>
   </data>
   <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
     <value>Only allow this plugin to extract media info (ffprobe) and capture image (ffmpeg). Default is OFF.</value>
+  </data>
+  <data name="Repo_Link" xml:space="preserve">
+    <value>Repo Link</value>
+  </data>
+  <data name="Wiki_Link" xml:space="preserve">
+    <value>Wiki Link</value>
+  </data>
+  <data name="AboutOptions_EditorTitle_About" xml:space="preserve">
+    <value>About</value>
   </data>
 </root>

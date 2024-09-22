@@ -16,11 +16,7 @@ namespace StrmAssistant
             IsConflictPluginLoaded
                 ? Resources.PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract
                 : string.Empty;
-
-        //[VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsTrue)]
-        //public LabelItem IncompatibleMessage { get; set; } = IsConflictPluginLoaded?new(Resources
-        //    .PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract): new LabelItem("");
-
+        
         [DisplayNameL("GeneralOptions_EditorTitle_General_Options", typeof(Resources))]
         [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
@@ -40,6 +36,9 @@ namespace StrmAssistant
         [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         public ModOptions ModOptions { get; set; } = new ModOptions();
+
+        [DisplayNameL("AboutOptions_EditorTitle_About", typeof(Resources))]
+        public AboutOptions AboutOptions { get; set; } = new AboutOptions();
 
         [Browsable(false)]
         public bool IsConflictPluginLoaded { get; } =

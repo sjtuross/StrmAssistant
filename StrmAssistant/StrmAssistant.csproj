@@ -4,6 +4,7 @@
     <AssemblyVersion>1.0.0.19</AssemblyVersion>
     <FileVersion>1.0.0.19</FileVersion>
     <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
+    <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\thumb.png" />
@@ -17,6 +18,10 @@
       <GeneratePathProperty>True</GeneratePathProperty>
     </PackageReference>
     <PackageReference Include="mediabrowser.server.core" Version="4.8.0.80" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Resource.Embedder" Version="2.2.0" />
     <PackageReference Include="System.Memory" Version="4.5.5">
       <Aliases>SystemMemory</Aliases>

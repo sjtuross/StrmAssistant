@@ -126,9 +126,18 @@
     <value>❤️最爱</value>
   </data>
   <data name="ModOptions_ExclusiveExtract_Exclusive_Extract" xml:space="preserve">
-    <value>独占提取媒体信息</value>
+    <value>独占媒体信息提取</value>
   </data>
   <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
     <value>仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg)，默认关闭。</value>
+  </data>
+  <data name="Repo_Link" xml:space="preserve">
+    <value>项目链接</value>
+  </data>
+  <data name="Wiki_Link" xml:space="preserve">
+    <value>功能介绍</value>
+  </data>
+  <data name="AboutOptions_EditorTitle_About" xml:space="preserve">
+    <value>关于</value>
   </data>
 </root>

@@ -1,4 +1,6 @@
 using Emby.Web.GenericEdit.Common;
+using Emby.Web.GenericEdit.Elements;
+using Emby.Web.GenericEdit.Elements.List;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Entities;
@@ -18,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace StrmAssistant
@@ -78,17 +81,11 @@ namespace StrmAssistant
             NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
 
             _currentCatchupMode = GetOptions().GeneralOptions.CatchupMode;
-            if (_currentCatchupMode)
-            {
-                InitializeCatchupMode();
-            }
+            if (_currentCatchupMode) InitializeCatchupMode();
 
             PlaySessionMonitor = new PlaySessionMonitor(libraryManager, sessionManager, itemRepository, userManager);
             _currentEnableIntroSkip = GetOptions().IntroSkipOptions.EnableIntroSkip;
-            if (_currentEnableIntroSkip)
-            {
-                PlaySessionMonitor.Initialize();
-            }
+            if (_currentEnableIntroSkip) PlaySessionMonitor.Initialize();
         }
 
         public void Dispose()
@@ -369,6 +366,33 @@ namespace StrmAssistant
             };
             options.ModOptions.LanguageList = languageList;
 
+            options.AboutOptions.VersionInfoList.Clear();
+            options.AboutOptions.VersionInfoList.Add(
+                new GenericListItem
+                {
+                    PrimaryText = GetVersionHash(),
+                    Icon = IconNames.info,
+                    IconMode = ItemListIconMode.SmallRegular
+                });
+
+            options.AboutOptions.VersionInfoList.Add(
+                new GenericListItem
+                {
+                    PrimaryText = Resources.Repo_Link,
+                    Icon = IconNames.code,
+                    IconMode = ItemListIconMode.SmallRegular,
+                    HyperLink = "https://github.com/sjtuross/StrmAssistant",
+                });
+
+            options.AboutOptions.VersionInfoList.Add(
+                new GenericListItem
+                {
+                    PrimaryText = Resources.Wiki_Link,
+                    Icon = IconNames.menu_book,
+                    IconMode = ItemListIconMode.SmallRegular,
+                    HyperLink = "https://github.com/sjtuross/StrmAssistant/wiki",
+                });
+
             return base.OnBeforeShowUI(options);
         }
 
@@ -378,6 +402,24 @@ namespace StrmAssistant
             pageInfo.EnableInMainMenu = true;
 
             base.OnCreatePageInfo(pageInfo);
+        }
+
+        private static string GetVersionHash()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var informationalVersion = assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+            var fullVersion = assembly.GetName().Version?.ToString();
+
+            if (informationalVersion != null)
+            {
+                var parts = informationalVersion.Split('+');
+                var shortCommitHash = parts.Length > 1 ? parts[1].Substring(0, 7) : "n/a";
+                return $"{fullVersion}+{shortCommitHash}";
+            }
+
+            return fullVersion;
         }
     }
 }
