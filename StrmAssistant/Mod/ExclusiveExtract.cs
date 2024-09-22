@@ -1,10 +1,8 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using static StrmAssistant.Mod.PatchManager;
@@ -27,8 +25,7 @@ namespace StrmAssistant.Mod
             {
                 var embyProvidersManager = Assembly.Load("Emby.Providers");
                 var providerManager = embyProvidersManager.GetType("Emby.Providers.Manager.ProviderManager");
-                _canRefresh =
-                    providerManager.GetMethod("CanRefresh", BindingFlags.Static | BindingFlags.NonPublic);
+                _canRefresh = providerManager.GetMethod("CanRefresh", BindingFlags.Static | BindingFlags.NonPublic);
                 
                 _mediaEncodingAssembly = Assembly.Load("Emby.Server.MediaEncoding");
                 var mediaProbeManager =
@@ -166,23 +163,20 @@ namespace StrmAssistant.Mod
             timeoutMs = 60000 * Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
         }
 
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         private static bool CanRefreshPrefix(IMetadataProvider provider, BaseItem item, LibraryOptions libraryOptions,
-            bool includeDisabled, bool forceEnableInternetMetadata, bool ignoreMetadataLock)
+            bool includeDisabled, bool forceEnableInternetMetadata, bool ignoreMetadataLock, ref bool __result)
         {
-            if (item.IsShortcut)
-                return true;
+            if (item.Parent is null || !(provider is IPreRefreshProvider) || !(provider is ICustomMetadataProvider<Video>)) return true;
 
-            if (CurrentItem.Value != null && item.InternalId == CurrentItem.Value.InternalId)
-                return true;
+            if (CurrentItem.Value != null && CurrentItem.Value.InternalId == item.InternalId) return true;
 
-            var stackFrames = new StackTrace(1, false).GetFrames();
-            if (stackFrames != null && stackFrames.Select(f => f.GetMethod()).Any(m =>
-                    m?.DeclaringType?.Assembly == _mediaEncodingAssembly && m?.Name == "GetPlaybackInfo"))
-                return true;
-
-            if (provider is IPreRefreshProvider && provider is ICustomMetadataProvider<Video>)
+            if (item.DateLastRefreshed == DateTimeOffset.MinValue ||
+                Plugin.LibraryApi.HasMediaStream(item) && !Plugin.LibraryApi.HasFileChanged(item))
+            {
+                __result = false;
                 return false;
+            }
 
             return true;
         }

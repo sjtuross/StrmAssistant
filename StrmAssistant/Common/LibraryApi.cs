@@ -370,6 +370,19 @@ namespace StrmAssistant
 
             return users;
         }
+        
+        public bool HasFileChanged(BaseItem item)
+        {
+            if (item.IsFileProtocol)
+            {
+                var directoryService = new DirectoryService(_logger, _fileSystem);
+                var file = directoryService.GetFile(item.Path);
+                if (file != null && item.HasDateModifiedChanged(file.LastWriteTimeUtc))
+                    return true;
+            }
+
+            return false;
+        }
 
         public async Task ProbeMediaInfo(BaseItem item, CancellationToken cancellationToken)
         {
