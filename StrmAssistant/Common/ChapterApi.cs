@@ -318,8 +318,14 @@ namespace StrmAssistant
             return resultEpisodes;
         }
 
-        public void PopulateIntroCredits(List<Episode> episodes)
+        public void PopulateIntroCredits(List<Episode> incomingEpisodes)
         {
+            var episodesLatestDataQuery = new InternalItemsQuery
+            {
+                ItemIds = incomingEpisodes.Select(e => e.InternalId).ToArray()
+            };
+            var episodes = _libraryManager.GetItemList(episodesLatestDataQuery);
+
             var seasonIds = episodes.Select(e => e.ParentId).Distinct().ToArray();
 
             var episodesQuery = new InternalItemsQuery
