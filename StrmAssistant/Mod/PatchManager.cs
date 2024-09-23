@@ -1,8 +1,8 @@
 using HarmonyLib;
+using MediaBrowser.Common;
 using System;
 using System.Linq;
 using System.Reflection;
-using MediaBrowser.Common;
 
 namespace StrmAssistant.Mod
 {

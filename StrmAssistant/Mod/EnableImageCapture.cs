@@ -33,23 +33,23 @@ namespace StrmAssistant.Mod
 
             try
             {
-                var _mediaEncodingAssembly = Assembly.Load("Emby.Server.MediaEncoding");
-                var _imageExtractorBaseType =
-                    _mediaEncodingAssembly.GetType("Emby.Server.MediaEncoding.ImageExtraction.ImageExtractorBase");
+                var mediaEncodingAssembly = Assembly.Load("Emby.Server.MediaEncoding");
+                var imageExtractorBaseType =
+                    mediaEncodingAssembly.GetType("Emby.Server.MediaEncoding.ImageExtraction.ImageExtractorBase");
                 _staticConstructor =
-                    _imageExtractorBaseType.GetConstructor(BindingFlags.Static | BindingFlags.NonPublic, null,
+                    imageExtractorBaseType.GetConstructor(BindingFlags.Static | BindingFlags.NonPublic, null,
                         Type.EmptyTypes, null);
                 _resourcePoolField =
-                    _imageExtractorBaseType.GetField("resourcePool", BindingFlags.NonPublic | BindingFlags.Static);
+                    imageExtractorBaseType.GetField("resourcePool", BindingFlags.NonPublic | BindingFlags.Static);
                 _isShortcutGetter = typeof(BaseItem)
                     .GetProperty("IsShortcut", BindingFlags.Instance | BindingFlags.Public)
-                    .GetGetMethod();
+                    ?.GetGetMethod();
                 _isShortcutProperty =
                     typeof(BaseItem).GetProperty("IsShortcut", BindingFlags.Instance | BindingFlags.Public);
 
-                var _embyProvidersAssemby = Assembly.Load("Emby.Providers");
-                var _videoImageProvider = _embyProvidersAssemby.GetType("Emby.Providers.MediaInfo.VideoImageProvider");
-                _getImage = _videoImageProvider.GetMethod("GetImage", BindingFlags.Public | BindingFlags.Instance);
+                var embyProvidersAssembly = Assembly.Load("Emby.Providers");
+                var videoImageProvider = embyProvidersAssembly.GetType("Emby.Providers.MediaInfo.VideoImageProvider");
+                _getImage = videoImageProvider.GetMethod("GetImage", BindingFlags.Public | BindingFlags.Instance);
             }
             catch (Exception e)
             {
