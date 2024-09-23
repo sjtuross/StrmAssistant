@@ -140,4 +140,10 @@
   <data name="AboutOptions_EditorTitle_About" xml:space="preserve">
     <value>关于</value>
   </data>
+  <data name="IntroSkipOptions_UserScope_User_Scope" xml:space="preserve">
+    <value>允许的用户</value>
+  </data>
+  <data name="IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all" xml:space="preserve">
+    <value>允许的用户范围，留空包含所有用户。</value>
+  </data>
 </root>

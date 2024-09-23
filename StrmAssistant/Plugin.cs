@@ -83,7 +83,7 @@ namespace StrmAssistant
             _currentCatchupMode = GetOptions().GeneralOptions.CatchupMode;
             if (_currentCatchupMode) InitializeCatchupMode();
 
-            PlaySessionMonitor = new PlaySessionMonitor(libraryManager, sessionManager, itemRepository, userManager);
+            PlaySessionMonitor = new PlaySessionMonitor(libraryManager, userManager, sessionManager);
             _currentEnableIntroSkip = GetOptions().IntroSkipOptions.EnableIntroSkip;
             if (_currentEnableIntroSkip) PlaySessionMonitor.Initialize();
         }
@@ -292,8 +292,17 @@ namespace StrmAssistant
                         ?.Name));
             logger.Info("IntroSkip - LibraryScope is set to {0}",
                 string.IsNullOrEmpty(intoSkipLibraryScope) ? "ALL" : intoSkipLibraryScope);
-            PlaySessionMonitor.UpdateLibraryPaths();
+            PlaySessionMonitor.UpdateLibraryPathsInScope();
             
+            var introSkipUserScope= string.Join(", ",
+                options.IntroSkipOptions.UserScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(v => options.IntroSkipOptions.UserList
+                        .FirstOrDefault(option => option.Value == v)
+                        ?.Name));
+            logger.Info("IntroSkip - UserScope is set to {0}",
+                string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
+            PlaySessionMonitor.UpdateUsersInScope();
+
             base.OnOptionsSaved(options);
         }
 
@@ -392,6 +401,22 @@ namespace StrmAssistant
                     IconMode = ItemListIconMode.SmallRegular,
                     HyperLink = "https://github.com/sjtuross/StrmAssistant/wiki",
                 });
+
+            var allUsers = LibraryApi.AllUsers;
+            var userList = new List<EditorSelectOption>();
+            foreach (var user in allUsers)
+            {
+                var selectOption = new EditorSelectOption
+                {
+                    Value = user.Key.InternalId.ToString(),
+                    Name = (user.Value ? "\ud83d\udc51" : "\ud83d\udc64") + user.Key.Name,
+                    IsEnabled = true,
+                };
+
+                userList.Add(selectOption);
+            }
+
+            options.IntroSkipOptions.UserList = userList;
 
             return base.OnBeforeShowUI(options);
         }

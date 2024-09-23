@@ -1,9 +1,9 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Concurrent;
@@ -17,6 +17,7 @@ namespace StrmAssistant
     public class PlaySessionMonitor
     {
         private readonly ILibraryManager _libraryManager;
+        private readonly IUserManager _userManager;
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
 
@@ -32,18 +33,21 @@ namespace StrmAssistant
         private static Task _introSkipProcessTask;
 
         public static List<string> LibraryPathsInScope;
+        public static User[] UsersInScope;
 
-        public PlaySessionMonitor(ILibraryManager libraryManager, ISessionManager sessionManager,
-            IItemRepository itemRepository, IUserManager userManager)
+        public PlaySessionMonitor(ILibraryManager libraryManager, IUserManager userManager,
+            ISessionManager sessionManager)
         {
             _logger = Plugin.Instance.logger;
             _libraryManager = libraryManager;
+            _userManager = userManager;
             _sessionManager = sessionManager;
 
-            UpdateLibraryPaths();
+            UpdateLibraryPathsInScope();
+            UpdateUsersInScope();
         }
 
-        public void UpdateLibraryPaths()
+        public void UpdateLibraryPathsInScope()
         {
             var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope
                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
@@ -56,6 +60,27 @@ namespace StrmAssistant
                     ? ls
                     : ls + Path.DirectorySeparatorChar)
                 .ToList();
+        }
+
+        public void UpdateUsersInScope()
+        {
+            var userIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.UserScope
+                ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+            
+            var userQuery = new UserQuery
+            {
+                IsDisabled = false
+            };
+
+            if (userIds != null && userIds.Any())
+            {
+                userQuery.UserIds = userIds;
+                UsersInScope = _userManager.GetUserList(userQuery);
+            }
+            else
+            {
+                UsersInScope = Array.Empty<User>();
+            }
         }
 
         public void Initialize()
@@ -81,7 +106,7 @@ namespace StrmAssistant
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (IsInScope(e.Item))
+            if (IsLibraryInScope(e.Item))
             {
                 if (!Plugin.LibraryApi.HasMediaStream(e.Item))
                 {
@@ -224,8 +249,7 @@ namespace StrmAssistant
 
         private PlaySessionData GetPlaySessionData(PlaybackProgressEventArgs e)
         {
-            if (!IsInScope(e.Item)) return null;
-            //&& _userManager.GetUserById(e.Session.UserInternalId).Policy.IsAdministrator; //Admin only
+            if (!IsLibraryInScope(e.Item) || !IsUserInScope(e.Session.UserInternalId)) return null;
 
             var playSessionId = e.PlaySessionId;
             if (!_playSessionData.ContainsKey(playSessionId))
@@ -237,14 +261,24 @@ namespace StrmAssistant
             return playSessionData;
         }
 
-        public bool IsInScope(BaseItem item)
+        public bool IsLibraryInScope(BaseItem item)
         {
-            bool isEnable = item is Episode && (Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly ? item.IsShortcut : true);
+            var isEnable = item is Episode && (Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly ? item.IsShortcut : true);
             if (!isEnable) return false;
             
-            bool isInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
+            var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
 
-            return isInScope;
+            return isLibraryInScope;
+        }
+
+        public bool IsUserInScope(long userInternalId)
+        {
+            if (!UsersInScope.Any())
+                return true;
+
+            var isUserInScope = UsersInScope.Any(u => u.InternalId == userInternalId);
+
+            return isUserInScope;
         }
 
         private void UpdateIntroTask(Episode episode, SessionInfo session, long introStartPositionTicks,

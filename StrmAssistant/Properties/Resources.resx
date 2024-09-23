@@ -227,4 +227,10 @@
   <data name="AboutOptions_EditorTitle_About" xml:space="preserve">
     <value>About</value>
   </data>
+  <data name="IntroSkipOptions_UserScope_User_Scope" xml:space="preserve">
+    <value>Allowed Users</value>
+  </data>
+  <data name="IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all" xml:space="preserve">
+    <value>Users allowed to detect. Blank includes all users.</value>
+  </data>
 </root>

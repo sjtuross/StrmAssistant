@@ -39,7 +39,7 @@ namespace StrmAssistant
                                                                 ExtraType.ThemeSong,
                                                                 ExtraType.ThemeVideo,
                                                                 ExtraType.Trailer };
-        public static User[] AllUsers;
+        public static Dictionary<User, bool> AllUsers = new Dictionary<User, bool>();
 
         public LibraryApi(ILibraryManager libraryManager,
             IFileSystem fileSystem,
@@ -90,11 +90,16 @@ namespace StrmAssistant
 
         public void FetchUsers()
         {
-            UserQuery userQuery = new UserQuery
+            var userQuery = new UserQuery
             {
-                IsDisabled = false
+                IsDisabled = false,
             };
-            AllUsers = _userManager.GetUserList(userQuery);
+            var allUsers = _userManager.GetUserList(userQuery);
+
+            foreach (var user in allUsers)
+            {
+                AllUsers[user] = _userManager.GetUserById(user.InternalId).Policy.IsAdministrator;
+            }
         }
 
         public bool HasMediaStream(BaseItem item)
@@ -217,14 +222,14 @@ namespace StrmAssistant
             var favoritesWithExtra = Array.Empty<BaseItem>();
             if (libraryIds.Contains("-1"))
             {
-                var favorites = AllUsers.SelectMany(user => _libraryManager.GetItemList(new InternalItemsQuery
+                var favorites = AllUsers.Select(e => e.Key)
+                    .SelectMany(user => _libraryManager.GetItemList(new InternalItemsQuery
                     {
                         User = user,
                         IsFavorite = true,
                         HasPath = true,
                         MediaTypes = new[] { MediaType.Video, MediaType.Audio }
-                    }))
-                    .GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
+                    })).GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
 
                 favoritesWithExtra = favorites.Concat(includeExtra
                         ? favorites.SelectMany(f => f.GetExtras(extraType))
@@ -345,10 +350,10 @@ namespace StrmAssistant
 
         private List<BaseItem> FilterByFavorites(List<BaseItem> items)
         {
-            var movies = AllUsers
+            var movies = AllUsers.Select(e => e.Key)
                 .SelectMany(u => items.OfType<Movie>()
                 .Where(i => i.IsFavoriteOrLiked(u)));
-            var episodes = AllUsers
+            var episodes = AllUsers.Select(e => e.Key)
                 .SelectMany(u => items.OfType<Episode>()
                 .GroupBy(e => e.SeriesId)
                 .Where(g => g.Any(i => i.IsFavoriteOrLiked(u)) || g.First().Series.IsFavoriteOrLiked(u))
@@ -362,7 +367,7 @@ namespace StrmAssistant
 
         public List<User> GetUsersByFavorites(BaseItem item)
         {
-            var users = AllUsers.Where(u =>
+            var users = AllUsers.Select(e=>e.Key).Where(u =>
                 (item is Movie || item is Series) && item.IsFavoriteOrLiked(u) ||
                 item is Episode e && (e.IsFavoriteOrLiked(u) ||
                                             (e.Series != null && e.Series.IsFavoriteOrLiked(u)))

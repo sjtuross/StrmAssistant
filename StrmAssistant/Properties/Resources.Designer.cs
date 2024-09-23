@@ -144,6 +144,24 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allowed Users.
+        /// </summary>
+        public static string IntroSkipOptions_UserScope_User_Scope {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_UserScope_User_Scope", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Users allowed to detect. Blank includes all.
+        /// </summary>
+        public static string IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Customize MovieDb Fallback Language.
         /// </summary>
         public static string ModOptions_ChineseMovieDb_Chinese_MovieDb {
