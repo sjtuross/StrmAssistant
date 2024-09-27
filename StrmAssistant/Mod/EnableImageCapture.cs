@@ -21,6 +21,7 @@ namespace StrmAssistant.Mod
         private static MethodInfo _isShortcutGetter;
         private static PropertyInfo _isShortcutProperty;
         private static MethodInfo _getImage;
+        private static MethodInfo _runExtraction;
 
         private static AsyncLocal<BaseItem> CurrentItem { get; } = new AsyncLocal<BaseItem>();
         private static int _currentMaxConcurrentCount;
@@ -46,6 +47,8 @@ namespace StrmAssistant.Mod
                     ?.GetGetMethod();
                 _isShortcutProperty =
                     typeof(BaseItem).GetProperty("IsShortcut", BindingFlags.Instance | BindingFlags.Public);
+                _runExtraction =
+                    imageExtractorBaseType.GetMethod("RunExtraction", BindingFlags.Instance | BindingFlags.Public);
 
                 var embyProvidersAssembly = Assembly.Load("Emby.Providers");
                 var videoImageProvider = embyProvidersAssembly.GetType("Emby.Providers.MediaInfo.VideoImageProvider");
@@ -364,6 +367,51 @@ namespace StrmAssistant.Mod
             }
         }
 
+        public static void PatchFFmpegTimeout()
+        {
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
+            {
+                try
+                {
+                    if (!IsPatched(_runExtraction))
+                    {
+                        HarmonyMod.Patch(_runExtraction,
+                            prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("RunExtractionPrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch RunExtraction Success by Harmony");
+                    }
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Patch RunExtraction Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
+                }
+            }
+        }
+
+        public static void UnpatchFFmpegTimeout()
+        {
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
+            {
+                try
+                {
+                    if (IsPatched(_runExtraction))
+                    {
+                        HarmonyMod.Unpatch(_runExtraction, HarmonyPatchType.Prefix);
+                        Plugin.Instance.logger.Debug("Unpatch RunExtraction Success by Harmony");
+                    }
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Unpatch RunExtraction Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
+                }
+            }
+        }
+
         [HarmonyPrefix]
         private static bool ResourcePoolPrefix()
         {
@@ -413,6 +461,28 @@ namespace StrmAssistant.Mod
                 itemResult.MediaStreams = itemResult.MediaStreams
                     .Where(ms => ms.Type != MediaStreamType.EmbeddedImage)
                     .ToArray();
+            }
+
+            return true;
+        }
+
+        [HarmonyPrefix]
+        private static bool RunExtractionPrefix(object __instance)
+        {
+            var imageExtractor = __instance.GetType();
+
+            if (imageExtractor.Name == "QuickSingleImageExtractor")
+            {
+                var totalTimeoutMs =
+                    imageExtractor.GetProperty("TotalTimeoutMs",
+                        BindingFlags.Instance | BindingFlags.Public);
+
+                if (totalTimeoutMs != null)
+                {
+                    var newValue =
+                        60000 * Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
+                    totalTimeoutMs.SetValue(__instance, newValue);
+                }
             }
 
             return true;

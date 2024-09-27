@@ -29,7 +29,11 @@ namespace StrmAssistant
 
             var items = Plugin.LibraryApi.FetchExtractTaskItems();
 
-            if (items.Count > 0) ExclusiveExtract.PatchFFProbeTimeout();
+            if (items.Count > 0)
+            {
+                ExclusiveExtract.PatchFFProbeTimeout();
+                if (enableImageCapture) EnableImageCapture.PatchFFmpegTimeout();
+            }
 
             double total = items.Count;
             var index = 0;
@@ -101,7 +105,11 @@ namespace StrmAssistant
             }
             await Task.WhenAll(tasks);
 
-            if (items.Count > 0) ExclusiveExtract.UnpatchFFProbeTimeout();
+            if (items.Count > 0)
+            {
+                ExclusiveExtract.UnpatchFFProbeTimeout();
+                if (enableImageCapture) EnableImageCapture.UnpatchFFmpegTimeout();
+            }
 
             progress.Report(100.0);
             _logger.Info("MediaInfoExtract - Scheduled Task Complete");

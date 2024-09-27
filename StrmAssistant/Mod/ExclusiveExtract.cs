@@ -1,7 +1,9 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
+using MediaBrowser.Model.Entities;
 using System;
 using System.Reflection;
 using System.Threading;
@@ -9,12 +11,19 @@ using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
 {
+    public class RefreshContext
+    {
+        public BaseItem BaseItem { get; set; }
+        public MetadataRefreshOptions MetadataRefreshOptions { get; set; }
+    }
+
     public static class ExclusiveExtract
     {
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
 
         private static Assembly _mediaEncodingAssembly;
-        private static MethodInfo _canRefresh;
+        private static MethodInfo _canRefreshMetadata;
+        private static MethodInfo _canRefreshImage;
         private static MethodInfo _runFfProcess;
 
         private static MethodInfo _addVirtualFolder;
@@ -24,14 +33,29 @@ namespace StrmAssistant.Mod
 
         private static AsyncLocal<BaseItem> CurrentItem { get; } = new AsyncLocal<BaseItem>();
 
+        private static AsyncLocal<RefreshContext> CurrentRefreshContext { get; } = new AsyncLocal<RefreshContext>();
+
         public static void Initialize()
         {
             try
             {
-                var embyProvidersManager = Assembly.Load("Emby.Providers");
-                var providerManager = embyProvidersManager.GetType("Emby.Providers.Manager.ProviderManager");
-                _canRefresh = providerManager.GetMethod("CanRefresh", BindingFlags.Static | BindingFlags.NonPublic);
-                
+                var embyProviders = Assembly.Load("Emby.Providers");
+                var providerManager = embyProviders.GetType("Emby.Providers.Manager.ProviderManager");
+                _canRefreshMetadata = providerManager.GetMethod("CanRefresh",
+                    BindingFlags.Static | BindingFlags.NonPublic, null,
+                    new Type[]
+                    {
+                        typeof(IMetadataProvider), typeof(BaseItem), typeof(LibraryOptions), typeof(bool),
+                        typeof(bool), typeof(bool)
+                    }, null);
+                _canRefreshImage = providerManager.GetMethod("CanRefresh",
+                    BindingFlags.Instance | BindingFlags.NonPublic, null,
+                    new Type[]
+                    {
+                        typeof(IImageProvider), typeof(BaseItem), typeof(LibraryOptions),
+                        typeof(ImageRefreshOptions), typeof(bool), typeof(bool)
+                    }, null);
+
                 _mediaEncodingAssembly = Assembly.Load("Emby.Server.MediaEncoding");
                 var mediaProbeManager =
                     _mediaEncodingAssembly.GetType("Emby.Server.MediaEncoding.Probing.MediaProbeManager");
@@ -117,13 +141,21 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (!IsPatched(_canRefresh))
+                    if (!IsPatched(_canRefreshMetadata))
                     {
-                        HarmonyMod.Patch(_canRefresh,
-                            prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("CanRefreshPrefix",
+                        HarmonyMod.Patch(_canRefreshMetadata,
+                            prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("CanRefreshMetadataPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.logger.Debug(
-                            "Patch CanRefresh Success by Harmony");
+                            "Patch CanRefreshMetadata Success by Harmony");
+                    }
+                    if (!IsPatched(_canRefreshImage))
+                    {
+                        HarmonyMod.Patch(_canRefreshImage,
+                            prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("CanRefreshImagePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch CanRefreshImage Success by Harmony");
                     }
                     if (!IsPatched(_addVirtualFolder))
                     {
@@ -174,10 +206,15 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (IsPatched(_canRefresh))
+                    if (IsPatched(_canRefreshMetadata))
                     {
-                        HarmonyMod.Unpatch(_canRefresh, HarmonyPatchType.Prefix);
-                        Plugin.Instance.logger.Debug("Unpatch CanRefresh Success by Harmony");
+                        HarmonyMod.Unpatch(_canRefreshMetadata, HarmonyPatchType.Prefix);
+                        Plugin.Instance.logger.Debug("Unpatch CanRefreshMetadata Success by Harmony");
+                    }
+                    if (IsPatched(_canRefreshImage))
+                    {
+                        HarmonyMod.Unpatch(_canRefreshImage, HarmonyPatchType.Prefix);
+                        Plugin.Instance.logger.Debug("Unpatch CanRefreshImage Success by Harmony");
                     }
                     if (IsPatched(_addVirtualFolder))
                     {
@@ -232,15 +269,71 @@ namespace StrmAssistant.Mod
         }
 
         [HarmonyPrefix]
-        private static bool CanRefreshPrefix(IMetadataProvider provider, BaseItem item, LibraryOptions libraryOptions,
+        private static bool CanRefreshMetadataPrefix(IMetadataProvider provider, BaseItem item, LibraryOptions libraryOptions,
             bool includeDisabled, bool forceEnableInternetMetadata, bool ignoreMetadataLock, ref bool __result)
         {
             if (item.Parent is null || !(provider is IPreRefreshProvider) || !(provider is ICustomMetadataProvider<Video>)) return true;
 
             if (CurrentItem.Value != null && CurrentItem.Value.InternalId == item.InternalId) return true;
 
-            if (item.DateLastRefreshed == DateTimeOffset.MinValue ||
-                Plugin.LibraryApi.HasMediaStream(item) && !Plugin.LibraryApi.HasFileChanged(item))
+            if (item.DateLastRefreshed == DateTimeOffset.MinValue)
+            {
+                __result = false;
+                return false;
+            }
+
+            if (CurrentRefreshContext.Value != null &&
+                CurrentRefreshContext.Value.BaseItem.InternalId == item.InternalId &&
+                CurrentRefreshContext.Value.MetadataRefreshOptions.MetadataRefreshMode <= MetadataRefreshMode.Default &&
+                CurrentRefreshContext.Value.MetadataRefreshOptions.ImageRefreshMode <= MetadataRefreshMode.Default)
+            {
+                __result = false;
+                return false;
+            }
+
+            if (!item.IsShortcut && CurrentRefreshContext.Value != null &&
+                CurrentRefreshContext.Value.MetadataRefreshOptions.ReplaceAllImages) return true;
+
+            if (Plugin.LibraryApi.HasMediaStream(item) && !Plugin.LibraryApi.HasFileChanged(item))
+            {
+                __result = false;
+                return false;
+            }
+
+            return true;
+        }
+
+        [HarmonyPrefix]
+        private static bool CanRefreshImagePrefix(IImageProvider provider, BaseItem item, LibraryOptions libraryOptions,
+            ImageRefreshOptions refreshOptions, bool ignoreMetadataLock, bool ignoreLibraryOptions, ref bool __result)
+        {
+            if (item.Parent is null || !provider.Supports(item) || !(item is Video)) return true;
+
+            if (CurrentItem.Value != null && CurrentItem.Value.InternalId == item.InternalId) return true;
+
+            if (item.DateLastRefreshed == DateTimeOffset.MinValue) return true;
+
+            if (CurrentRefreshContext.Value == null && refreshOptions is MetadataRefreshOptions options)
+            {
+                CurrentRefreshContext.Value = new RefreshContext
+                {
+                    BaseItem = item,
+                    MetadataRefreshOptions = options
+                };
+            }
+
+            if (!item.IsShortcut && provider is IDynamicImageProvider &&
+                provider.GetType().Name == "VideoImageProvider" && refreshOptions is MetadataRefreshOptions &&
+                !refreshOptions.ReplaceAllImages &&
+                item is Episode && item.HasImage(ImageType.Primary))
+            {
+                __result = false;
+                return false;
+            }
+
+            if (item.IsShortcut && (provider is ILocalImageProvider || provider is IRemoteImageProvider) &&
+                refreshOptions is MetadataRefreshOptions && !refreshOptions.ReplaceAllImages && item is Episode &&
+                item.HasImage(ImageType.Primary))
             {
                 __result = false;
                 return false;
