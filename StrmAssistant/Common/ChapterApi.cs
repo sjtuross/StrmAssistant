@@ -273,8 +273,7 @@ namespace StrmAssistant
         public List<Episode> SeasonHasIntroCredits(List<Episode> episodes)
         {
             var episodesInScope = episodes
-                .Where(e => PlaySessionMonitor.LibraryPathsInScope.Any(p => e.ContainingFolderPath.StartsWith(p)))
-                .ToList();
+                .Where(e => Plugin.PlaySessionMonitor.IsLibraryInScope(e)).ToList();
 
             var seasonIds = episodesInScope.Select(e => e.ParentId).Distinct().ToArray();
 

@@ -1,4 +1,4 @@
-using HarmonyLib;
+﻿using HarmonyLib;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
@@ -287,6 +287,9 @@ namespace StrmAssistant.Mod
                 CurrentRefreshContext.Value.MetadataRefreshOptions.MetadataRefreshMode <= MetadataRefreshMode.Default &&
                 CurrentRefreshContext.Value.MetadataRefreshOptions.ImageRefreshMode <= MetadataRefreshMode.Default)
             {
+                if (Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
+                    QueueManager.ExternalSubtitleItemQueue.Enqueue(item);
+
                 __result = false;
                 return false;
             }
@@ -296,6 +299,9 @@ namespace StrmAssistant.Mod
 
             if (Plugin.LibraryApi.HasMediaStream(item) && !Plugin.LibraryApi.HasFileChanged(item))
             {
+                if (Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
+                    QueueManager.ExternalSubtitleItemQueue.Enqueue(item);
+
                 __result = false;
                 return false;
             }

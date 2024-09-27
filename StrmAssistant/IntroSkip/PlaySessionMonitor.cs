@@ -90,32 +90,10 @@ namespace StrmAssistant
             _sessionManager.PlaybackStart += OnPlaybackStart;
             _sessionManager.PlaybackProgress += OnPlaybackProgress;
             _sessionManager.PlaybackStopped += OnPlaybackStopped;
-            _libraryManager.ItemAdded += OnItemAdded;
 
             if (_introSkipProcessTask == null || _introSkipProcessTask.IsCompleted)
             {
                 _introSkipProcessTask = Task.Run(() => QueueManager.IntroSkip_ProcessItemQueueAsync());
-            }
-
-            if (QueueManager.MediaInfoExtractProcessTask == null || QueueManager.MediaInfoExtractProcessTask.IsCompleted)
-            {
-                QueueManager.MediaInfoExtractProcessTask =
-                    Task.Run(() => QueueManager.MediaInfoExtract_ProcessItemQueueAsync());
-            }
-        }
-
-        private void OnItemAdded(object sender, ItemChangeEventArgs e)
-        {
-            if (IsLibraryInScope(e.Item))
-            {
-                if (!Plugin.LibraryApi.HasMediaStream(e.Item))
-                {
-                    QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
-                }
-                else
-                {
-                    QueueManager.IntroSkipItemQueue.Enqueue(e.Item as Episode);
-                }
             }
         }
 
@@ -372,7 +350,6 @@ namespace StrmAssistant
             _sessionManager.PlaybackStart -= OnPlaybackStart;
             _sessionManager.PlaybackProgress -= OnPlaybackProgress;
             _sessionManager.PlaybackStopped -= OnPlaybackStopped;
-            _libraryManager.ItemAdded -= OnItemAdded;
             if (QueueManager.IntroSkipTokenSource != null) QueueManager.IntroSkipTokenSource.Cancel();
         }
     }

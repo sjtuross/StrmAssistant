@@ -4,13 +4,16 @@ using Emby.Web.GenericEdit.Elements.List;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
@@ -21,7 +24,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
@@ -31,6 +33,7 @@ namespace StrmAssistant
         public static LibraryApi LibraryApi { get; private set; }
         public static ChapterApi ChapterApi { get; private set; }
         public static NotificationApi NotificationApi { get; private set; }
+        public static SubtitleApi SubtitleApi { get; private set; }
         public static PlaySessionMonitor PlaySessionMonitor { get; private set; }
 
         private readonly Guid _id = new Guid("63c322b7-a371-41a3-b11f-04f8418b37d8");
@@ -56,6 +59,8 @@ namespace StrmAssistant
             IItemRepository itemRepository,
             INotificationManager notificationManager,
             IMediaSourceManager mediaSourceManager,
+            IMediaProbeManager mediaProbeManager,
+            ILocalizationManager localizationManager,
             IUserManager userManager,
             IUserDataManager userDataManager) : base(applicationHost)
         {
@@ -63,51 +68,39 @@ namespace StrmAssistant
             logger = logManager.GetLogger(Name);
             logger.Info("Plugin is getting loaded.");
 
-            _currentMaxConcurrentCount = GetOptions().MediaInfoExtractOptions.MaxConcurrentCount;
-            QueueManager.Initialize();
-
-            _currentEnableImageCapture= GetOptions().MediaInfoExtractOptions.EnableImageCapture;
-            _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
-            _currentChineseMovieDb = GetOptions().ModOptions.ChineseMovieDb;
-            _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
-            PatchManager.Initialize(applicationHost);
-
             _libraryManager = libraryManager;
             _userManager = userManager;
             _userDataManager = userDataManager;
 
+            _currentMaxConcurrentCount = GetOptions().MediaInfoExtractOptions.MaxConcurrentCount;
+            _currentEnableImageCapture = GetOptions().MediaInfoExtractOptions.EnableImageCapture;
+            _currentCatchupMode = GetOptions().GeneralOptions.CatchupMode;
+            _currentEnableIntroSkip = GetOptions().IntroSkipOptions.EnableIntroSkip;
+            _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
+            _currentChineseMovieDb = GetOptions().ModOptions.ChineseMovieDb;
+            _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
+
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
-            NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
-
-            _currentCatchupMode = GetOptions().GeneralOptions.CatchupMode;
-            if (_currentCatchupMode) InitializeCatchupMode();
-
             PlaySessionMonitor = new PlaySessionMonitor(libraryManager, userManager, sessionManager);
-            _currentEnableIntroSkip = GetOptions().IntroSkipOptions.EnableIntroSkip;
-            if (_currentEnableIntroSkip) PlaySessionMonitor.Initialize();
-        }
+            NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
+            SubtitleApi = new SubtitleApi(libraryManager, fileSystem, mediaProbeManager, localizationManager,
+                itemRepository);
 
-        public void Dispose()
-        {
-            DisposeCatchupMode();
-            PlaySessionMonitor.Dispose();
+            PatchManager.Initialize(applicationHost);
+            if (_currentCatchupMode) InitializeCatchupMode();
+            if (_currentEnableIntroSkip) PlaySessionMonitor.Initialize();
+            QueueManager.Initialize();
+            _libraryManager.ItemAdded += OnItemAdded;
         }
 
         private void InitializeCatchupMode()
         {
             DisposeCatchupMode();
 
-            _libraryManager.ItemAdded += OnItemAdded;
             _userDataManager.UserDataSaved += OnUserDataSaved;
             _userManager.UserCreated += OnUserCreated;
             _userManager.UserDeleted += OnUserDeleted;
-
-            if (QueueManager.MediaInfoExtractProcessTask == null || QueueManager.MediaInfoExtractProcessTask.IsCompleted)
-            {
-                QueueManager.MediaInfoExtractProcessTask =
-                    Task.Run(() => QueueManager.MediaInfoExtract_ProcessItemQueueAsync());
-            }
         }
 
         private void DisposeCatchupMode()
@@ -130,10 +123,11 @@ namespace StrmAssistant
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (_currentExclusiveExtract || e.Item.IsShortcut)
-            {
+            if ((_currentCatchupMode || _currentEnableIntroSkip) && (_currentExclusiveExtract || e.Item.IsShortcut))
                 QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
-            }
+
+            if (_currentEnableIntroSkip && PlaySessionMonitor.IsLibraryInScope(e.Item) &&
+                LibraryApi.HasMediaStream(e.Item)) QueueManager.IntroSkipItemQueue.Enqueue(e.Item as Episode);
 
             NotificationApi.FavoritesUpdateSendNotification(e.Item);
         }
@@ -271,11 +265,6 @@ namespace StrmAssistant
                 {
                     PlaySessionMonitor.Dispose();
                 }
-            }
-
-            if (!_currentCatchupMode && !_currentEnableIntroSkip)
-            {
-                if (QueueManager.MediaInfoExtractTokenSource != null) QueueManager.MediaInfoExtractTokenSource.Cancel();
             }
 
             var libraryScope = string.Join(", ",
