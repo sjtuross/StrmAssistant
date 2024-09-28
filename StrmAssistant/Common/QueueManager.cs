@@ -174,9 +174,8 @@ namespace StrmAssistant
                             {
                                 try
                                 {
-                                    await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem,
-                                        LibraryApi.MediaInfoRefreshOptions,
-                                        cancellationToken).ConfigureAwait(false);
+                                    await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
+                                        .ConfigureAwait(false);
 
                                     _logger.Info("ExternalSubtitle - Item Processed: " + taskItem.Name + " - " + taskItem.Path);
                                 }

@@ -90,10 +90,10 @@ namespace StrmAssistant
             return false;
         }
 
-        public async Task UpdateExternalSubtitles(BaseItem item, MetadataRefreshOptions options,
-            CancellationToken cancellationToken)
+        public async Task UpdateExternalSubtitles(BaseItem item, CancellationToken cancellationToken)
         {
             var directoryService = new DirectoryService(_logger, _fileSystem);
+            var refreshOptions = LibraryApi.MediaInfoRefreshOptions;
             var namingOptions = _libraryManager.GetNamingOptions();
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
             var currentStreams = item.GetMediaStreams()
@@ -112,7 +112,7 @@ namespace StrmAssistant
                         if (UpdateExternalSubtitleStream.Invoke(FFProbeSubtitleInfo,
                                 new object[]
                                 {
-                                    item, subtitleStream, options, libraryOptions, cancellationToken
+                                    item, subtitleStream, refreshOptions, libraryOptions, cancellationToken
                                 }) is Task<bool> subtitleTask && !await subtitleTask.ConfigureAwait(false))
                         {
                             _logger.Warn("No result when probing external subtitle file: {0}",
@@ -126,6 +126,82 @@ namespace StrmAssistant
                 currentStreams.AddRange(externalSubtitleStreams);
                 _itemRepository.SaveMediaStreams(item.InternalId, currentStreams, cancellationToken);
             }
+        }
+
+        public List<BaseItem> FetchScanTaskItems()
+        {
+            var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            var libraries = _libraryManager.GetVirtualFolders()
+                .Where(f => !libraryIds.Any() || libraryIds.Contains(f.Id)).ToList();
+            _logger.Info("MediaInfoExtract - LibraryScope: " +
+                         (libraryIds.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
+            var includeExtra = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.IncludeExtra;
+            _logger.Info("Include Extra: " + includeExtra);
+            var strmOnly = Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly;
+            _logger.Info("Strm Only: " + strmOnly);
+
+            var favoritesWithExtra = new List<BaseItem>();
+            if (libraryIds.Contains("-1"))
+            {
+                var favorites = LibraryApi.AllUsers.Select(e => e.Key)
+                    .SelectMany(user => _libraryManager.GetItemList(new InternalItemsQuery
+                    {
+                        User = user,
+                        IsFavorite = true
+                    })).GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
+
+                var expanded = Plugin.LibraryApi.ExpandFavorites(favorites, false);
+
+                favoritesWithExtra = expanded
+                    .Concat(includeExtra
+                        ? expanded.SelectMany(f => f.GetExtras(LibraryApi.IncludeExtraType))
+                        : Enumerable.Empty<BaseItem>())
+                    .Where(Plugin.LibraryApi.HasMediaStream)
+                    .ToList();
+            }
+
+            var itemsWithExtras = new List<BaseItem>();
+            if (!libraryIds.Any() || libraryIds.Any(id => id != "-1"))
+            {
+                var itemsQuery = new InternalItemsQuery
+                {
+                    HasPath = true,
+                    HasAudioStream = true,
+                    MediaTypes = new[] { MediaType.Video }
+                };
+
+                if (libraryIds.Any(id => id != "-1") && libraries.Any())
+                {
+                    itemsQuery.PathStartsWithAny = libraries.SelectMany(l => l.Locations).Select(ls =>
+                        ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                            ? ls
+                            : ls + Path.DirectorySeparatorChar).ToArray();
+                }
+
+                itemsWithExtras = _libraryManager.GetItemList(itemsQuery).ToList();
+
+                if (includeExtra)
+                {
+                    itemsQuery.ExtraTypes = LibraryApi.IncludeExtraType;
+                    itemsWithExtras = _libraryManager.GetItemList(itemsQuery).Concat(itemsWithExtras).ToList();
+                }
+            }
+
+            var combined = favoritesWithExtra.Concat(itemsWithExtras)
+                .Where(i => !strmOnly || i.IsShortcut)
+                .GroupBy(i => i.InternalId)
+                .Select(g => g.First())
+                .ToList();
+
+            var results = Plugin.LibraryApi.OrderUnprocessed(combined);
+
+            return results;
+        }
+
+        private List<BaseItem> FilterUnprocessed(List<BaseItem> items)
+        {
+            return items.Where(HasExternalSubtitleChanged).ToList();
         }
     }
 }

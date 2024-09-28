@@ -54,8 +54,7 @@ namespace StrmAssistant
                     current++;
                     _logger.Info("IntroSkip - Clear Task " + current + "/" + total + " - " + item.Path);
 
-                    // Optional: Add a small delay to allow for cancellation and responsiveness
-                    Task.Delay(10).Wait(); // 10ms delay
+                    Task.Delay(10).Wait();
                 }
             }, cancellationToken);
 

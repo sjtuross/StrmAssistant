@@ -29,7 +29,7 @@ namespace StrmAssistant
         public static MetadataRefreshOptions MediaInfoRefreshOptions;
         public static MetadataRefreshOptions ImageCaptureRefreshOptions;
         public static MetadataRefreshOptions FullRefreshOptions;
-        public static ExtraType[] extraType = { ExtraType.AdditionalPart,
+        public static ExtraType[] IncludeExtraType = { ExtraType.AdditionalPart,
                                                                 ExtraType.BehindTheScenes,
                                                                 ExtraType.Clip,
                                                                 ExtraType.DeletedScene,
@@ -160,7 +160,7 @@ namespace StrmAssistant
             resultItems = resultItems.GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
 
             var unprocessedItems = FilterUnprocessed(resultItems
-                .Concat(includeExtra ? resultItems.SelectMany(f => f.GetExtras(extraType)) : Enumerable.Empty<BaseItem>())
+                .Concat(includeExtra ? resultItems.SelectMany(f => f.GetExtras(IncludeExtraType)) : Enumerable.Empty<BaseItem>())
                 .ToList());
             var orderedItems = OrderUnprocessed(unprocessedItems);
 
@@ -190,13 +190,13 @@ namespace StrmAssistant
                     .SelectMany(user => _libraryManager.GetItemList(new InternalItemsQuery
                     {
                         User = user,
-                        IsFavorite = true,
+                        IsFavorite = true
                     })).GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
 
                 var expanded = ExpandFavorites(favorites, false);
 
                 favoritesWithExtra = expanded.Concat(includeExtra
-                        ? expanded.SelectMany(f => f.GetExtras(extraType))
+                        ? expanded.SelectMany(f => f.GetExtras(IncludeExtraType))
                         : Enumerable.Empty<BaseItem>())
                     .ToArray();
             }
@@ -227,7 +227,7 @@ namespace StrmAssistant
                 {
                     IncludeItemTypes = new[] { "Movie", "Episode" },
                     HasPath = true,
-                    MediaTypes = new[] { MediaType.Video },
+                    MediaTypes = new[] { MediaType.Video }
                 };
 
                 if (enableImageCapture && librariesWithImageCapture.Any())
@@ -250,12 +250,12 @@ namespace StrmAssistant
 
                 if (includeExtra)
                 {
-                    itemsMediaInfoQuery.ExtraTypes = extraType;
+                    itemsMediaInfoQuery.ExtraTypes = IncludeExtraType;
                     var extrasMediaInfo = _libraryManager.GetItemList(itemsMediaInfoQuery);
 
                     if (enableImageCapture && librariesWithImageCapture.Any())
                     {
-                        itemsImageCaptureQuery.ExtraTypes = extraType;
+                        itemsImageCaptureQuery.ExtraTypes = IncludeExtraType;
                         var extrasImageCapture = _libraryManager.GetItemList(itemsImageCaptureQuery);
                         extras = extrasImageCapture.Concat(extrasMediaInfo).GroupBy(i => i.InternalId)
                             .Select(g => g.First()).ToArray();
@@ -275,7 +275,7 @@ namespace StrmAssistant
             return results;
         }
 
-        private List<BaseItem> OrderUnprocessed(List<BaseItem> items)
+        public List<BaseItem> OrderUnprocessed(List<BaseItem> items)
         {
             var results = items.OrderBy(i => i.ExtraType == null ? 0 : 1)
                 .ThenByDescending(i =>
@@ -313,7 +313,7 @@ namespace StrmAssistant
             return results;
         }
 
-        private List<BaseItem> ExpandFavorites(List<BaseItem> items, bool filterNeeded)
+        public List<BaseItem> ExpandFavorites(List<BaseItem> items, bool filterNeeded)
         {
             var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
 
