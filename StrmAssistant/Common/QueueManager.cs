@@ -73,7 +73,7 @@ namespace StrmAssistant
                     catch
                     {
                         break;
-                    }                    
+                    }
                 }
 
                 if (!MediaInfoExtractItemQueue.IsEmpty || !ExternalSubtitleItemQueue.IsEmpty)

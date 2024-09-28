@@ -123,11 +123,22 @@ namespace StrmAssistant
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if ((_currentCatchupMode || _currentEnableIntroSkip) && (_currentExclusiveExtract || e.Item.IsShortcut))
+            if (_currentCatchupMode && (_currentExclusiveExtract || e.Item.IsShortcut))
+            {
                 QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+            }
 
-            if (_currentEnableIntroSkip && PlaySessionMonitor.IsLibraryInScope(e.Item) &&
-                LibraryApi.HasMediaStream(e.Item)) QueueManager.IntroSkipItemQueue.Enqueue(e.Item as Episode);
+            if (_currentEnableIntroSkip && PlaySessionMonitor.IsLibraryInScope(e.Item))
+            {
+                if (!LibraryApi.HasMediaStream(e.Item))
+                {
+                    QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+                }
+                else
+                {
+                    QueueManager.IntroSkipItemQueue.Enqueue(e.Item as Episode);
+                }
+            }
 
             NotificationApi.FavoritesUpdateSendNotification(e.Item);
         }

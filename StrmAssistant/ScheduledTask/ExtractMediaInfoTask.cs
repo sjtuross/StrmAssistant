@@ -1,4 +1,5 @@
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
@@ -25,6 +26,8 @@ namespace StrmAssistant
             _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount);
             var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
             _logger.Info("Enable Image Capture: " + enableImageCapture);
+            var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
+            _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
             var exclusiveExtract = Plugin.Instance.GetPluginOptions().ModOptions.ExclusiveExtract;
 
             var items = Plugin.LibraryApi.FetchExtractTaskItems();
@@ -78,6 +81,14 @@ namespace StrmAssistant
                         else
                         {
                             await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken).ConfigureAwait(false);
+                        }
+
+                        if (enableIntroSkip && Plugin.PlaySessionMonitor.IsLibraryInScope(taskItem))
+                        {
+                            if (taskItem is Episode episode && Plugin.ChapterApi.SeasonHasIntroCredits(episode))
+                            {
+                                QueueManager.IntroSkipItemQueue.Enqueue(episode);
+                            }
                         }
                     }
                     catch (TaskCanceledException)

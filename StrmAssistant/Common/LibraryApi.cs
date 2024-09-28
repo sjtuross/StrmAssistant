@@ -118,74 +118,37 @@ namespace StrmAssistant
             _logger.Info("Include Favorites: " + includeFavorites);
 
             var includeExtra = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.IncludeExtra;
-            var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
+            var catchupMode=Plugin.Instance.GetPluginOptions().GeneralOptions.CatchupMode;
             var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
 
             var resultItems = new List<BaseItem>();
 
-            if (includeFavorites)
+            if (catchupMode)
             {
-                var movies = items.OfType<Movie>().Cast<BaseItem>().ToList();
+                if (includeFavorites) resultItems = ExpandFavorites(items, true);
 
-                var seriesIds = items.OfType<Series>().Select(s => s.InternalId)
-                    .Union(items.OfType<Episode>().Select(e => e.SeriesId)).ToArray();
+                var incomingItems = items.OfType<Movie>().Cast<BaseItem>().Concat(items.OfType<Episode>()).ToList();
 
-                var episodes = Array.Empty<BaseItem>();
-                if (seriesIds.Length > 0)
-                {
-                    var episodesMediaInfoQuery = new InternalItemsQuery
-                    {
-                        HasPath = true,
-                        HasAudioStream = false,
-                        MediaTypes = new[] { MediaType.Video },
-                        Recursive = true,
-                        AncestorIds = seriesIds
-                    };
-                    var episodesMediaInfo = _libraryManager.GetItemList(episodesMediaInfoQuery);
-
-                    if (enableImageCapture)
-                    {
-                        var episodesImageCaptureQuery = new InternalItemsQuery
-                        {
-                            HasPath = true,
-                            MediaTypes = new[] { MediaType.Video },
-                            Recursive = true,
-                            AncestorIds = seriesIds
-                        };
-                        var episodesImageCapture = _libraryManager.GetItemList(episodesImageCaptureQuery)
-                            .Where(i => !i.HasImage(ImageType.Primary)).ToList();
-                        episodes = episodesMediaInfo.Concat(episodesImageCapture).GroupBy(i => i.InternalId)
-                            .Select(g => g.First()).ToArray();
-                    }
-                    else
-                    {
-                        episodes = episodesMediaInfo;
-                    }
-                }
-                resultItems = FilterByFavorites(movies.Concat(episodes).ToList());
-            }
-
-            var incomingItems = items.OfType<Movie>().Cast<BaseItem>().Concat(items.OfType<Episode>()).ToList();
-
-            var libraryPathsInScope = _libraryManager.GetVirtualFolders()
-                .Where(f => libraryIds == null || !libraryIds.Any() || libraryIds.Contains(f.Id))
-                .SelectMany(l => l.Locations)
-                .Select(ls => ls.EndsWith(Path.DirectorySeparatorChar.ToString())
-                    ? ls
-                    : ls + Path.DirectorySeparatorChar)
-                .ToList();
-
-            if (libraryIds == null || !libraryIds.Any())
-            {
-                resultItems = resultItems.Concat(incomingItems).ToList();
-            }
-
-            if (libraryIds != null && libraryIds.Any(id => id != "-1") && libraryPathsInScope.Any())
-            {
-                var filteredItems = incomingItems
-                    .Where(i => libraryPathsInScope.Any(p => i.ContainingFolderPath.StartsWith(p)))
+                var libraryPathsInScope = _libraryManager.GetVirtualFolders()
+                    .Where(f => libraryIds == null || !libraryIds.Any() || libraryIds.Contains(f.Id))
+                    .SelectMany(l => l.Locations)
+                    .Select(ls => ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                        ? ls
+                        : ls + Path.DirectorySeparatorChar)
                     .ToList();
-                resultItems = resultItems.Concat(filteredItems).ToList();
+
+                if (libraryIds == null || !libraryIds.Any())
+                {
+                    resultItems = resultItems.Concat(incomingItems).ToList();
+                }
+
+                if (libraryIds != null && libraryIds.Any(id => id != "-1") && libraryPathsInScope.Any())
+                {
+                    var filteredItems = incomingItems
+                        .Where(i => libraryPathsInScope.Any(p => i.ContainingFolderPath.StartsWith(p)))
+                        .ToList();
+                    resultItems = resultItems.Concat(filteredItems).ToList();
+                }
             }
 
             if (enableIntroSkip)
@@ -212,6 +175,7 @@ namespace StrmAssistant
                 .Where(f => !libraryIds.Any() || libraryIds.Contains(f.Id)).ToList();
             var librariesWithImageCapture = libraries.Where(l =>
                 l.LibraryOptions.TypeOptions.Any(t => t.ImageFetchers.Contains("Image Capture"))).ToList();
+
             _logger.Info("MediaInfoExtract - LibraryScope: " +
                          (libraryIds.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
 
@@ -227,18 +191,19 @@ namespace StrmAssistant
                     {
                         User = user,
                         IsFavorite = true,
-                        HasPath = true,
-                        MediaTypes = new[] { MediaType.Video, MediaType.Audio }
                     })).GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
 
-                favoritesWithExtra = favorites.Concat(includeExtra
-                        ? favorites.SelectMany(f => f.GetExtras(extraType))
+                var expanded = ExpandFavorites(favorites, false);
+
+                favoritesWithExtra = expanded.Concat(includeExtra
+                        ? expanded.SelectMany(f => f.GetExtras(extraType))
                         : Enumerable.Empty<BaseItem>())
                     .ToArray();
             }
 
             var items = Array.Empty<BaseItem>();
             var extras = Array.Empty<BaseItem>();
+
             if (!libraryIds.Any() || libraryIds.Any(id => id != "-1"))
             {
                 var itemsMediaInfoQuery = new InternalItemsQuery
@@ -346,6 +311,52 @@ namespace StrmAssistant
             _logger.Info("MediaInfoExtract - Number of items: " + results.Count);
 
             return results;
+        }
+
+        private List<BaseItem> ExpandFavorites(List<BaseItem> items, bool filterNeeded)
+        {
+            var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
+
+            var movies = items.OfType<Movie>().Cast<BaseItem>().ToList();
+
+            var seriesIds = items.OfType<Series>().Select(s => s.InternalId)
+                .Union(items.OfType<Episode>().Select(e => e.SeriesId)).ToArray();
+
+            var episodes = Array.Empty<BaseItem>();
+            if (seriesIds.Length > 0)
+            {
+                var episodesMediaInfoQuery = new InternalItemsQuery
+                {
+                    HasPath = true,
+                    HasAudioStream = false,
+                    MediaTypes = new[] { MediaType.Video },
+                    Recursive = true,
+                    AncestorIds = seriesIds
+                };
+                var episodesMediaInfo = _libraryManager.GetItemList(episodesMediaInfoQuery);
+
+                if (enableImageCapture)
+                {
+                    var episodesImageCaptureQuery = new InternalItemsQuery
+                    {
+                        HasPath = true,
+                        MediaTypes = new[] { MediaType.Video },
+                        Recursive = true,
+                        AncestorIds = seriesIds
+                    };
+                    var episodesImageCapture = _libraryManager.GetItemList(episodesImageCaptureQuery)
+                        .Where(i => !i.HasImage(ImageType.Primary)).ToList();
+                    episodes = episodesMediaInfo.Concat(episodesImageCapture).GroupBy(i => i.InternalId)
+                        .Select(g => g.First()).ToArray();
+                }
+                else
+                {
+                    episodes = episodesMediaInfo;
+                }
+            }
+
+            var combined = movies.Concat(episodes).ToList();
+            return filterNeeded ? FilterByFavorites(combined) : combined;
         }
 
         private List<BaseItem> FilterByFavorites(List<BaseItem> items)

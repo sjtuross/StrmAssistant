@@ -271,18 +271,18 @@ namespace StrmAssistant
 
             var allEpisodesInSeason = _libraryManager.GetItemList(query);
 
-            bool meetsCriteria = allEpisodesInSeason
+            var result = allEpisodesInSeason
                 .Any(e =>
                 {
                     var chapters = _itemRepository.GetChapters(e);
-                    bool hasIntroMarkers = chapters.Any(c => c.MarkerType == MarkerType.IntroStart) &&
-                                           chapters.Any(c => c.MarkerType == MarkerType.IntroEnd);
-                    bool hasCreditsStart = chapters.Any(c => c.MarkerType == MarkerType.CreditsStart);
+                    var hasIntroMarkers = chapters.Any(c => c.MarkerType == MarkerType.IntroStart) &&
+                                          chapters.Any(c => c.MarkerType == MarkerType.IntroEnd);
+                    var hasCreditsStart = chapters.Any(c => c.MarkerType == MarkerType.CreditsStart);
 
                     return hasIntroMarkers || hasCreditsStart;
                 });
 
-            return meetsCriteria;
+            return result;
         }
 
         public List<Episode> SeasonHasIntroCredits(List<Episode> episodes)
