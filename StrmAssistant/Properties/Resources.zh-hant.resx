@@ -45,10 +45,10 @@
     <value>僅處理Strm</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Enable_Image_Capture" xml:space="preserve">
-    <value>啟用影片截圖</value>
+    <value>影片截圖增強</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
-    <value>對缺少封面元資料的影片做影片截圖，預設關閉。</value>
+    <value>魔改支援Strm影片截圖，跳過內嵌封面，預設關閉。</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
     <value>啟用跳片頭功能</value>

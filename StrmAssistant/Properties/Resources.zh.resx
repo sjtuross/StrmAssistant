@@ -45,10 +45,10 @@
     <value>媒体库范围，留空包含所有。</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Enable_Image_Capture" xml:space="preserve">
-    <value>启用视频截图</value>
+    <value>视频截图增强</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
-    <value>对缺失封面元数据的视频做视频截图，默认关闭。</value>
+    <value>魔改支持Strm视频截图，跳过内嵌封面，默认关闭。</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
     <value>启用跳片头功能</value>
