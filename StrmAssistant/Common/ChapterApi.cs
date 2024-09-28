@@ -30,10 +30,25 @@ namespace StrmAssistant
             return _itemRepository.GetChapters(item)
                 .Any(c => c.MarkerType == MarkerType.IntroStart || c.MarkerType == MarkerType.IntroEnd);
         }
+
+        public long? GetIntroEnd(BaseItem item)
+        {
+            var introEnd = _itemRepository.GetChapters(item)
+                .FirstOrDefault(c => c.MarkerType == MarkerType.IntroEnd);
+            return introEnd?.StartPositionTicks;
+        }
+
         public bool HasCredits(BaseItem item)
         {
             return _itemRepository.GetChapters(item)
                 .Any(c => c.MarkerType is MarkerType.CreditsStart);
+        }
+
+        public long? GetCreditsStart(BaseItem item)
+        {
+            var creditsStart = _itemRepository.GetChapters(item)
+                .FirstOrDefault(c => c.MarkerType == MarkerType.CreditsStart);
+            return creditsStart?.StartPositionTicks;
         }
 
         public void UpdateIntro(Episode item, SessionInfo session, long introStartPositionTicks,
