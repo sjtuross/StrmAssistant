@@ -26,7 +26,7 @@
     <PackageReference Include="System.Memory" Version="4.5.5">
       <Aliases>SystemMemory</Aliases>
     </PackageReference>
-    <PackageReference Include="System.Text.Json" Version="6.0.9" />
+    <PackageReference Include="System.Text.Json" Version="4.7.2" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

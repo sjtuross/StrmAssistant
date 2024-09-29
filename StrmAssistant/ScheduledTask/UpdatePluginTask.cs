@@ -59,14 +59,17 @@ namespace StrmAssistant
 
             try
             {
-                var apiResult = JsonSerializer.Deserialize<ApiResponseInfo>(await _httpClient.Get(new HttpRequestOptions
-                {
-                    Url = RepoReleaseUrl,
-                    CancellationToken = cancellationToken,
-                    AcceptHeader = "application/json",
-                    EnableDefaultUserAgent = true
-                }).ConfigureAwait(false));
+                var stream = await _httpClient.Get(new HttpRequestOptions
+                    {
+                        Url = RepoReleaseUrl,
+                        CancellationToken = cancellationToken,
+                        AcceptHeader = "application/json",
+                        EnableDefaultUserAgent = true
+                    })
+                    .ConfigureAwait(false);
 
+                var apiResult = await JsonSerializer.DeserializeAsync<ApiResponseInfo>(stream, null, cancellationToken);
+                
                 var currentVersion = ParseVersion(CurrentVersion);
                 var remoteVersion = ParseVersion(apiResult?.TagName);
 
