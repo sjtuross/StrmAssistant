@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
-    public class ClearTask : IScheduledTask
+    public class ClearChapterMarkersTask : IScheduledTask
     {
         private readonly ILogger _logger;
 
-        public ClearTask()
+        public ClearChapterMarkersTask()
         {
             _logger = Plugin.Instance.logger;
         }
@@ -20,6 +20,8 @@ namespace StrmAssistant
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             _logger.Info("IntroSkip - Clear Task Execute");
+            await Task.Yield();
+            progress.Report(0);
 
             List<BaseItem> items = new List<BaseItem>();
 
@@ -52,8 +54,7 @@ namespace StrmAssistant
                     current++;
                     _logger.Info("IntroSkip - Clear Task " + current + "/" + total + " - " + item.Path);
 
-                    // Optional: Add a small delay to allow for cancellation and responsiveness
-                    Task.Delay(10).Wait(); // 10ms delay
+                    Task.Delay(10).Wait();
                 }
             }, cancellationToken);
 
@@ -61,11 +62,11 @@ namespace StrmAssistant
             _logger.Info("IntroSkip - Clear Task Complete");
         }
 
-        public string Category => "Strm Assistant";
+        public string Category => Plugin.Instance.Name;
 
         public string Key => "IntroSkipClearTask";
 
-        public string Description => "Clear intro and credits markers of episodes";
+        public string Description => "Clears intro and credits markers of episodes";
 
         public string Name => "Clear Episode Intros";
 

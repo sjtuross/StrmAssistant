@@ -1,31 +1,39 @@
-# Strm Assistant
+# STRM 助手
 
 ![logo](StrmAssistant/Properties/thumb.png "logo")
 
-## [中文介绍](README.zh.md)
+## [[English]](README.en.md)
 
-## Purpose
+## 用途
 
-1. Improve initial playback start speed
-2. Solve potential no progress bar issue
-3. Capture image for video without poster
-4. Playback behavior-based intro and credits detection
+1. 提高首次播放的起播速度
+2. 解决可能的无进度条问题
+3. 视频截图增强
+4. 基于播放行为探测片头片尾
+5. 自动合并同目录视频为多版本
+6. 自定义`TMDB`备选语言
+7. 独占模式提取媒体信息
+8. 独立的外挂字幕扫描
 
-## Update
+## 更新
 
-1. Support concurrent tasks (default is 1, max is 10)
-2. Add `Strm Only` option (default is True) to support non-strm media imported with ffprobe blocked
-3. Include media extras (default is False)
-4. Process media items by release date in the descending order
-5. Add plugin config page with libraries selection
-6. Enable image capture (**experimental**, default is False), check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/视频截图-(Image-Capture)) for details.
-7. Introduce catch-up mode (**experimental**, default is False), check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/追更模式-(Catch‐up-Mode)) for details.
-8. Playback behavior-based intro and credits detection for episodes (**experimental**, default is False), check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/片头探测-(Intro-Detection)) for details.
+1. 支持并发提取媒体信息 (默认最小为 1, 最大为 10), 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/媒体信息提取-(MediaInfo-Extract))
+2. 添加 `仅支持Strm` 的选项 (默认开启)，关闭后可以支持软链接或直连的场景
+3. 包含附加内容处理 (默认关闭)
+4. 按电影或剧集的发行日期倒序处理
+5. 添加插件配置界面，可多选媒体库
+6. 视频截图增强 (默认关闭), 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/视频截图增强-(Image-Capture-Enhanced))
+7. 追更模式 (默认关闭), 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/追更模式-(Catch‐up-Mode))
+8. 基于播放行为的剧集片头片尾探测 (默认关闭), 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/片头探测-(Intro-Detection))
+9. 自动合并同目录视频为多版本, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/自动合并同目录多版本)
+10. 尽可能从`TMDB`获取中文或日文元数据, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/自定义-TMDB-备选语言)
+11. 仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg), 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/变相多线程入库)
+12. 独立于扫库的外挂字幕扫描并更新，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/独立的外挂字幕扫描-(External-Subtitle-Scan))
 
-**Note**: The minimum required Emby version is 4.8.0.80.
+**注意**: Emby最低版本要求 `4.8.0.80`
 
-## Install
+## 安装
 
-1. Download `StrmAssistant.dll` to the `plugins` folder
-2. Restart Emby
-3. Go to the Plugins page and check the plugin version and settings
+1. 下载 `StrmAssistant.dll` 放入配置目录中的 `plugins` 目录
+2. 重启Emby
+3. 至插件页面检查版本及设置

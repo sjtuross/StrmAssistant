@@ -1,4 +1,4 @@
-﻿<root>
+<root>
   <resheader name="resmimetype">
     <value>text/microsoft-resx</value>
   </resheader>
@@ -12,10 +12,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PluginOptions_CatchupMode_Catch_up_Mode__Experimental_" xml:space="preserve">
-    <value>追更模式 (实验室)</value>
+    <value>追更模式</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>最爱中的电影洗版或剧集有更新后实时提取媒体信息以及同步片头片尾标记，默认关闭。</value>
+    <value>电影洗版或剧集有更新后实时提取媒体信息以及同步片头片尾标记，默认关闭。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>包含附加内容</value>
@@ -45,13 +45,13 @@
     <value>媒体库范围，留空包含所有。</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Enable_Image_Capture" xml:space="preserve">
-    <value>启用视频截图 (实验室)</value>
+    <value>视频截图增强</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
-    <value>对缺失封面元数据的视频做视频截图，默认关闭。</value>
+    <value>魔改支持Strm视频截图，跳过内嵌封面，默认关闭。</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
-    <value>启用跳片头功能 (实验室)</value>
+    <value>启用跳片头功能</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__Default_is_False_" xml:space="preserve">
     <value>基于播放行为的剧集片头片尾探测，默认关闭。</value>
@@ -100,5 +100,50 @@
   </data>
   <data name="GeneralOptions_EditorTitle_General_Options" xml:space="preserve">
     <value>通用</value>
+  </data>
+  <data name="GeneralOptions_MergeMultiVersion_Merge_Multiple_Versions" xml:space="preserve">
+    <value>自动合并多版本</value>
+  </data>
+  <data name="GeneralOptions_MergeMultiVersion_Auto_merge_multiple_versions_if_in_the_same_folder_" xml:space="preserve">
+    <value>自动合并同目录视频为多版本，不需符合官方严格的命名要求，默认关闭。</value>
+  </data>
+  <data name="PluginOptions_ModOptions_Mod_Features" xml:space="preserve">
+    <value>魔改</value>
+  </data>
+  <data name="ModOptions_ChineseMovieDb_Chinese_MovieDb" xml:space="preserve">
+    <value>自定义 TMDB 备选语言</value>
+  </data>
+  <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
+    <value>尽可能从 TMDB 获取中文或日文元数据，默认关闭。</value>
+  </data>
+  <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
+    <value>备选语言</value>
+  </data>
+  <data name="ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_" xml:space="preserve">
+    <value>备选元数据语言，可多选</value>
+  </data>
+  <data name="Favorites" xml:space="preserve">
+    <value>❤️最爱</value>
+  </data>
+  <data name="ModOptions_ExclusiveExtract_Exclusive_Extract" xml:space="preserve">
+    <value>独占媒体信息提取</value>
+  </data>
+  <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
+    <value>仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg)，默认关闭。</value>
+  </data>
+  <data name="Repo_Link" xml:space="preserve">
+    <value>项目链接</value>
+  </data>
+  <data name="Wiki_Link" xml:space="preserve">
+    <value>功能介绍</value>
+  </data>
+  <data name="AboutOptions_EditorTitle_About" xml:space="preserve">
+    <value>关于</value>
+  </data>
+  <data name="IntroSkipOptions_UserScope_User_Scope" xml:space="preserve">
+    <value>允许的用户</value>
+  </data>
+  <data name="IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all" xml:space="preserve">
+    <value>允许的用户范围，留空包含所有用户。</value>
   </data>
 </root>

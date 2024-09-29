@@ -7,6 +7,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace StrmAssistant
@@ -29,10 +30,25 @@ namespace StrmAssistant
             return _itemRepository.GetChapters(item)
                 .Any(c => c.MarkerType == MarkerType.IntroStart || c.MarkerType == MarkerType.IntroEnd);
         }
+
+        public long? GetIntroEnd(BaseItem item)
+        {
+            var introEnd = _itemRepository.GetChapters(item)
+                .FirstOrDefault(c => c.MarkerType == MarkerType.IntroEnd);
+            return introEnd?.StartPositionTicks;
+        }
+
         public bool HasCredits(BaseItem item)
         {
             return _itemRepository.GetChapters(item)
                 .Any(c => c.MarkerType is MarkerType.CreditsStart);
+        }
+
+        public long? GetCreditsStart(BaseItem item)
+        {
+            var creditsStart = _itemRepository.GetChapters(item)
+                .FirstOrDefault(c => c.MarkerType == MarkerType.CreditsStart);
+            return creditsStart?.StartPositionTicks;
         }
 
         public void UpdateIntro(Episode item, SessionInfo session, long introStartPositionTicks,
@@ -197,8 +213,8 @@ namespace StrmAssistant
 
         public List<BaseItem> FetchClearTaskItems()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope?.Split(',')
-                .Where(id => !string.IsNullOrWhiteSpace(id)).ToArray();
+            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope
+                ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var libraries = _libraryManager.GetVirtualFolders()
                 .Where(f => libraryIds != null && libraryIds.Any()
                     ? libraryIds.Contains(f.Id)
@@ -214,7 +230,10 @@ namespace StrmAssistant
                 IncludeItemTypes = new[] { "Episode" },
                 HasPath = true,
                 MediaTypes = new[] { MediaType.Video },
-                PathStartsWithAny = libraries.SelectMany(l => l.Locations).ToArray()
+                PathStartsWithAny = libraries.SelectMany(l => l.Locations).Select(ls =>
+                    ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                        ? ls
+                        : ls + Path.DirectorySeparatorChar).ToArray()
             };
 
             BaseItem[] results = _libraryManager.GetItemList(itemsIntroSkipQuery);
@@ -252,23 +271,26 @@ namespace StrmAssistant
 
             var allEpisodesInSeason = _libraryManager.GetItemList(query);
 
-            bool meetsCriteria = allEpisodesInSeason
+            var result = allEpisodesInSeason
                 .Any(e =>
                 {
                     var chapters = _itemRepository.GetChapters(e);
-                    bool hasIntroMarkers = chapters.Any(c => c.MarkerType == MarkerType.IntroStart) &&
-                                           chapters.Any(c => c.MarkerType == MarkerType.IntroEnd);
-                    bool hasCreditsStart = chapters.Any(c => c.MarkerType == MarkerType.CreditsStart);
+                    var hasIntroMarkers = chapters.Any(c => c.MarkerType == MarkerType.IntroStart) &&
+                                          chapters.Any(c => c.MarkerType == MarkerType.IntroEnd);
+                    var hasCreditsStart = chapters.Any(c => c.MarkerType == MarkerType.CreditsStart);
 
                     return hasIntroMarkers || hasCreditsStart;
                 });
 
-            return meetsCriteria;
+            return result;
         }
 
         public List<Episode> SeasonHasIntroCredits(List<Episode> episodes)
         {
-            var seasonIds = episodes.Select(e => e.ParentId).Distinct().ToArray();
+            var episodesInScope = episodes
+                .Where(e => Plugin.PlaySessionMonitor.IsLibraryInScope(e)).ToList();
+
+            var seasonIds = episodesInScope.Select(e => e.ParentId).Distinct().ToArray();
 
             var episodesQuery = new InternalItemsQuery
             {
@@ -280,7 +302,7 @@ namespace StrmAssistant
 
             var groupedBySeason = _libraryManager.GetItemList(episodesQuery)
                 .OfType<Episode>()
-                .Where(ep => !episodes.Select(e => e.InternalId).Contains(ep.InternalId))
+                .Where(ep => !episodesInScope.Select(e => e.InternalId).Contains(ep.InternalId))
                 .GroupBy(ep => ep.ParentId);
 
             var resultEpisodes = new List<Episode>();
@@ -302,16 +324,22 @@ namespace StrmAssistant
 
                 if (hasMarkers)
                 {
-                    var episodesWithMarkers = episodes.Where(e => e.ParentId == seasonGroup.Key).ToList();
-                    resultEpisodes.AddRange(episodesWithMarkers);
+                    var episodesCanMarkers = episodesInScope.Where(e => e.ParentId == seasonGroup.Key).ToList();
+                    resultEpisodes.AddRange(episodesCanMarkers);
                 }
             }
 
             return resultEpisodes;
         }
 
-        public void PopulateIntroCredits(List<Episode> episodes)
+        public void PopulateIntroCredits(List<Episode> incomingEpisodes)
         {
+            var episodesLatestDataQuery = new InternalItemsQuery
+            {
+                ItemIds = incomingEpisodes.Select(e => e.InternalId).ToArray()
+            };
+            var episodes = _libraryManager.GetItemList(episodesLatestDataQuery);
+
             var seasonIds = episodes.Select(e => e.ParentId).Distinct().ToArray();
 
             var episodesQuery = new InternalItemsQuery

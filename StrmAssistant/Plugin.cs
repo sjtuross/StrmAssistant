@@ -1,21 +1,28 @@
 using Emby.Web.GenericEdit.Common;
+using Emby.Web.GenericEdit.Elements;
+using Emby.Web.GenericEdit.Elements.List;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Plugins;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Events;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Plugins;
+using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Reflection;
 
 namespace StrmAssistant
 {
@@ -25,6 +32,7 @@ namespace StrmAssistant
         public static LibraryApi LibraryApi { get; private set; }
         public static ChapterApi ChapterApi { get; private set; }
         public static NotificationApi NotificationApi { get; private set; }
+        public static SubtitleApi SubtitleApi { get; private set; }
         public static PlaySessionMonitor PlaySessionMonitor { get; private set; }
 
         private readonly Guid _id = new Guid("63c322b7-a371-41a3-b11f-04f8418b37d8");
@@ -35,6 +43,7 @@ namespace StrmAssistant
         private readonly IUserDataManager _userDataManager;
 
         private int _currentMaxConcurrentCount;
+        private bool _currentEnableImageCapture;
         private bool _currentCatchupMode;
         private bool _currentEnableIntroSkip;
 
@@ -45,6 +54,9 @@ namespace StrmAssistant
             ISessionManager sessionManager,
             IItemRepository itemRepository,
             INotificationManager notificationManager,
+            IMediaSourceManager mediaSourceManager,
+            IMediaProbeManager mediaProbeManager,
+            ILocalizationManager localizationManager,
             IUserManager userManager,
             IUserDataManager userDataManager) : base(applicationHost)
         {
@@ -52,51 +64,35 @@ namespace StrmAssistant
             logger = logManager.GetLogger(Name);
             logger.Info("Plugin is getting loaded.");
 
-            _currentMaxConcurrentCount = GetOptions().MediaInfoExtractOptions.MaxConcurrentCount;
-            QueueManager.Initialize();
-
             _libraryManager = libraryManager;
             _userManager = userManager;
             _userDataManager = userDataManager;
 
-            LibraryApi = new LibraryApi(libraryManager, fileSystem, userManager);
-            ChapterApi = new ChapterApi(libraryManager, itemRepository);
-            NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
-
+            _currentMaxConcurrentCount = GetOptions().MediaInfoExtractOptions.MaxConcurrentCount;
+            _currentEnableImageCapture = GetOptions().MediaInfoExtractOptions.EnableImageCapture;
             _currentCatchupMode = GetOptions().GeneralOptions.CatchupMode;
-            if (_currentCatchupMode)
-            {
-                InitializeCatchupMode();
-            }
-
-            PlaySessionMonitor = new PlaySessionMonitor(libraryManager, sessionManager, itemRepository, userManager);
             _currentEnableIntroSkip = GetOptions().IntroSkipOptions.EnableIntroSkip;
-            if (_currentEnableIntroSkip)
-            {
-                PlaySessionMonitor.Initialize();
-            }
-        }
 
-        public void Dispose()
-        {
-            DisposeCatchupMode();
-            PlaySessionMonitor.Dispose();
+            LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, userManager);
+            ChapterApi = new ChapterApi(libraryManager, itemRepository);
+            PlaySessionMonitor = new PlaySessionMonitor(libraryManager, userManager, sessionManager);
+            NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
+            SubtitleApi = new SubtitleApi(libraryManager, fileSystem, mediaProbeManager, localizationManager,
+                itemRepository);
+
+            if (_currentCatchupMode) InitializeCatchupMode();
+            if (_currentEnableIntroSkip) PlaySessionMonitor.Initialize();
+            QueueManager.Initialize();
+            _libraryManager.ItemAdded += OnItemAdded;
         }
 
         private void InitializeCatchupMode()
         {
             DisposeCatchupMode();
 
-            _libraryManager.ItemAdded += OnItemAdded;
             _userDataManager.UserDataSaved += OnUserDataSaved;
             _userManager.UserCreated += OnUserCreated;
             _userManager.UserDeleted += OnUserDeleted;
-
-            if (QueueManager.MediaInfoExtractProcessTask == null || QueueManager.MediaInfoExtractProcessTask.IsCompleted)
-            {
-                QueueManager.MediaInfoExtractProcessTask =
-                    Task.Run(() => QueueManager.MediaInfoExtract_ProcessItemQueueAsync());
-            }
         }
 
         private void DisposeCatchupMode()
@@ -119,12 +115,24 @@ namespace StrmAssistant
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (e.Item.IsShortcut) //Strm only for real-time extract
+            if (_currentCatchupMode && e.Item.IsShortcut)
             {
                 QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
             }
 
-            NotificationApi.CatchupUpdateSendNotification(e.Item);
+            if (_currentEnableIntroSkip && PlaySessionMonitor.IsLibraryInScope(e.Item))
+            {
+                if (!LibraryApi.HasMediaStream(e.Item))
+                {
+                    QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+                }
+                else
+                {
+                    QueueManager.IntroSkipItemQueue.Enqueue(e.Item as Episode);
+                }
+            }
+
+            NotificationApi.FavoritesUpdateSendNotification(e.Item);
         }
 
         private void OnUserDataSaved(object sender, UserDataSaveEventArgs e)
@@ -134,6 +142,7 @@ namespace StrmAssistant
                 QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
             }
         }
+
         public ImageFormat ThumbImageFormat => ImageFormat.Png;
 
         public override string Description => "Extract MediaInfo and Enable IntroSkip";
@@ -150,23 +159,25 @@ namespace StrmAssistant
 
         public PluginOptions GetPluginOptions()
         {
-            return this.GetOptions();
+            return GetOptions();
         }
 
         protected override void OnOptionsSaved(PluginOptions options)
         {
+            logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
+            logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
+
             logger.Info("MaxConcurrentCount is set to {0}", options.MediaInfoExtractOptions.MaxConcurrentCount);
             if (_currentMaxConcurrentCount != options.MediaInfoExtractOptions.MaxConcurrentCount)
             {
                 _currentMaxConcurrentCount = options.MediaInfoExtractOptions.MaxConcurrentCount;
+
                 QueueManager.UpdateSemaphore(_currentMaxConcurrentCount);
             }
 
-            logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
-            logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
             logger.Info("EnableImageCapture is set to {0}", options.MediaInfoExtractOptions.EnableImageCapture);
-            logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
 
+            logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
             if (_currentCatchupMode != options.GeneralOptions.CatchupMode)
             {
                 _currentCatchupMode = options.GeneralOptions.CatchupMode;
@@ -198,26 +209,31 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentCatchupMode && !_currentEnableIntroSkip)
-            {
-                if (QueueManager.MediaInfoExtractTokenSource != null) QueueManager.MediaInfoExtractTokenSource.Cancel();
-            }
-
             var libraryScope = string.Join(", ",
-                options.MediaInfoExtractOptions.LibraryScope.Split(',')
-                    .Select(v => options.MediaInfoExtractOptions.LibraryList.FirstOrDefault(option => option.Value == v)?.Name));
+                options.MediaInfoExtractOptions.LibraryScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(v =>
+                        options.MediaInfoExtractOptions.LibraryList.FirstOrDefault(option => option.Value == v)?.Name));
             logger.Info("MediaInfoExtract - LibraryScope is set to {0}",
                 string.IsNullOrEmpty(libraryScope) ? "ALL" : libraryScope);
 
             var intoSkipLibraryScope = string.Join(", ",
-                options.IntroSkipOptions.LibraryScope.Split(',')
+                options.IntroSkipOptions.LibraryScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(v => options.IntroSkipOptions.LibraryList
                         .FirstOrDefault(option => option.Value == v)
                         ?.Name));
             logger.Info("IntroSkip - LibraryScope is set to {0}",
                 string.IsNullOrEmpty(intoSkipLibraryScope) ? "ALL" : intoSkipLibraryScope);
-            PlaySessionMonitor.UpdateLibraryPaths();
+            PlaySessionMonitor.UpdateLibraryPathsInScope();
             
+            var introSkipUserScope= string.Join(", ",
+                options.IntroSkipOptions.UserScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(v => options.IntroSkipOptions.UserList
+                        .FirstOrDefault(option => option.Value == v)
+                        ?.Name));
+            logger.Info("IntroSkip - UserScope is set to {0}",
+                string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
+            PlaySessionMonitor.UpdateUsersInScope();
+
             base.OnOptionsSaved(options);
         }
 
@@ -227,6 +243,13 @@ namespace StrmAssistant
 
             var list = new List<EditorSelectOption>();
             var listShows = new List<EditorSelectOption>();
+
+            list.Add(new EditorSelectOption
+            {
+                Value = "-1",
+                Name = Resources.Favorites,
+                IsEnabled = true
+            });
 
             foreach (var item in libraries)
             {
@@ -248,7 +271,76 @@ namespace StrmAssistant
             options.MediaInfoExtractOptions.LibraryList = list;
             options.IntroSkipOptions.LibraryList = listShows;
 
+            options.AboutOptions.VersionInfoList.Clear();
+            options.AboutOptions.VersionInfoList.Add(
+                new GenericListItem
+                {
+                    PrimaryText = GetVersionHash(),
+                    Icon = IconNames.info,
+                    IconMode = ItemListIconMode.SmallRegular
+                });
+
+            options.AboutOptions.VersionInfoList.Add(
+                new GenericListItem
+                {
+                    PrimaryText = Resources.Repo_Link,
+                    Icon = IconNames.code,
+                    IconMode = ItemListIconMode.SmallRegular,
+                    HyperLink = "https://github.com/sjtuross/StrmAssistant",
+                });
+
+            options.AboutOptions.VersionInfoList.Add(
+                new GenericListItem
+                {
+                    PrimaryText = Resources.Wiki_Link,
+                    Icon = IconNames.menu_book,
+                    IconMode = ItemListIconMode.SmallRegular,
+                    HyperLink = "https://github.com/sjtuross/StrmAssistant/wiki",
+                });
+
+            var allUsers = LibraryApi.AllUsers;
+            var userList = new List<EditorSelectOption>();
+            foreach (var user in allUsers)
+            {
+                var selectOption = new EditorSelectOption
+                {
+                    Value = user.Key.InternalId.ToString(),
+                    Name = (user.Value ? "\ud83d\udc51" : "\ud83d\udc64") + user.Key.Name,
+                    IsEnabled = true,
+                };
+
+                userList.Add(selectOption);
+            }
+
+            options.IntroSkipOptions.UserList = userList;
+
             return base.OnBeforeShowUI(options);
+        }
+
+        protected override void OnCreatePageInfo(PluginPageInfo pageInfo)
+        {
+            pageInfo.Name = Resources.PluginOptions_EditorTitle_Strm_Assistant;
+            pageInfo.EnableInMainMenu = true;
+
+            base.OnCreatePageInfo(pageInfo);
+        }
+
+        private static string GetVersionHash()
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+            var informationalVersion = assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+            var fullVersion = assembly.GetName().Version?.ToString();
+
+            if (informationalVersion != null)
+            {
+                var parts = informationalVersion.Split('+');
+                var shortCommitHash = parts.Length > 1 ? parts[1].Substring(0, 7) : "n/a";
+                return $"{fullVersion}+{shortCommitHash}";
+            }
+
+            return fullVersion;
         }
     }
 }

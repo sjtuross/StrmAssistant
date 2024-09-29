@@ -28,7 +28,7 @@ namespace StrmAssistant
             _sessionManager = sessionManager;
         }
 
-        public void CatchupUpdateSendNotification(BaseItem item)
+        public void FavoritesUpdateSendNotification(BaseItem item)
         {
             Resources.Culture = Thread.CurrentThread.CurrentUICulture;
 
@@ -39,7 +39,7 @@ namespace StrmAssistant
                 {
                     Title =
                         Resources.PluginOptions_EditorTitle_Strm_Assistant,
-                    EventId = "catchup.update",
+                    EventId = "favorites.update",
                     User = user,
                     Item = item,
                     Description =

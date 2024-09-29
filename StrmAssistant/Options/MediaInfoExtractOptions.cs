@@ -1,4 +1,4 @@
-﻿using Emby.Web.GenericEdit;
+using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Common;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;

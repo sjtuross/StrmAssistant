@@ -61,11 +61,48 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to About.
+        /// </summary>
+        public static string AboutOptions_EditorTitle_About {
+            get {
+                return ResourceManager.GetString("AboutOptions_EditorTitle_About", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ❤️Favorites.
+        /// </summary>
+        public static string Favorites {
+            get {
+                return ResourceManager.GetString("Favorites", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to General.
         /// </summary>
         public static string GeneralOptions_EditorTitle_General_Options {
             get {
                 return ResourceManager.GetString("GeneralOptions_EditorTitle_General_Options", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auto merge multiple versions stored in the same folder. Default is OFF..
+        /// </summary>
+        public static string GeneralOptions_MergeMultiVersion_Auto_merge_multiple_versions_if_in_the_same_folder_ {
+            get {
+                return ResourceManager.GetString("GeneralOptions_MergeMultiVersion_Auto_merge_multiple_versions_if_in_the_same_fold" +
+                        "er_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Auto Merge Multi-version.
+        /// </summary>
+        public static string GeneralOptions_MergeMultiVersion_Merge_Multiple_Versions {
+            get {
+                return ResourceManager.GetString("GeneralOptions_MergeMultiVersion_Merge_Multiple_Versions", resourceCulture);
             }
         }
         
@@ -107,7 +144,80 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0}\n\n{1}&apos;s favorite.
+        ///   Looks up a localized string similar to Allowed Users.
+        /// </summary>
+        public static string IntroSkipOptions_UserScope_User_Scope {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_UserScope_User_Scope", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Users allowed to detect. Blank includes all.
+        /// </summary>
+        public static string IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Customize MovieDb Fallback Language.
+        /// </summary>
+        public static string ModOptions_ChineseMovieDb_Chinese_MovieDb {
+            get {
+                return ResourceManager.GetString("ModOptions_ChineseMovieDb_Chinese_MovieDb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Try to get Chinese or Japanese metadata from MovieDb. Default is OFF..
+        /// </summary>
+        public static string ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Exclusive MediaInfo Extract.
+        /// </summary>
+        public static string ModOptions_ExclusiveExtract_Exclusive_Extract {
+            get {
+                return ResourceManager.GetString("ModOptions_ExclusiveExtract_Exclusive_Extract", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Only allow this plugin to extract media info (ffprobe) and capture image (ffmpeg). Default is OFF..
+        /// </summary>
+        public static string ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe" +
+                        "__and_capture_image__ffmpeg___Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fallback Languages.
+        /// </summary>
+        public static string ModOptions_FallbackLanguages_Fallback_Languages {
+            get {
+                return ResourceManager.GetString("ModOptions_FallbackLanguages_Fallback_Languages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fallback metadata languages..
+        /// </summary>
+        public static string ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_ {
+            get {
+                return ResourceManager.GetString("ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Catch-up mode update - {0}\n\n{1}&apos;s favorite.
         /// </summary>
         public static string Notification_CatchupUpdate_EventDescription {
             get {
@@ -116,7 +226,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Catch-up Update.
+        ///   Looks up a localized string similar to Favorites Updated.
         /// </summary>
         public static string Notification_CatchupUpdate_EventName {
             get {
@@ -143,7 +253,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IntroSkip Update.
+        ///   Looks up a localized string similar to IntroSkip Updated.
         /// </summary>
         public static string Notification_IntroSkipUpdate_EventName {
             get {
@@ -170,7 +280,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Catch-up Mode (Experimental).
+        ///   Looks up a localized string similar to Catch-up Mode.
         /// </summary>
         public static string PluginOptions_CatchupMode_Catch_up_Mode__Experimental_ {
             get {
@@ -179,7 +289,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extract media info once new items are added for favorites and sync intro and credits markers. Default is OFF..
+        ///   Looks up a localized string similar to Extract media info for newly added items and sync intro and credits markers. Default is OFF..
         /// </summary>
         public static string PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_ {
             get {
@@ -207,7 +317,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable Image Capture (Experimental).
+        ///   Looks up a localized string similar to Enable Image Capture.
         /// </summary>
         public static string PluginOptions_EnableImageCapture_Enable_Image_Capture {
             get {
@@ -226,7 +336,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable Intro Skip (Experimental).
+        ///   Looks up a localized string similar to Enable Intro Skip.
         /// </summary>
         public static string PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_ {
             get {
@@ -319,6 +429,15 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Mod.
+        /// </summary>
+        public static string PluginOptions_ModOptions_Mod_Features {
+            get {
+                return ResourceManager.GetString("PluginOptions_ModOptions_Mod_Features", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Include Strm only. Turn off to also include Non-Strm. Default is ON..
         /// </summary>
         public static string PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_ {
@@ -333,6 +452,24 @@ namespace StrmAssistant.Properties {
         public static string PluginOptions_StrmOnly_Strm_Only {
             get {
                 return ResourceManager.GetString("PluginOptions_StrmOnly_Strm_Only", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Repo Link.
+        /// </summary>
+        public static string Repo_Link {
+            get {
+                return ResourceManager.GetString("Repo_Link", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wiki Link.
+        /// </summary>
+        public static string Wiki_Link {
+            get {
+                return ResourceManager.GetString("Wiki_Link", resourceCulture);
             }
         }
     }

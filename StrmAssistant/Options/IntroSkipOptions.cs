@@ -38,5 +38,15 @@ namespace StrmAssistant
         [SelectItemsSource(nameof(LibraryList))]
         [VisibleCondition(nameof(EnableIntroSkip), SimpleCondition.IsTrue)]
         public string LibraryScope { get; set; }
+
+        [Browsable(false)]
+        public IEnumerable<EditorSelectOption> UserList { get; set; }
+
+        [DisplayNameL("IntroSkipOptions_UserScope_User_Scope", typeof(Resources))]
+        [DescriptionL("IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all", typeof(Resources))]
+        [EditMultilSelect]
+        [SelectItemsSource(nameof(UserList))]
+        [VisibleCondition(nameof(EnableIntroSkip), SimpleCondition.IsTrue)]
+        public string UserScope { get; set; }
     }
 }

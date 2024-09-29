@@ -1,6 +1,5 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
@@ -18,23 +17,29 @@ namespace StrmAssistant
         private static readonly ConcurrentQueue<Func<Task>> _taskQueue = new ConcurrentQueue<Func<Task>>();
         private static bool _isProcessing = false;
         private static readonly object _lock = new object();
-        private static DateTime _mediaInfoExtractLastRunTime = DateTime.MinValue;
-        private static DateTime _introSkipLastRunTime = DateTime.MinValue;
+        private static DateTime _masterProcessLastRunTime = DateTime.MinValue;
+        private static DateTime _introSkipProcessLastRunTime = DateTime.MinValue;
         private static readonly TimeSpan ThrottleInterval = TimeSpan.FromSeconds(30);
         private static int _currentMaxConcurrentCount;
 
-        public static CancellationTokenSource MediaInfoExtractTokenSource;
+        public static CancellationTokenSource MasterTokenSource;
         public static CancellationTokenSource IntroSkipTokenSource;
         public static SemaphoreSlim SemaphoreMaster;
         public static ConcurrentQueue<BaseItem> MediaInfoExtractItemQueue = new ConcurrentQueue<BaseItem>();
+        public static ConcurrentQueue<BaseItem> ExternalSubtitleItemQueue = new ConcurrentQueue<BaseItem>();
         public static ConcurrentQueue<Episode> IntroSkipItemQueue = new ConcurrentQueue<Episode>();
-        public static Task MediaInfoExtractProcessTask;
+        public static Task MasterProcessTask;
 
         public static void Initialize()
         {
             _logger = Plugin.Instance.logger;
             _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
             SemaphoreMaster = new SemaphoreSlim(_currentMaxConcurrentCount);
+
+            if (MasterProcessTask == null || MasterProcessTask.IsCompleted)
+            {
+                MasterProcessTask = Task.Run(() => Master_ProcessItemQueueAsync());
+            }
         }
 
         public static void UpdateSemaphore(int maxConcurrentCount)
@@ -49,14 +54,14 @@ namespace StrmAssistant
             }
         }
 
-        public static async Task MediaInfoExtract_ProcessItemQueueAsync()
+        public static async Task Master_ProcessItemQueueAsync()
         {
-            _logger.Info("MediaInfoExtract - ProcessItemQueueAsync Started");
-            MediaInfoExtractTokenSource = new CancellationTokenSource();
-            var cancellationToken = MediaInfoExtractTokenSource.Token;
+            _logger.Info("Master - ProcessItemQueueAsync Started");
+            MasterTokenSource = new CancellationTokenSource();
+            var cancellationToken = MasterTokenSource.Token;
             while (!cancellationToken.IsCancellationRequested)
             {
-                var timeSinceLastRun = DateTime.UtcNow - _mediaInfoExtractLastRunTime;
+                var timeSinceLastRun = DateTime.UtcNow - _masterProcessLastRunTime;
                 var remainingTime = ThrottleInterval - timeSinceLastRun;
                 if (remainingTime > TimeSpan.Zero)
                 {
@@ -67,87 +72,122 @@ namespace StrmAssistant
                     catch
                     {
                         break;
-                    }                    
+                    }
                 }
 
-                if (!MediaInfoExtractItemQueue.IsEmpty)
+                if (!MediaInfoExtractItemQueue.IsEmpty || !ExternalSubtitleItemQueue.IsEmpty)
                 {
-                    _logger.Info("MediaInfoExtract - Clear Item Queue Started");
                     var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
                     _logger.Info("Image Capture Enabled: " + enableImageCapture);
                     var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
                     _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
 
-                    var dequeueItems = new List<BaseItem>();
+                    var dequeueMediaInfoItems = new List<BaseItem>();
                     while (MediaInfoExtractItemQueue.TryDequeue(out var dequeueItem))
                     {
-                        dequeueItems.Add(dequeueItem);
+                        dequeueMediaInfoItems.Add(dequeueItem);
                     }
 
-                    var dedupQueueItems = dequeueItems.GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
-                    var items = Plugin.LibraryApi.FetchExtractQueueItems(dedupQueueItems);
-
-                    foreach (var item in items)
+                    if (dequeueMediaInfoItems.Count > 0)
                     {
-                        var taskItem = item;
-                        _taskQueue.Enqueue(async () =>
+                        _logger.Info("MediaInfoExtract - Clear Item Queue Started");
+
+                        var dedupMediaInfoItems = dequeueMediaInfoItems.GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
+                        var mediaInfoItems = Plugin.LibraryApi.FetchExtractQueueItems(dedupMediaInfoItems);
+
+                        foreach (var item in mediaInfoItems)
                         {
-                            try
+                            var taskItem = item;
+                            _taskQueue.Enqueue(async () =>
                             {
-                                MetadataRefreshOptions refreshOptions;
-                                if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
+                                try
                                 {
-                                    refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
-                                }
-                                else
-                                {
-                                    refreshOptions = LibraryApi.MediaInfoRefreshOptions;
-                                }
+                                    await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken)
+                                        .ConfigureAwait(false);
 
-                                var resp = await item.RefreshMetadata(refreshOptions, cancellationToken)
-                                    .ConfigureAwait(false);
-                                _logger.Info("MediaInfoExtract - Item Processed: " + taskItem.Name + " - " + taskItem.Path);
+                                    _logger.Info("MediaInfoExtract - Item Processed: " + taskItem.Name + " - " + taskItem.Path);
 
-                                if (enableIntroSkip && taskItem is Episode episode)
-                                {
-                                    IntroSkipItemQueue.Enqueue(episode);
+                                    if (enableIntroSkip && Plugin.PlaySessionMonitor.IsLibraryInScope(taskItem))
+                                    {
+                                        IntroSkipItemQueue.Enqueue(taskItem as Episode);
+                                    }
                                 }
-                            }
-                            catch (TaskCanceledException)
-                            {
-                                _logger.Info("MediaInfoExtract - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
-                            }
-                            catch
-                            {
-                                _logger.Info("MediaInfoExtract - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
-                            }
-                        });
+                                catch (TaskCanceledException)
+                                {
+                                    _logger.Info("MediaInfoExtract - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
+                                }
+                                catch
+                                {
+                                    _logger.Info("MediaInfoExtract - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
+                                }
+                            });
+                        }
+                        _logger.Info("MediaInfoExtract - Clear Item Queue Stopped");
                     }
+
+                    var dequeueSubtitleItems = new List<BaseItem>();
+                    while (ExternalSubtitleItemQueue.TryDequeue(out var dequeueItem))
+                    {
+                        dequeueSubtitleItems.Add(dequeueItem);
+                    }
+
+                    if (dequeueSubtitleItems.Count > 0)
+                    {
+                        _logger.Info("ExternalSubtitle - Clear Item Queue Started");
+
+                        var dedupSubtitleItems =
+                            dequeueSubtitleItems.GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
+
+                        foreach (var item in dedupSubtitleItems)
+                        {
+                            var taskItem = item;
+                            _taskQueue.Enqueue(async () =>
+                            {
+                                try
+                                {
+                                    await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
+                                        .ConfigureAwait(false);
+
+                                    _logger.Info("ExternalSubtitle - Item Processed: " + taskItem.Name + " - " + taskItem.Path);
+                                }
+                                catch (TaskCanceledException)
+                                {
+                                    _logger.Info("ExternalSubtitle - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
+                                }
+                                catch
+                                {
+                                    _logger.Info("ExternalSubtitle - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
+                                }
+                            });
+                        }
+                        _logger.Info("ExternalSubtitle - Clear Item Queue Stopped");
+                    }
+
                     lock (_lock)
                     {
-                        if (!_isProcessing)
+                        if (!_isProcessing && (dequeueMediaInfoItems.Count > 0 || dequeueSubtitleItems.Count > 0))
                         {
                             _isProcessing = true;
-                            var task = Task.Run(() => MediaInfoExtract_ProcessTaskQueueAsync(cancellationToken));
+                            var task = Task.Run(() => Master_ProcessTaskQueueAsync(cancellationToken));
                         }
                     }
-                    _logger.Info("MediaInfoExtract - Clear Item Queue Stopped");
                 }
-                _mediaInfoExtractLastRunTime = DateTime.UtcNow;
+                _masterProcessLastRunTime = DateTime.UtcNow;
             }
-            if (MediaInfoExtractItemQueue.IsEmpty)
+
+            if (MediaInfoExtractItemQueue.IsEmpty && ExternalSubtitleItemQueue.IsEmpty)
             {
-                _logger.Info("MediaInfoExtract - ProcessItemQueueAsync Stopped");
+                _logger.Info("Master - ProcessItemQueueAsync Stopped");
             }
             else
             {
-                _logger.Info("MediaInfoExtract - ProcessItemQueueAsync Cancelled");
+                _logger.Info("Master - ProcessItemQueueAsync Cancelled");
             }
         }
 
-        private static async Task MediaInfoExtract_ProcessTaskQueueAsync(CancellationToken cancellationToken)
+        private static async Task Master_ProcessTaskQueueAsync(CancellationToken cancellationToken)
         {
-            _logger.Info("MediaInfoExtract - ProcessTaskQueueAsync Started");
+            _logger.Info("Master - ProcessTaskQueueAsync Started");
             _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount);
 
             while (!cancellationToken.IsCancellationRequested)
@@ -186,11 +226,11 @@ namespace StrmAssistant
                 _isProcessing = false;
                 if (_taskQueue.IsEmpty)
                 {
-                    _logger.Info("MediaInfoExtract - ProcessTaskQueueAsync Stopped");
+                    _logger.Info("Master - ProcessTaskQueueAsync Stopped");
                 }
                 else
                 {
-                    _logger.Info("MediaInfoExtract - ProcessTaskQueueAsync Cancelled");
+                    _logger.Info("Master - ProcessTaskQueueAsync Cancelled");
                 }
             }
         }
@@ -199,10 +239,10 @@ namespace StrmAssistant
         {
             _logger.Info("IntroSkip - ProcessItemQueueAsync Started");
             IntroSkipTokenSource = new CancellationTokenSource();
-            CancellationToken cancellationToken = IntroSkipTokenSource.Token;
+            var cancellationToken = IntroSkipTokenSource.Token;
             while (!cancellationToken.IsCancellationRequested)
             {
-                var timeSinceLastRun = DateTime.UtcNow - _introSkipLastRunTime;
+                var timeSinceLastRun = DateTime.UtcNow - _introSkipProcessLastRunTime;
                 var remainingTime = ThrottleInterval - timeSinceLastRun;
                 if (remainingTime > TimeSpan.Zero)
                 {
@@ -218,19 +258,24 @@ namespace StrmAssistant
 
                 if (!IntroSkipItemQueue.IsEmpty)
                 {
-                    Plugin.Instance.logger.Info("IntroSkip - Clear Item Queue Started");
-
-                    List<Episode> dequeueItems = new List<Episode>();
+                    var dequeueItems = new List<Episode>();
                     while (IntroSkipItemQueue.TryDequeue(out var dequeueItem))
                     {
                         dequeueItems.Add(dequeueItem);
                     }
-                    Plugin.ChapterApi.PopulateIntroCredits(dequeueItems);
 
-                    _logger.Info("IntroSkip - Clear Item Queue Stopped");
+                    if (dequeueItems.Count > 0)
+                    {
+                        _logger.Info("IntroSkip - Clear Item Queue Started");
+
+                        Plugin.ChapterApi.PopulateIntroCredits(dequeueItems);
+
+                        _logger.Info("IntroSkip - Clear Item Queue Stopped");
+                    }
                 }
-                _introSkipLastRunTime = DateTime.UtcNow;
+                _introSkipProcessLastRunTime = DateTime.UtcNow;
             }
+
             if (IntroSkipItemQueue.IsEmpty)
             {
                 _logger.Info("IntroSkip - ProcessItemQueueAsync Stopped");
@@ -239,6 +284,11 @@ namespace StrmAssistant
             {
                 _logger.Info("IntroSkip - ProcessItemQueueAsync Cancelled");
             }
+        }
+
+        public static void Dispose()
+        {
+            MasterTokenSource?.Cancel();
         }
     }
 }

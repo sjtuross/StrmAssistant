@@ -1,13 +1,14 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
-using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,6 +17,7 @@ namespace StrmAssistant
     public class PlaySessionMonitor
     {
         private readonly ILibraryManager _libraryManager;
+        private readonly IUserManager _userManager;
         private readonly ISessionManager _sessionManager;
         private readonly ILogger _logger;
 
@@ -31,27 +33,54 @@ namespace StrmAssistant
         private static Task _introSkipProcessTask;
 
         public static List<string> LibraryPathsInScope;
+        public static User[] UsersInScope;
 
-        public PlaySessionMonitor(ILibraryManager libraryManager, ISessionManager sessionManager,
-            IItemRepository itemRepository, IUserManager userManager)
+        public PlaySessionMonitor(ILibraryManager libraryManager, IUserManager userManager,
+            ISessionManager sessionManager)
         {
             _logger = Plugin.Instance.logger;
             _libraryManager = libraryManager;
+            _userManager = userManager;
             _sessionManager = sessionManager;
 
-            UpdateLibraryPaths();
+            UpdateLibraryPathsInScope();
+            UpdateUsersInScope();
         }
 
-        public void UpdateLibraryPaths()
+        public void UpdateLibraryPathsInScope()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope?.Split(',')
-                .Where(id => !string.IsNullOrWhiteSpace(id)).ToArray();
+            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope
+                ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             LibraryPathsInScope = _libraryManager.GetVirtualFolders()
                 .Where(f => libraryIds != null && libraryIds.Any()
                     ? libraryIds.Contains(f.Id)
                     : f.CollectionType == "tvshows" || f.CollectionType is null)
                 .SelectMany(l => l.Locations)
+                .Select(ls => ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                    ? ls
+                    : ls + Path.DirectorySeparatorChar)
                 .ToList();
+        }
+
+        public void UpdateUsersInScope()
+        {
+            var userIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.UserScope
+                ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
+            
+            var userQuery = new UserQuery
+            {
+                IsDisabled = false
+            };
+
+            if (userIds != null && userIds.Any())
+            {
+                userQuery.UserIds = userIds;
+                UsersInScope = _userManager.GetUserList(userQuery);
+            }
+            else
+            {
+                UsersInScope = Array.Empty<User>();
+            }
         }
 
         public void Initialize()
@@ -61,32 +90,10 @@ namespace StrmAssistant
             _sessionManager.PlaybackStart += OnPlaybackStart;
             _sessionManager.PlaybackProgress += OnPlaybackProgress;
             _sessionManager.PlaybackStopped += OnPlaybackStopped;
-            _libraryManager.ItemAdded += OnItemAdded;
 
             if (_introSkipProcessTask == null || _introSkipProcessTask.IsCompleted)
             {
                 _introSkipProcessTask = Task.Run(() => QueueManager.IntroSkip_ProcessItemQueueAsync());
-            }
-
-            if (QueueManager.MediaInfoExtractProcessTask == null || QueueManager.MediaInfoExtractProcessTask.IsCompleted)
-            {
-                QueueManager.MediaInfoExtractProcessTask =
-                    Task.Run(() => QueueManager.MediaInfoExtract_ProcessItemQueueAsync());
-            }
-        }
-
-        private void OnItemAdded(object sender, ItemChangeEventArgs e)
-        {
-            if (IsInScope(e.Item))
-            {
-                if (!Plugin.LibraryApi.HasMediaStream(e.Item))
-                {
-                    QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
-                }
-                else
-                {
-                    QueueManager.IntroSkipItemQueue.Enqueue(e.Item as Episode);
-                }
             }
         }
 
@@ -94,6 +101,7 @@ namespace StrmAssistant
         {
             if (!e.PlaybackPositionTicks.HasValue || e.Item is null) return;
 
+            _playSessionData.TryRemove(e.PlaySessionId, out _);
             var playSessionData = GetPlaySessionData(e);
             if (playSessionData is null) return;
 
@@ -106,25 +114,31 @@ namespace StrmAssistant
                              new TimeSpan(playSessionData.PlaybackStartTicks).ToString(@"hh\:mm\:ss\.fff"));
                 _logger.Info("IntroSkip - Detection Started");
             }
+            else
+            {
+                _logger.Info("IntroSkip - Intro marker exists");
+            }
         }
 
         private void OnPlaybackProgress(object sender, PlaybackProgressEventArgs e)
         {
-            if (e.Item == null || e.EventName != ProgressEvent.TimeUpdate && e.EventName != ProgressEvent.Unpause ||
-                !e.PlaybackPositionTicks.HasValue)
+            if (e.Item == null || e.EventName != ProgressEvent.TimeUpdate && e.EventName != ProgressEvent.Unpause &&
+                e.EventName != ProgressEvent.PlaybackRateChange && e.EventName != ProgressEvent.Pause ||
+                !e.PlaybackPositionTicks.HasValue || e.PlaybackPositionTicks.Value == 0)
                 return;
 
             var playSessionData = GetPlaySessionData(e);
             if (playSessionData is null) return;
 
-            long currentPositionTicks = e.PlaybackPositionTicks.Value;
+            var currentPositionTicks = e.PlaybackPositionTicks.Value;
+            var currentEventTime = DateTime.UtcNow;
+            var introEnd = Plugin.ChapterApi.GetIntroEnd(e.Item);
+            var creditsStart = Plugin.ChapterApi.GetCreditsStart(e.Item);
 
-            if (e.EventName == ProgressEvent.TimeUpdate && !Plugin.ChapterApi.HasIntro(e.Item))
+            if (e.EventName == ProgressEvent.TimeUpdate && !introEnd.HasValue)
             {
-                DateTime currentEventTime = DateTime.UtcNow;
-
-                double elapsedTime = (currentEventTime - playSessionData.PreviousEventTime).TotalSeconds;
-                double positionTimeDiff = TimeSpan.FromTicks(currentPositionTicks - playSessionData.PreviousPositionTicks)
+                var elapsedTime = (currentEventTime - playSessionData.PreviousEventTime).TotalSeconds;
+                var positionTimeDiff = TimeSpan.FromTicks(currentPositionTicks - playSessionData.PreviousPositionTicks)
                     .TotalSeconds;
 
                 if (Math.Abs(positionTimeDiff) - elapsedTime > 5 &&
@@ -171,15 +185,38 @@ namespace StrmAssistant
                 playSessionData.PreviousEventTime = currentEventTime;
             }
 
-            if (e.EventName == ProgressEvent.Unpause &&
-                currentPositionTicks < playSessionData.MaxIntroDurationTicks && Plugin.ChapterApi.HasIntro(e.Item))
+            if (e.EventName == ProgressEvent.Pause)
+            {
+                playSessionData.LastPauseEventTime = currentEventTime;
+                return;
+            }
+
+            if (e.EventName == ProgressEvent.PlaybackRateChange)
+            {
+                playSessionData.LastPlaybackRateChangeEventTime = currentEventTime;
+                return;
+            }
+
+            if (e.EventName == ProgressEvent.Unpause && playSessionData.LastPauseEventTime.HasValue &&
+                (currentEventTime - playSessionData.LastPauseEventTime.Value).TotalMilliseconds <
+                (playSessionData.LastPlaybackRateChangeEventTime.HasValue ? 1500 : 500))
+            {
+                playSessionData.LastPauseEventTime = null;
+                return;
+            }
+
+            if (e.EventName == ProgressEvent.Unpause && playSessionData.LastPauseEventTime.HasValue &&
+                currentPositionTicks < playSessionData.MaxIntroDurationTicks && introEnd.HasValue &&
+                Math.Abs(TimeSpan.FromTicks(currentPositionTicks - introEnd.Value).TotalMilliseconds) >
+                (playSessionData.LastPlaybackRateChangeEventTime.HasValue ? 500 : 0))
             {
                 UpdateIntroTask(e.Item as Episode, e.Session, new TimeSpan(0, 0, 0).Ticks, currentPositionTicks);
             }
 
             if (e.EventName == ProgressEvent.Unpause && e.Item.RunTimeTicks.HasValue &&
+                playSessionData.LastPauseEventTime.HasValue &&
                 currentPositionTicks > e.Item.RunTimeTicks - playSessionData.MaxCreditsDurationTicks &&
-                Plugin.ChapterApi.HasCredits(e.Item))
+                creditsStart.HasValue)
             {
                 if (e.Item.RunTimeTicks.Value > currentPositionTicks)
                 {
@@ -212,9 +249,8 @@ namespace StrmAssistant
 
         private PlaySessionData GetPlaySessionData(PlaybackProgressEventArgs e)
         {
-            if (!IsInScope(e.Item)) return null;
-            //&& _userManager.GetUserById(e.Session.UserInternalId).Policy.IsAdministrator; //Admin only
-
+            if (!IsLibraryInScope(e.Item) || !IsUserInScope(e.Session.UserInternalId)) return null;
+            
             var playSessionId = e.PlaySessionId;
             if (!_playSessionData.ContainsKey(playSessionId))
             {
@@ -225,14 +261,24 @@ namespace StrmAssistant
             return playSessionData;
         }
 
-        public bool IsInScope(BaseItem item)
+        public bool IsLibraryInScope(BaseItem item)
         {
-            bool isEnable = item is Episode && (Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly ? item.IsShortcut : true);
+            var isEnable = item is Episode && (Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly ? item.IsShortcut : true);
             if (!isEnable) return false;
             
-            bool isInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
+            var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
 
-            return isInScope;
+            return isLibraryInScope;
+        }
+
+        public bool IsUserInScope(long userInternalId)
+        {
+            if (!UsersInScope.Any())
+                return true;
+
+            var isUserInScope = UsersInScope.Any(u => u.InternalId == userInternalId);
+
+            return isUserInScope;
         }
 
         private void UpdateIntroTask(Episode episode, SessionInfo session, long introStartPositionTicks,
@@ -326,7 +372,6 @@ namespace StrmAssistant
             _sessionManager.PlaybackStart -= OnPlaybackStart;
             _sessionManager.PlaybackProgress -= OnPlaybackProgress;
             _sessionManager.PlaybackStopped -= OnPlaybackStopped;
-            _libraryManager.ItemAdded -= OnItemAdded;
             if (QueueManager.IntroSkipTokenSource != null) QueueManager.IntroSkipTokenSource.Cancel();
         }
     }
