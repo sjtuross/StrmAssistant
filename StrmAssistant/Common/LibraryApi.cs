@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Dlna;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
@@ -13,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,6 +42,9 @@ namespace StrmAssistant
                                                                 ExtraType.ThemeVideo,
                                                                 ExtraType.Trailer };
         public static Dictionary<User, bool> AllUsers = new Dictionary<User, bool>();
+
+        private readonly bool _fallbackProbeApproach;
+        private readonly MethodInfo GetPlayackMediaSources;
 
         public LibraryApi(ILibraryManager libraryManager,
             IFileSystem fileSystem,
@@ -86,6 +91,27 @@ namespace StrmAssistant
                 MetadataRefreshMode = MetadataRefreshMode.FullRefresh,
                 ReplaceAllImages = true
             };
+
+            if (Plugin.Instance.ApplicationHost.ApplicationVersion > new Version("4.9.0.14"))
+            {
+                try
+                {
+                    GetPlayackMediaSources = mediaSourceManager.GetType()
+                        .GetMethod("GetPlayackMediaSources",
+                            new[]
+                            {
+                                typeof(BaseItem), typeof(User), typeof(bool), typeof(string), typeof(bool),
+                                typeof(bool), typeof(CancellationToken)
+                            });
+                    _fallbackProbeApproach = true;
+                }
+                catch (Exception e)
+                {
+                    _logger.Debug("GetPlayackMediaSources - Init Failed");
+                    _logger.Debug(e.Message);
+                    _logger.Debug(e.StackTrace);
+                }
+            }
         }
 
         public void FetchUsers()
@@ -404,19 +430,38 @@ namespace StrmAssistant
         {
             var probeMediaSources = item.GetMediaSources(true, true, _libraryManager.GetLibraryOptions(item));
 
-            await Task.WhenAll(probeMediaSources.Select(async probeMediaSource =>
+            if (!_fallbackProbeApproach)
             {
-                var resultMediaSources = (await _mediaSourceManager
-                    .GetPlayackMediaSources(item, null, true, probeMediaSource.Id, true, cancellationToken)
-                    .ConfigureAwait(false)).ToArray();
-
-                foreach (var resultMediaSource in resultMediaSources)
+                await Task.WhenAll(probeMediaSources.Select(async probeMediaSource =>
                 {
-                    resultMediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(
-                        SystemMemory::System.MemoryExtensions.AsSpan(resultMediaSource.Container),
-                        SystemMemory::System.MemoryExtensions.AsSpan(resultMediaSource.Path), null, DlnaProfileType.Video);
-                }
-            }));
+                    var resultMediaSources = (await _mediaSourceManager
+                        .GetPlayackMediaSources(item, null, true, probeMediaSource.Id, true, cancellationToken)
+                        .ConfigureAwait(false));
+
+                    foreach (var resultMediaSource in resultMediaSources)
+                    {
+                        resultMediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(
+                            SystemMemory::System.MemoryExtensions.AsSpan(resultMediaSource.Container),
+                            SystemMemory::System.MemoryExtensions.AsSpan(resultMediaSource.Path), null, DlnaProfileType.Video);
+                    }
+                }));
+            }
+            else
+            {
+                await Task.WhenAll(probeMediaSources.Select(async probeMediaSource =>
+                {
+                    var resultMediaSources = await (Task<List<MediaSourceInfo>>)GetPlayackMediaSources.Invoke(
+                        _mediaSourceManager,
+                        new object[] { item, null, true, probeMediaSource.Id, true, false, cancellationToken });
+
+                    foreach (var resultMediaSource in resultMediaSources)
+                    {
+                        resultMediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(
+                            SystemMemory::System.MemoryExtensions.AsSpan(resultMediaSource.Container),
+                            SystemMemory::System.MemoryExtensions.AsSpan(resultMediaSource.Path), null, DlnaProfileType.Video);
+                    }
+                }));
+            }
         }
     }
 }

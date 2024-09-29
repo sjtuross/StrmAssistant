@@ -9,12 +9,9 @@ namespace StrmAssistant.Mod
     public static class PatchManager
     {
         public static Harmony HarmonyMod;
-        public static IApplicationHost ApplicationHost;
 
-        public static void Initialize(IApplicationHost applicationHost)
+        public static void Initialize()
         {
-            ApplicationHost = applicationHost;
-
             try
             {
                 HarmonyMod = new Harmony("emby.mod");

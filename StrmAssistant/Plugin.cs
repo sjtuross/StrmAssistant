@@ -39,6 +39,7 @@ namespace StrmAssistant
         private readonly Guid _id = new Guid("63c322b7-a371-41a3-b11f-04f8418b37d8");
 
         public readonly ILogger logger;
+        public readonly IApplicationHost ApplicationHost;
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
@@ -67,6 +68,7 @@ namespace StrmAssistant
             Instance = this;
             logger = logManager.GetLogger(Name);
             logger.Info("Plugin is getting loaded.");
+            ApplicationHost = applicationHost;
 
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -87,7 +89,7 @@ namespace StrmAssistant
             SubtitleApi = new SubtitleApi(libraryManager, fileSystem, mediaProbeManager, localizationManager,
                 itemRepository);
 
-            PatchManager.Initialize(applicationHost);
+            PatchManager.Initialize();
             if (_currentCatchupMode) InitializeCatchupMode();
             if (_currentEnableIntroSkip) PlaySessionMonitor.Initialize();
             QueueManager.Initialize();

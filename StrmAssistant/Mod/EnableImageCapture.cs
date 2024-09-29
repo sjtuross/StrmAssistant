@@ -209,7 +209,7 @@ namespace StrmAssistant.Mod
                 switch (PatchApproachTracker.FallbackPatchApproach)
                 {
                     case PatchApproach.Harmony:
-                        ApplicationHost.NotifyPendingRestart();
+                        Plugin.Instance.ApplicationHost.NotifyPendingRestart();
 
                         /* un-patch and re-patch don't work for readonly static field
                         UnpatchResourcePool();
