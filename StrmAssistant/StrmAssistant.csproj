@@ -10,6 +10,9 @@
     <EmbeddedResource Include="Properties\thumb.png" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="CHTCHSConv" Version="1.0.0">
+      <GeneratePathProperty>True</GeneratePathProperty>
+    </PackageReference>
     <PackageReference Include="ILRepack" Version="2.0.34">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -48,6 +51,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="$(ILRepack) /out:%25AppData%25\Emby-Server\programdata\plugins\$(TargetFileName) $(TargetPath) $(PkgLib_Harmony_Thin)\lib\net6.0\0Harmony.dll $(TargetDir)Mono*.dll /lib:$(TargetDir) /wildcards" />
+    <Exec Command="$(ILRepack) /out:%25AppData%25\Emby-Server\programdata\plugins\$(TargetFileName) $(TargetPath) $(PkgLib_Harmony_Thin)\lib\net6.0\0Harmony.dll $(TargetDir)Mono*.dll $(PkgCHTCHSConv)\lib\netstandard2.0\ChineseConverter.dll /lib:$(TargetDir) /wildcards" />
   </Target>
 </Project>

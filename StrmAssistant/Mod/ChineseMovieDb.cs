@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
+using static StrmAssistant.LanguageUtility;
 using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
@@ -333,12 +333,6 @@ namespace StrmAssistant.Mod
             }
         }
 
-        private static bool IsChinese(string title) => new Regex(@"[\u4E00-\u9FFF]").IsMatch(title);
-
-        private static bool IsJapanese(string title) => new Regex(@"[\u3040-\u309F\u30A0-\u30FF]").IsMatch(title);
-
-        private static bool IsDefaultChineseEpisodeName(string name) => new Regex(@"第\s*\d+\s*集").IsMatch(name);
-
         private static bool IsUpdateNeeded(string name, bool isEpisode)
         {
             var isJapaneseFallback = GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase);
@@ -386,6 +380,8 @@ namespace StrmAssistant.Mod
                         __result = false;
                         return false;
                     }
+                    item.Name = ConvertTraditionalToSimplified(item.Name);
+                    item.Overview = ConvertTraditionalToSimplified(item.Overview);
                 }
                 else
                 {
@@ -394,6 +390,7 @@ namespace StrmAssistant.Mod
                         __result = false;
                         return false;
                     }
+                    item.Name = ConvertTraditionalToSimplified(item.Name);
                 }
             }
             else
@@ -403,6 +400,8 @@ namespace StrmAssistant.Mod
                     if (IsChinese(item.Name) && IsChinese(item.Overview) ||
                         IsJapanese(item.Name) && IsJapanese(item.Overview))
                     {
+                        item.Name = ConvertTraditionalToSimplified(item.Name);
+                        item.Overview = ConvertTraditionalToSimplified(item.Overview);
                         return true;
                     }
                 }
@@ -410,6 +409,7 @@ namespace StrmAssistant.Mod
                 {
                     if (IsChinese(item.Name) || IsJapanese(item.Name))
                     {
+                        item.Name = ConvertTraditionalToSimplified(item.Name);
                         return true;
                     }
                 }
