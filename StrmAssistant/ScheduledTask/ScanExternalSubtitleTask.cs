@@ -79,7 +79,7 @@ namespace StrmAssistant
 
         public string Key => "ScanExternalSubtitleTask";
 
-        public string Description => "Scan external subtitles for videos";
+        public string Description => "Scans external subtitles for videos";
 
         public string Name => "Scan External Subtitles";
 

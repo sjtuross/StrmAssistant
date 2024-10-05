@@ -155,7 +155,7 @@ namespace StrmAssistant
 
                 favoritesWithExtra = expanded
                     .Concat(includeExtra
-                        ? expanded.SelectMany(f => f.GetExtras(LibraryApi.IncludeExtraType))
+                        ? expanded.SelectMany(f => f.GetExtras(LibraryApi.IncludeExtraTypes))
                         : Enumerable.Empty<BaseItem>())
                     .Where(Plugin.LibraryApi.HasMediaStream)
                     .ToList();
@@ -183,7 +183,7 @@ namespace StrmAssistant
 
                 if (includeExtra)
                 {
-                    itemsQuery.ExtraTypes = LibraryApi.IncludeExtraType;
+                    itemsQuery.ExtraTypes = LibraryApi.IncludeExtraTypes;
                     itemsWithExtras = _libraryManager.GetItemList(itemsQuery).Concat(itemsWithExtras).ToList();
                 }
             }
