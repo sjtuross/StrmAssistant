@@ -1,4 +1,4 @@
-using HarmonyLib;
+﻿using HarmonyLib;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -35,6 +35,8 @@ namespace StrmAssistant.Mod
         private static MethodInfo _movieDbEpisodeProviderIsComplete;
         private static MethodInfo _movieDbEpisodeProviderImportData;
 
+        private static MethodInfo _movieDbPersonProviderImportData;
+        
         public static void Initialize()
         {
             try
@@ -84,6 +86,10 @@ namespace StrmAssistant.Mod
                         movieDbEpisodeProvider.GetMethod("IsComplete", BindingFlags.NonPublic | BindingFlags.Instance);
                     _movieDbEpisodeProviderImportData =
                         movieDbEpisodeProvider.GetMethod("ImportData", BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    var movieDbPersonProvider = movieDbAssembly.GetType("MovieDb.MovieDbPersonProvider");
+                    _movieDbPersonProviderImportData = movieDbPersonProvider.GetMethod("ImportData",
+                        BindingFlags.NonPublic | BindingFlags.Instance);
                 }
                 else
                 {
@@ -234,6 +240,15 @@ namespace StrmAssistant.Mod
                             Plugin.Instance.logger.Debug(
                                 "Patch MovieDbEpisodeProvider.ImportData Success by Harmony");
                         }
+
+                        if (!IsPatched(_movieDbPersonProviderImportData))
+                        {
+                            HarmonyMod.Patch(_movieDbPersonProviderImportData,
+                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("PersonImportDataPrefix",
+                                    BindingFlags.Static | BindingFlags.NonPublic)));
+                            Plugin.Instance.logger.Debug(
+                                "Patch MovieDbPersonProvider.ImportData Success by Harmony");
+                        }
                     }
                 }
                 catch (Exception he)
@@ -323,6 +338,12 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Unpatch(_movieDbEpisodeProviderImportData, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch MovieDbEpisodeProvider.ImportData Success by Harmony");
                     }
+
+                    if (IsPatched(_movieDbPersonProviderImportData))
+                    {
+                        HarmonyMod.Unpatch(_movieDbPersonProviderImportData, HarmonyPatchType.Prefix);
+                        Plugin.Instance.logger.Debug("Unpatch MovieDbPersonProvider.ImportData Success by Harmony");
+                    }
                 }
                 catch (Exception he)
                 {
@@ -342,7 +363,7 @@ namespace StrmAssistant.Mod
                                            IsJapanese(name));
         }
 
-        private static List<string> GetFallbackLanguages()
+        public static List<string> GetFallbackLanguages()
         {
             var currentFallbackLanguages = Plugin.Instance.GetPluginOptions().ModOptions.FallbackLanguages
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
@@ -559,6 +580,53 @@ namespace StrmAssistant.Mod
             }
 
             __result = string.Join(",", list.ToArray());
+        }
+
+        [HarmonyPrefix]
+        private static bool PersonImportDataPrefix(Person item, object info, bool isFirstLanguage)
+        {
+            var nameProperty = info.GetType().GetProperty("name");
+            if (nameProperty?.GetValue(info) is string infoName)
+            {
+                var updateNameResult = Plugin.MetadataApi.UpdateAsNeeded(infoName);
+
+                if (updateNameResult.Item2)
+                {
+                    nameProperty.SetValue(info, updateNameResult.Item1);
+                }
+                else
+                {
+                    var alsoKnownAsProperty = info.GetType().GetProperty("also_known_as");
+                    if (alsoKnownAsProperty?.GetValue(info) is List<object> alsoKnownAsList)
+                    {
+                        foreach (var alias in alsoKnownAsList)
+                        {
+                            if (alias is string aliasString && !string.IsNullOrEmpty(aliasString))
+                            {
+                                var updateAliasResult = Plugin.MetadataApi.UpdateAsNeeded(aliasString);
+                                if (updateAliasResult.Item2)
+                                {
+                                    nameProperty.SetValue(info, updateAliasResult.Item1);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            var biographyProperty = info.GetType().GetProperty("biography");
+            if (biographyProperty?.GetValue(info) is string infoBiography)
+            {
+                var updateBiographyResult = Plugin.MetadataApi.UpdateAsNeeded(infoBiography);
+
+                if (updateBiographyResult.Item2)
+                {
+                    biographyProperty.SetValue(info, updateBiographyResult.Item1);
+                }
+            }
+
+            return true;
         }
     }
 }

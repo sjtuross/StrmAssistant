@@ -1,5 +1,4 @@
 using HarmonyLib;
-using MediaBrowser.Common;
 using System;
 using System.Linq;
 using System.Reflection;

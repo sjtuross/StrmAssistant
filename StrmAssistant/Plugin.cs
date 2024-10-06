@@ -3,6 +3,7 @@ using Emby.Web.GenericEdit.Elements;
 using Emby.Web.GenericEdit.Elements.List;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -35,6 +36,7 @@ namespace StrmAssistant
         public static NotificationApi NotificationApi { get; private set; }
         public static SubtitleApi SubtitleApi { get; private set; }
         public static PlaySessionMonitor PlaySessionMonitor { get; private set; }
+        public static MetadataApi MetadataApi { get; private set; }
 
         private readonly Guid _id = new Guid("63c322b7-a371-41a3-b11f-04f8418b37d8");
 
@@ -63,7 +65,8 @@ namespace StrmAssistant
             IMediaProbeManager mediaProbeManager,
             ILocalizationManager localizationManager,
             IUserManager userManager,
-            IUserDataManager userDataManager) : base(applicationHost)
+            IUserDataManager userDataManager,
+            IServerConfigurationManager configurationManager) : base(applicationHost)
         {
             Instance = this;
             logger = logManager.GetLogger(Name);
@@ -88,6 +91,7 @@ namespace StrmAssistant
             NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
             SubtitleApi = new SubtitleApi(libraryManager, fileSystem, mediaProbeManager, localizationManager,
                 itemRepository);
+            MetadataApi = new MetadataApi(libraryManager, fileSystem, configurationManager);
 
             PatchManager.Initialize();
             if (_currentCatchupMode) InitializeCatchupMode();
