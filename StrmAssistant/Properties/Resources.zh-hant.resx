@@ -114,13 +114,13 @@
     <value>自訂 TMDB 備選語言</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
-    <value>盡可能從 TMDB 取得中文或日文元數據，預設為關閉。</value>
+    <value>盡可能從 TMDB 獲取中文或日文元數據，包括演員，預設為關閉。</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
     <value>備選語言</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_" xml:space="preserve">
-    <value>備選元資料語言，可多選</value>
+    <value>備選元資料語言，可多選。</value>
   </data>
   <data name="Favorites" xml:space="preserve">
     <value>❤️最愛</value>
@@ -142,5 +142,14 @@
   </data>
   <data name="IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all" xml:space="preserve">
     <value>允許的使用者範圍，留空包含所有使用者。</value>
+  </data>
+  <data name="ModOptions_OriginalPoster_Original_Poster" xml:space="preserve">
+    <value>原語言海報 TMDB</value>
+  </data>
+  <data name="Wiki_Link" xml:space="preserve">
+    <value>功能介紹</value>
+  </data>
+  <data name="ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_" xml:space="preserve">
+    <value>優先使用原語言海報，預設關閉。</value>
   </data>
 </root>

@@ -201,7 +201,7 @@
     <value>Customize MovieDb Fallback Language</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
-    <value>Try to get Chinese or Japanese metadata from MovieDb. Default is OFF.</value>
+    <value>Try to get Chinese or Japanese metadata from MovieDb, including actors. Default is OFF.</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
     <value>Fallback Languages</value>
@@ -232,5 +232,11 @@
   </data>
   <data name="IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all" xml:space="preserve">
     <value>Users allowed to detect. Blank includes all users.</value>
+  </data>
+  <data name="ModOptions_OriginalPoster_Original_Poster" xml:space="preserve">
+    <value>Original Language Poster (TMDB)</value>
+  </data>
+  <data name="ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_" xml:space="preserve">
+    <value>Prefer original poster based on the original language. Default is OFF.</value>
   </data>
 </root>

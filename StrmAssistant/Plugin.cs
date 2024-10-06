@@ -53,6 +53,7 @@ namespace StrmAssistant
         private bool _currentMergeMultiVersion;
         private bool _currentChineseMovieDb;
         private bool _currentExclusiveExtract;
+        private bool _currentPreferOriginalPoster;
 
         public Plugin(IApplicationHost applicationHost,
             ILogManager logManager,
@@ -84,6 +85,7 @@ namespace StrmAssistant
             _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
             _currentChineseMovieDb = GetOptions().ModOptions.ChineseMovieDb;
             _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
+            _currentPreferOriginalPoster = GetOptions().ModOptions.PreferOriginalPoster;
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
@@ -222,6 +224,21 @@ namespace StrmAssistant
                 }
             }
 
+            logger.Info("ExclusiveExtract is set to {0}", options.ModOptions.ExclusiveExtract);
+            if (_currentExclusiveExtract != GetOptions().ModOptions.ExclusiveExtract)
+            {
+                _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
+
+                if (_currentExclusiveExtract)
+                {
+                    ExclusiveExtract.Patch();
+                }
+                else
+                {
+                    ExclusiveExtract.Unpatch();
+                }
+            }
+
             logger.Info("ChineseMovieDb is set to {0}", options.ModOptions.ChineseMovieDb);
             if (_currentChineseMovieDb != GetOptions().ModOptions.ChineseMovieDb)
             {
@@ -237,18 +254,18 @@ namespace StrmAssistant
                 }
             }
 
-            logger.Info("ExclusiveExtract is set to {0}", options.ModOptions.ExclusiveExtract);
-            if (_currentExclusiveExtract != GetOptions().ModOptions.ExclusiveExtract)
+            logger.Info("PreferOriginalPoster is set to {0}", options.ModOptions.PreferOriginalPoster);
+            if (_currentPreferOriginalPoster != GetOptions().ModOptions.PreferOriginalPoster)
             {
-                _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
+                _currentPreferOriginalPoster = GetOptions().ModOptions.PreferOriginalPoster;
 
-                if (_currentExclusiveExtract)
+                if (_currentPreferOriginalPoster)
                 {
-                    ExclusiveExtract.Patch();
+                    PreferOriginalPoster.Patch();
                 }
                 else
                 {
-                    ExclusiveExtract.Unpatch();
+                    PreferOriginalPoster.Unpatch();
                 }
             }
 

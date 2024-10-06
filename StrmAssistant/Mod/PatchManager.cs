@@ -1,5 +1,6 @@
 using HarmonyLib;
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -24,8 +25,9 @@ namespace StrmAssistant.Mod
 
             EnableImageCapture.Initialize();
             MergeMultiVersion.Initialize();
-            ChineseMovieDb.Initialize();
             ExclusiveExtract.Initialize();
+            ChineseMovieDb.Initialize();
+            PreferOriginalPoster.Initialize();
         }
 
         public static bool IsPatched(MethodBase methodInfo, Type type)

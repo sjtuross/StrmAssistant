@@ -153,7 +153,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Users allowed to detect. Blank includes all.
+        ///   Looks up a localized string similar to Users allowed to detect. Blank includes all users..
         /// </summary>
         public static string IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all {
             get {
@@ -213,6 +213,25 @@ namespace StrmAssistant.Properties {
         public static string ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_ {
             get {
                 return ResourceManager.GetString("ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Original Language Poster.
+        /// </summary>
+        public static string ModOptions_OriginalPoster_Original_Poster {
+            get {
+                return ResourceManager.GetString("ModOptions_OriginalPoster_Original_Poster", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show original poster based on original language. Default is OFF..
+        /// </summary>
+        public static string ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Defaul" +
+                        "t_is_OFF_", resourceCulture);
             }
         }
         
@@ -317,7 +336,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable Image Capture.
+        ///   Looks up a localized string similar to Image Capture Enhanced.
         /// </summary>
         public static string PluginOptions_EnableImageCapture_Enable_Image_Capture {
             get {
@@ -326,7 +345,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Perform image capture for videos without primary image. Default is OFF..
+        ///   Looks up a localized string similar to Support image capture for Strm. Skip embedded image. Default is OFF..
         /// </summary>
         public static string PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_ {
             get {
