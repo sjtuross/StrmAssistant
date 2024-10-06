@@ -124,13 +124,7 @@ namespace StrmAssistant
 
                 if (IsChinese(input) || (isJapaneseFallback && IsJapanese(input)))
                 {
-                    if (libraryItem is null)
-                    {
-                        return new Tuple<string, bool>(input,
-                            !string.Equals(input, convertedInput, StringComparison.Ordinal));
-                    }
-
-                    return new Tuple<string, bool>(input, true);
+                    return new Tuple<string, bool>(convertedInput, true);
                 }
 
                 return new Tuple<string, bool>(input, false);

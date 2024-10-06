@@ -653,7 +653,8 @@ namespace StrmAssistant.Mod
 
                 if (updateNameResult.Item2)
                 {
-                    nameProperty.SetValue(info, updateNameResult.Item1);
+                    if (!string.Equals(infoName, updateNameResult.Item1, StringComparison.Ordinal))
+                        nameProperty.SetValue(info, updateNameResult.Item1);
                 }
                 else
                 {
@@ -683,7 +684,8 @@ namespace StrmAssistant.Mod
 
                 if (updateBiographyResult.Item2)
                 {
-                    biographyProperty.SetValue(info, updateBiographyResult.Item1);
+                    if (!string.Equals(infoBiography, updateBiographyResult.Item1, StringComparison.Ordinal))
+                        biographyProperty.SetValue(info, updateBiographyResult.Item1);
                 }
             }
 
