@@ -28,15 +28,25 @@ namespace StrmAssistant.Mod
             ExclusiveExtract.Initialize();
         }
 
-        public static bool IsPatched(MethodBase methodInfo)
+        public static bool IsPatched(MethodBase methodInfo, Type type)
         {
             var patchedMethods = Harmony.GetAllPatchedMethods();
             if (!patchedMethods.Contains(methodInfo)) return false;
             var patchInfo = Harmony.GetPatchInfo(methodInfo);
 
-            return patchInfo.Prefixes.Any(p => p.owner == HarmonyMod.Id) ||
-                   patchInfo.Postfixes.Any(p => p.owner == HarmonyMod.Id) ||
-                   patchInfo.Transpilers.Any(p => p.owner == HarmonyMod.Id);
+            return patchInfo.Prefixes.Any(p => p.owner == HarmonyMod.Id && p.PatchMethod.DeclaringType == type) ||
+                   patchInfo.Postfixes.Any(p => p.owner == HarmonyMod.Id && p.PatchMethod.DeclaringType == type) ||
+                   patchInfo.Transpilers.Any(p => p.owner == HarmonyMod.Id && p.PatchMethod.DeclaringType == type);
+        }
+
+        public static bool WasCalledByMethod(Assembly assembly, string callingMethodName)
+        {
+            var stackFrames = new StackTrace(1, false).GetFrames();
+            if (stackFrames != null && stackFrames.Select(f => f.GetMethod()).Any(m =>
+                    m?.DeclaringType?.Assembly == assembly && m?.Name == callingMethodName))
+                return true;
+
+            return false;
         }
     }
 }

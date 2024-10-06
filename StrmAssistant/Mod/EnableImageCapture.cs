@@ -98,7 +98,7 @@ namespace StrmAssistant.Mod
                 case PatchApproach.Harmony:
                     try
                     {
-                        if (!IsPatched(_staticConstructor))
+                        if (!IsPatched(_staticConstructor, typeof(EnableImageCapture)))
                         {
                             HarmonyMod.Patch(_staticConstructor,
                                 prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("ResourcePoolPrefix",
@@ -154,7 +154,7 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (!IsPatched(_getImage))
+                    if (!IsPatched(_getImage, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Patch(_getImage,
                             prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("GetImagePrefix",
@@ -179,7 +179,7 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (!IsPatched(_isShortcutGetter))
+                    if (!IsPatched(_isShortcutGetter, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Patch(_isShortcutGetter,
                             prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("IsShortcutPrefix",
@@ -304,7 +304,7 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (IsPatched(_staticConstructor))
+                    if (IsPatched(_staticConstructor, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Unpatch(_staticConstructor, HarmonyPatchType.All);
                         Plugin.Instance.logger.Debug("Unpatch IsShortcut Success by Harmony");
@@ -331,7 +331,7 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (IsPatched(_isShortcutGetter))
+                    if (IsPatched(_isShortcutGetter, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Unpatch(_isShortcutGetter, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch IsShortcut Success by Harmony");
@@ -352,7 +352,7 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (IsPatched(_getImage))
+                    if (IsPatched(_getImage, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Unpatch(_getImage, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch VideoImageProvider.GetImage Success by Harmony");
@@ -373,7 +373,7 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (!IsPatched(_runExtraction))
+                    if (!IsPatched(_runExtraction, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Patch(_runExtraction,
                             prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("RunExtractionPrefix",
@@ -397,7 +397,7 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (IsPatched(_runExtraction))
+                    if (IsPatched(_runExtraction, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Unpatch(_runExtraction, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch RunExtraction Success by Harmony");

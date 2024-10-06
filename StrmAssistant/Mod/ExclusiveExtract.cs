@@ -11,7 +11,7 @@ using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
 {
-    public class RefreshContext
+    internal class RefreshContext
     {
         public BaseItem BaseItem { get; set; }
         public MetadataRefreshOptions MetadataRefreshOptions { get; set; }
@@ -96,7 +96,7 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (!IsPatched(_runFfProcess))
+                    if (!IsPatched(_runFfProcess, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Patch(_runFfProcess,
                             prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("RunFfProcessPrefix",
@@ -120,7 +120,7 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (IsPatched(_runFfProcess))
+                    if (IsPatched(_runFfProcess, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Unpatch(_runFfProcess, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch RunFfProcess Success by Harmony");
@@ -141,7 +141,7 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (!IsPatched(_canRefreshMetadata))
+                    if (!IsPatched(_canRefreshMetadata, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Patch(_canRefreshMetadata,
                             prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("CanRefreshMetadataPrefix",
@@ -149,7 +149,7 @@ namespace StrmAssistant.Mod
                         Plugin.Instance.logger.Debug(
                             "Patch CanRefreshMetadata Success by Harmony");
                     }
-                    if (!IsPatched(_canRefreshImage))
+                    if (!IsPatched(_canRefreshImage, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Patch(_canRefreshImage,
                             prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("CanRefreshImagePrefix",
@@ -157,7 +157,7 @@ namespace StrmAssistant.Mod
                         Plugin.Instance.logger.Debug(
                             "Patch CanRefreshImage Success by Harmony");
                     }
-                    if (!IsPatched(_addVirtualFolder))
+                    if (!IsPatched(_addVirtualFolder, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Patch(_addVirtualFolder,
                             prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("RefreshLibraryPrefix",
@@ -165,7 +165,7 @@ namespace StrmAssistant.Mod
                         Plugin.Instance.logger.Debug(
                             "Patch AddVirtualFolder Success by Harmony");
                     }
-                    if (!IsPatched(_removeVirtualFolder))
+                    if (!IsPatched(_removeVirtualFolder, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Patch(_removeVirtualFolder,
                             prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("RefreshLibraryPrefix",
@@ -173,7 +173,7 @@ namespace StrmAssistant.Mod
                         Plugin.Instance.logger.Debug(
                             "Patch RemoveVirtualFolder Success by Harmony");
                     }
-                    if (!IsPatched(_addMediaPath))
+                    if (!IsPatched(_addMediaPath, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Patch(_addMediaPath,
                             prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("RefreshLibraryPrefix",
@@ -181,7 +181,7 @@ namespace StrmAssistant.Mod
                         Plugin.Instance.logger.Debug(
                             "Patch AddMediaPath Success by Harmony");
                     }
-                    if (!IsPatched(_removeMediaPath))
+                    if (!IsPatched(_removeMediaPath, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Patch(_removeMediaPath,
                             prefix: new HarmonyMethod(typeof(ExclusiveExtract).GetMethod("RefreshLibraryPrefix",
@@ -192,7 +192,7 @@ namespace StrmAssistant.Mod
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch CanRefresh Failed by Harmony");
+                    Plugin.Instance.logger.Debug("Patch ExclusiveExtract Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
@@ -206,32 +206,32 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (IsPatched(_canRefreshMetadata))
+                    if (IsPatched(_canRefreshMetadata, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Unpatch(_canRefreshMetadata, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch CanRefreshMetadata Success by Harmony");
                     }
-                    if (IsPatched(_canRefreshImage))
+                    if (IsPatched(_canRefreshImage, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Unpatch(_canRefreshImage, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch CanRefreshImage Success by Harmony");
                     }
-                    if (IsPatched(_addVirtualFolder))
+                    if (IsPatched(_addVirtualFolder, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Unpatch(_addVirtualFolder, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch AddVirtualFolder Success by Harmony");
                     }
-                    if (IsPatched(_removeVirtualFolder))
+                    if (IsPatched(_removeVirtualFolder, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Unpatch(_removeVirtualFolder, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch RemoveVirtualFolder Success by Harmony");
                     }
-                    if (IsPatched(_addMediaPath))
+                    if (IsPatched(_addMediaPath, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Unpatch(_addMediaPath, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch AddMediaPath Success by Harmony");
                     }
-                    if (IsPatched(_removeMediaPath))
+                    if (IsPatched(_removeMediaPath, typeof(ExclusiveExtract)))
                     {
                         HarmonyMod.Unpatch(_removeMediaPath, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch RemoveMediaPath Success by Harmony");
@@ -239,7 +239,7 @@ namespace StrmAssistant.Mod
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch CanRefresh Failed by Harmony");
+                    Plugin.Instance.logger.Debug("Unpatch ExclusiveExtract Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                 }

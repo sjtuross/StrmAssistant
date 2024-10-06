@@ -43,7 +43,7 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (!IsPatched(_isEligibleForMultiVersion))
+                    if (!IsPatched(_isEligibleForMultiVersion, typeof(MergeMultiVersion)))
                     {
                         HarmonyMod.Patch(_isEligibleForMultiVersion,
                             prefix: new HarmonyMethod(typeof(MergeMultiVersion).GetMethod("IsEligibleForMultiVersionPrefix",
@@ -68,7 +68,7 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (IsPatched(_isEligibleForMultiVersion))
+                    if (IsPatched(_isEligibleForMultiVersion, typeof(MergeMultiVersion)))
                     {
                         HarmonyMod.Unpatch(_isEligibleForMultiVersion, HarmonyPatchType.Prefix);
                         Plugin.Instance.logger.Debug("Unpatch IsEligibleForMultiVersion Success by Harmony");
