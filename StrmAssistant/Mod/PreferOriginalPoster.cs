@@ -236,17 +236,18 @@ namespace StrmAssistant.Mod
             CancellationToken cancellationToken, Task __result)
         {
             __result.ContinueWith(task =>
-            {
-                var result = task.GetType().GetProperty("Result")?.GetValue(task);
-                if (result != null)
                 {
-                    var tmdbId = result.GetType().GetProperty("id")?.GetValue(result).ToString();
-                    var imdbId = item.GetProviderId(MetadataProviders.Imdb);
-                    var originalLanguage =
-                        result.GetType().GetProperty("original_language")?.GetValue(result) as string;
-                    UpdateOriginalLanguage(tmdbId, imdbId, originalLanguage);
-                }
-            }, cancellationToken);
+                    var result = task.GetType().GetProperty("Result")?.GetValue(task);
+                    if (result != null)
+                    {
+                        var tmdbId = result.GetType().GetProperty("id")?.GetValue(result).ToString();
+                        var imdbId = item.GetProviderId(MetadataProviders.Imdb);
+                        var originalLanguage =
+                            result.GetType().GetProperty("original_language")?.GetValue(result) as string;
+                        UpdateOriginalLanguage(tmdbId, imdbId, originalLanguage);
+                    }
+                }, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
+                .ConfigureAwait(false);
         }
 
         [HarmonyPostfix]
@@ -256,20 +257,21 @@ namespace StrmAssistant.Mod
             if (WasCalledByMethod(_movieDbAssembly, "FetchImages")) WasCalledByFetchImages.Value = true;
 
             __result.ContinueWith(task =>
-            {
-                if (WasCalledByFetchImages.Value)
                 {
-                    var result = task.GetType().GetProperty("Result")?.GetValue(task);
-                    if (result != null)
+                    if (WasCalledByFetchImages.Value)
                     {
-                        var id = result.GetType().GetProperty("id")?.GetValue(result).ToString();
-                        var originalLanguage =
-                            (result.GetType().GetProperty("languages")?.GetValue(result) as List<string>)
-                            ?.FirstOrDefault();
-                        UpdateOriginalLanguage(id, null, originalLanguage);
+                        var result = task.GetType().GetProperty("Result")?.GetValue(task);
+                        if (result != null)
+                        {
+                            var id = result.GetType().GetProperty("id")?.GetValue(result).ToString();
+                            var originalLanguage =
+                                (result.GetType().GetProperty("languages")?.GetValue(result) as List<string>)
+                                ?.FirstOrDefault();
+                            UpdateOriginalLanguage(id, null, originalLanguage);
+                        }
                     }
-                }
-            }, cancellationToken);
+                }, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
+                .ConfigureAwait(false);
         }
 
         [HarmonyPrefix]
@@ -298,20 +300,6 @@ namespace StrmAssistant.Mod
             }
 
             return true;
-        }
-
-        [HarmonyPostfix]
-        private static void GetAvailableRemoteImagesPostfix(BaseItem item, LibraryOptions libraryOptions,
-            ref RemoteImageQuery query, IDirectoryService directoryService, CancellationToken cancellationToken,
-            Task<IEnumerable<RemoteImageInfo>> __result)
-        {
-            __result.ContinueWith(task =>
-            {
-                var remoteImages = task.Result;
-                var remoteImageList = remoteImages.ToList();
-
-                return (IEnumerable<RemoteImageInfo>)remoteImageList;
-            });
         }
     }
 }

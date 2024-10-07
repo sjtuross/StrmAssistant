@@ -7,6 +7,7 @@ using MediaBrowser.Model.Logging;
 using StrmAssistant.Mod;
 using System;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using static StrmAssistant.LanguageUtility;
@@ -107,13 +108,13 @@ namespace StrmAssistant
             return providerWithOptions.GetMetadata(options, cancellationToken);
         }
 
-        public Tuple<string, bool> UpdateAsNeeded(BaseItem libraryItem, string input)
+        public Tuple<string, bool> UpdateAsExpected(Person item, string input)
         {
             var isJapaneseFallback = Plugin.Instance.GetPluginOptions().ModOptions.ChineseMovieDb && ChineseMovieDb
                 .GetFallbackLanguages()
                 .Contains("ja-jp", StringComparer.OrdinalIgnoreCase);
 
-            if (libraryItem is null || string.Equals(Plugin.MetadataApi.GetPreferredMetadataLanguage(libraryItem), "zh-cn",
+            if (item is null || string.Equals(Plugin.MetadataApi.GetPreferredMetadataLanguage(item), "zh-cn",
                     StringComparison.OrdinalIgnoreCase))
             {
                 var convertedInput = input;
@@ -133,9 +134,14 @@ namespace StrmAssistant
             return new Tuple<string, bool>(input, true);
         }
 
-        public Tuple<string, bool> UpdateAsNeeded(string input)
+        public Tuple<string, bool> UpdateAsExpected(string input)
         {
-            return UpdateAsNeeded(null, input);
+            return UpdateAsExpected(null, input);
+        }
+
+        public string CleanPersonName(string input)
+        {
+            return Regex.Replace(input, @"\s+", "");
         }
     }
 }

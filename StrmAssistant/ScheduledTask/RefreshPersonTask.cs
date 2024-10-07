@@ -31,8 +31,8 @@ namespace StrmAssistant
             var personItems = _libraryManager.GetItemList(new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { "Person" }
-            });
-            _logger.Info("RefreshPerson - Number of Persons Before: " + personItems.Length);
+            }).Cast<Person>().ToList();
+            _logger.Info("RefreshPerson - Number of Persons Before: " + personItems.Count);
 
             var checkKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "tmdb", "imdb", "tvdb" };
 
@@ -100,14 +100,18 @@ namespace StrmAssistant
                             var newName = result.Item.Name;
                             if (!string.IsNullOrEmpty(newName))
                             {
-                                var updateResult = Plugin.MetadataApi.UpdateAsNeeded(taskItem, newName);
-                                if (updateResult.Item2) taskItem.Name = taskItem.SortName = updateResult.Item1;
+                                var updateResult = Plugin.MetadataApi.UpdateAsExpected(taskItem, newName);
+                                if (updateResult.Item2)
+                                {
+                                    taskItem.Name = taskItem.SortName =
+                                        Plugin.MetadataApi.CleanPersonName(updateResult.Item1);
+                                }
                             }
 
                             var newOverview = result.Item.Overview;
                             if (!string.IsNullOrEmpty(newOverview))
                             {
-                                var updateResult = Plugin.MetadataApi.UpdateAsNeeded(taskItem, newOverview);
+                                var updateResult = Plugin.MetadataApi.UpdateAsExpected(taskItem, newOverview);
                                 if (updateResult.Item2) taskItem.Overview = updateResult.Item1;
                             }
 

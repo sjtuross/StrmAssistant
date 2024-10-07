@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -43,6 +43,7 @@ namespace StrmAssistant.Mod
         private static MethodInfo _movieDbPersonProviderImportData;
 
         private static readonly AsyncLocal<bool> WasCalledByFetchImages = new AsyncLocal<bool>();
+        private static readonly AsyncLocal<string> RequestCountryCode = new AsyncLocal<string>();
 
         public static void Initialize()
         {
@@ -393,9 +394,9 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool IsCompletePrefix(BaseItem item, ref bool __result)
         {
-            if (!GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase))
+            if (item is Movie || item is Series || item is Season || item is Episode)
             {
-                if (item is Season || item is Episode)
+                if (!GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase))
                 {
                     if (!IsChinese(item.Name) || !IsChinese(item.Overview))
                     {
@@ -404,40 +405,22 @@ namespace StrmAssistant.Mod
                     }
                     item.Name = ConvertTraditionalToSimplified(item.Name);
                     item.Overview = ConvertTraditionalToSimplified(item.Overview);
+                    __result = true;
+                    return false;
                 }
                 else
-                {
-                    if (!IsChinese(item.Name))
-                    {
-                        __result = false;
-                        return false;
-                    }
-                    item.Name = ConvertTraditionalToSimplified(item.Name);
-                }
-            }
-            else
-            {
-                if (item is Season || item is Episode)
                 {
                     if (IsChinese(item.Name) && IsChinese(item.Overview) ||
                         IsJapanese(item.Name) && IsJapanese(item.Overview))
                     {
                         item.Name = ConvertTraditionalToSimplified(item.Name);
                         item.Overview = ConvertTraditionalToSimplified(item.Overview);
-                        return true;
+                        __result = true;
+                        return false;
                     }
+                    __result = false;
+                    return false;
                 }
-                else
-                {
-                    if (IsChinese(item.Name) || IsJapanese(item.Name))
-                    {
-                        item.Name = ConvertTraditionalToSimplified(item.Name);
-                        return true;
-                    }
-                }
-
-                __result = false;
-                return false;
             }
 
             return true;
@@ -484,48 +467,50 @@ namespace StrmAssistant.Mod
             Task __result)
         {
             if (WasCalledByMethod(_movieDbAssembly, "FetchImages")) WasCalledByFetchImages.Value = true;
+            RequestCountryCode.Value = string.IsNullOrEmpty(language) ? null : language.Split('-')[1];
 
             __result.ContinueWith(task =>
-            {
-                if (!WasCalledByFetchImages.Value)
                 {
-                    var fallbackLanguages = GetFallbackLanguages();
-                    var countryCodes = new HashSet<string>(fallbackLanguages.Select(l => l.Split('-')[1]),
-                        StringComparer.OrdinalIgnoreCase);
-
-                    var result = task.GetType().GetProperty("Result")?.GetValue(task);
-                    if (result != null)
+                    if (!WasCalledByFetchImages.Value)
                     {
-                        var nameProperty = result.GetType().GetProperty("name");
-                        if (nameProperty != null)
+                        var isJapaneseFallback =
+                            GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase);
+
+                        var result = task.GetType().GetProperty("Result")?.GetValue(task);
+                        if (result != null)
                         {
-                            var name = nameProperty.GetValue(result) as string;
-                            if (IsUpdateNeeded(name, false))
+                            var nameProperty = result.GetType().GetProperty("name");
+                            if (nameProperty != null)
                             {
-                                var alternativeTitlesProperty = result.GetType().GetProperty("alternative_titles");
-                                if (alternativeTitlesProperty != null)
+                                var name = nameProperty.GetValue(result) as string;
+                                if (!IsChinese(name) && (!isJapaneseFallback || !IsJapanese(name)))
                                 {
-                                    var alternativeTitles = alternativeTitlesProperty.GetValue(result);
-                                    var resultsProperty = alternativeTitles?.GetType().GetProperty("results");
-
-                                    if (resultsProperty?.GetValue(alternativeTitles) is IList altTitles)
+                                    var alternativeTitlesProperty = result.GetType().GetProperty("alternative_titles");
+                                    if (alternativeTitlesProperty != null)
                                     {
-                                        foreach (var altTitle in altTitles)
-                                        {
-                                            var iso3166Property = altTitle.GetType().GetProperty("iso_3166_1");
-                                            var titleProperty = altTitle.GetType().GetProperty("title");
+                                        var alternativeTitles = alternativeTitlesProperty.GetValue(result);
+                                        var resultsProperty = alternativeTitles?.GetType().GetProperty("results");
 
-                                            if (iso3166Property != null && titleProperty != null)
+                                        if (resultsProperty?.GetValue(alternativeTitles) is IList altTitles)
+                                        {
+                                            foreach (var altTitle in altTitles)
                                             {
-                                                var iso3166Value = iso3166Property.GetValue(altTitle)?.ToString();
-                                                if (iso3166Value != null && countryCodes.Contains(iso3166Value))
+                                                var iso3166Property = altTitle.GetType().GetProperty("iso_3166_1");
+                                                var titleProperty = altTitle.GetType().GetProperty("title");
+
+                                                if (iso3166Property != null && titleProperty != null)
                                                 {
-                                                    var titleValue = titleProperty.GetValue(altTitle)?.ToString();
-                                                    if (titleValue != null)
+                                                    var iso3166Value = iso3166Property.GetValue(altTitle)?.ToString();
+                                                    if (iso3166Value != null && RequestCountryCode.Value != null &&
+                                                        string.Equals(iso3166Value, RequestCountryCode.Value,
+                                                            StringComparison.OrdinalIgnoreCase))
                                                     {
-                                                        nameProperty.SetValue(result,
-                                                            ConvertTraditionalToSimplified(titleValue));
-                                                        break;
+                                                        var titleValue = titleProperty.GetValue(altTitle)?.ToString();
+                                                        if (titleValue != null)
+                                                        {
+                                                            nameProperty.SetValue(result, titleValue);
+                                                            break;
+                                                        }
                                                     }
                                                 }
                                             }
@@ -537,6 +522,10 @@ namespace StrmAssistant.Mod
                     }
                 }
             }, cancellationToken);
+                        }
+                    }
+                }, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
+                .ConfigureAwait(false);
         }
 
         [HarmonyPrefix]
@@ -649,11 +638,12 @@ namespace StrmAssistant.Mod
             var nameProperty = info.GetType().GetProperty("name");
             if (nameProperty?.GetValue(info) is string infoName)
             {
-                var updateNameResult = Plugin.MetadataApi.UpdateAsNeeded(infoName);
+                var updateNameResult = Plugin.MetadataApi.UpdateAsExpected(infoName);
 
                 if (updateNameResult.Item2)
                 {
-                    if (!string.Equals(infoName, updateNameResult.Item1, StringComparison.Ordinal))
+                    if (!string.Equals(infoName, Plugin.MetadataApi.CleanPersonName(updateNameResult.Item1),
+                            StringComparison.Ordinal))
                         nameProperty.SetValue(info, updateNameResult.Item1);
                 }
                 else
@@ -665,7 +655,7 @@ namespace StrmAssistant.Mod
                         {
                             if (alias is string aliasString && !string.IsNullOrEmpty(aliasString))
                             {
-                                var updateAliasResult = Plugin.MetadataApi.UpdateAsNeeded(aliasString);
+                                var updateAliasResult = Plugin.MetadataApi.UpdateAsExpected(aliasString);
                                 if (updateAliasResult.Item2)
                                 {
                                     nameProperty.SetValue(info, updateAliasResult.Item1);
@@ -680,7 +670,7 @@ namespace StrmAssistant.Mod
             var biographyProperty = info.GetType().GetProperty("biography");
             if (biographyProperty?.GetValue(info) is string infoBiography)
             {
-                var updateBiographyResult = Plugin.MetadataApi.UpdateAsNeeded(infoBiography);
+                var updateBiographyResult = Plugin.MetadataApi.UpdateAsExpected(infoBiography);
 
                 if (updateBiographyResult.Item2)
                 {
