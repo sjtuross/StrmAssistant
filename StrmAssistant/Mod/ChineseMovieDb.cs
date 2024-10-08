@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -459,6 +459,35 @@ namespace StrmAssistant.Mod
                 }
             }
 
+            if (isFirstLanguage && string.Equals(CurrentLookupCountryCode.Value, "CN", StringComparison.OrdinalIgnoreCase))
+            {
+                var genresProperty = seriesInfo.GetType().GetProperty("genres");
+                if (genresProperty != null)
+                {
+                    if (genresProperty.GetValue(seriesInfo) is IList genres)
+                    {
+                        foreach (var genre in genres)
+                        {
+                            var genreNameProperty = genre.GetType().GetProperty("name");
+                            if (genreNameProperty != null)
+                            {
+                                var genreValue = genreNameProperty.GetValue(genre)?.ToString();
+                                if (genreValue != null)
+                                {
+                                    if (string.Equals(genreValue, "Sci-Fi & Fantasy",
+                                            StringComparison.OrdinalIgnoreCase))
+                                        genreNameProperty.SetValue(genre, "科幻奇幻");
+
+                                    if (string.Equals(genreValue, "War & Politics",
+                                            StringComparison.OrdinalIgnoreCase))
+                                        genreNameProperty.SetValue(genre, "战争政治");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             return true;
         }
 
@@ -512,35 +541,6 @@ namespace StrmAssistant.Mod
                                                             break;
                                                         }
                                                     }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (string.Equals(RequestCountryCode.Value,"CN",StringComparison.OrdinalIgnoreCase))
-                            {
-                                var genresProperty = result.GetType().GetProperty("genres");
-                                if (genresProperty != null)
-                                {
-                                    if (genresProperty.GetValue(result) is IList genres)
-                                    {
-                                        foreach (var genre in genres)
-                                        {
-                                            var genreNameProperty = genre.GetType().GetProperty("name");
-                                            if (genreNameProperty != null)
-                                            {
-                                                var genreValue = genreNameProperty.GetValue(genre)?.ToString();
-                                                if (genreValue != null)
-                                                {
-                                                    if (string.Equals(genreValue, "Sci-Fi & Fantasy",
-                                                            StringComparison.OrdinalIgnoreCase))
-                                                        genreNameProperty.SetValue(genre, "科幻奇幻");
-
-                                                    if (string.Equals(genreValue, "War & Politics",
-                                                            StringComparison.OrdinalIgnoreCase))
-                                                        genreNameProperty.SetValue(genre, "战争政治");
                                                 }
                                             }
                                         }
