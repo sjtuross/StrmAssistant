@@ -1,4 +1,4 @@
-using HarmonyLib;
+﻿using HarmonyLib;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -43,7 +43,7 @@ namespace StrmAssistant.Mod
         private static MethodInfo _movieDbPersonProviderImportData;
 
         private static readonly AsyncLocal<bool> WasCalledByFetchImages = new AsyncLocal<bool>();
-        private static readonly AsyncLocal<string> RequestCountryCode = new AsyncLocal<string>();
+        private static readonly AsyncLocal<string> CurrentLookupCountryCode = new AsyncLocal<string>();
 
         public static void Initialize()
         {
@@ -496,7 +496,7 @@ namespace StrmAssistant.Mod
             Task __result)
         {
             if (WasCalledByMethod(_movieDbAssembly, "FetchImages")) WasCalledByFetchImages.Value = true;
-            RequestCountryCode.Value = string.IsNullOrEmpty(language) ? null : language.Split('-')[1];
+            CurrentLookupCountryCode.Value = string.IsNullOrEmpty(language) ? null : language.Split('-')[1];
 
             __result.ContinueWith(task =>
                 {
@@ -530,8 +530,8 @@ namespace StrmAssistant.Mod
                                                 if (iso3166Property != null && titleProperty != null)
                                                 {
                                                     var iso3166Value = iso3166Property.GetValue(altTitle)?.ToString();
-                                                    if (iso3166Value != null && RequestCountryCode.Value != null &&
-                                                        string.Equals(iso3166Value, RequestCountryCode.Value,
+                                                    if (iso3166Value != null && CurrentLookupCountryCode.Value != null &&
+                                                        string.Equals(iso3166Value, CurrentLookupCountryCode.Value,
                                                             StringComparison.OrdinalIgnoreCase))
                                                     {
                                                         var titleValue = titleProperty.GetValue(altTitle)?.ToString();
@@ -582,6 +582,9 @@ namespace StrmAssistant.Mod
         private static bool EpisodeImportDataPrefix(MetadataResult<Episode> result, EpisodeInfo info, object response,
             object settings, bool isFirstLanguage)
         {
+            var isJapaneseFallback =
+                GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase);
+
             var item = result.Item;
 
             if (IsUpdateNeeded(item.Name, true))
@@ -589,7 +592,13 @@ namespace StrmAssistant.Mod
                 var nameProperty = response.GetType().GetProperty("name");
                 if (nameProperty != null)
                 {
-                    item.Name = nameProperty.GetValue(response) as string;
+                    var nameValue = nameProperty.GetValue(response) as string;
+                    if (string.IsNullOrEmpty(item.Name) || !isJapaneseFallback ||
+                        (IsChinese(item.Name) && IsDefaultChineseEpisodeName(item.Name) && IsJapanese(nameValue) &&
+                         !IsDefaultJapaneseEpisodeName(nameValue)))
+                    {
+                        item.Name = nameValue;
+                    }
                 }
             }
 
