@@ -1,6 +1,8 @@
 ﻿using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
+using MediaBrowser.Controller;
+using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
@@ -17,18 +19,22 @@ namespace StrmAssistant
 {
     public class UpdatePluginTask : IScheduledTask
     {
+        private readonly ILogger _logger;
         private readonly IApplicationHost _applicationHost;
         private readonly IApplicationPaths _applicationPaths;
         private readonly IHttpClient _httpClient;
-        private readonly ILogger _logger;
+        private readonly IActivityManager _activityManager;
+        private readonly IServerApplicationHost _serverApplicationHost;
 
         public UpdatePluginTask(IApplicationHost applicationHost, IApplicationPaths applicationPaths,
-            IHttpClient httpClient)
+            IHttpClient httpClient, IActivityManager activityManager, IServerApplicationHost serverApplicationHost)
         {
             _logger = Plugin.Instance.logger;
             _applicationHost = applicationHost;
             _applicationPaths = applicationPaths;
             _httpClient = httpClient;
+            _activityManager = activityManager;
+            _serverApplicationHost = serverApplicationHost;
         }
 
         private static string CurrentVersion => Assembly.GetExecutingAssembly().GetName().Version?.ToString();
@@ -101,6 +107,14 @@ namespace StrmAssistant
 
                     _logger.Info("Plugin update complete");
 
+                    _activityManager.Create(new ActivityLogEntry
+                    {
+                        Name = Plugin.Instance.Name + " Updated to " + remoteVersion + " on " +
+                               _serverApplicationHost.FriendlyName,
+                        Type = "PluginUpdateInstalled",
+                        Severity = LogSeverity.Info
+                    });
+
                     _applicationHost.NotifyPendingRestart();
                 }
                 else
@@ -110,6 +124,14 @@ namespace StrmAssistant
             }
             catch (Exception e)
             {
+                _activityManager.Create(new ActivityLogEntry
+                {
+                    Name = Plugin.Instance.Name + " update failed on " + _serverApplicationHost.FriendlyName,
+                    Type = "PluginUpdateFailed",
+                    Overview = e.Message,
+                    Severity = LogSeverity.Error
+                });
+
                 _logger.Error("Update error: {0}", e.Message);
                 _logger.Debug(e.StackTrace);
             }
