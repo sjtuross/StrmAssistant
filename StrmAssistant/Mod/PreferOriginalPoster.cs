@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -29,9 +31,18 @@ namespace StrmAssistant.Mod
 
         private static Assembly _movieDbAssembly;
         private static MethodInfo _getMovieInfo;
+        private static PropertyInfo _tmdbIdMovieDataProperty;
+        private static PropertyInfo _imdbIdMovieDataProperty;
+        private static PropertyInfo _originalLanguageMovieDataProperty;
+
         private static MethodInfo _ensureSeriesInfo;
         private static MethodInfo _getAvailableRemoteImages;
-        private static MethodInfo _indexOfIgnoreCase;
+        private static PropertyInfo _tmdbIdSeriesInfoProperty;
+        private static PropertyInfo _languagesSeriesInfoProperty;
+
+        private static PropertyInfo _movieDataTaskResultProperty;
+        private static PropertyInfo _seriesInfoTaskResultProperty;
+        private static FieldInfo _remoteImageTaskResult;
 
         private static readonly ConcurrentDictionary<string, ContextItem> CurrentItemsByTmdbId =
             new ConcurrentDictionary<string, ContextItem>();
@@ -56,9 +67,18 @@ namespace StrmAssistant.Mod
                         BindingFlags.Instance | BindingFlags.NonPublic, null,
                         new[] { typeof(BaseItem), typeof(string), typeof(IJsonSerializer), typeof(CancellationToken) },
                         null);
+                    var completeMovieData = _movieDbAssembly.GetType("MovieDb.MovieDbProvider")
+                        .GetNestedType("CompleteMovieData", BindingFlags.NonPublic);
+                    _tmdbIdMovieDataProperty = completeMovieData.GetProperty("id");
+                    _imdbIdMovieDataProperty = completeMovieData.GetProperty("imdb_id");
+                    _originalLanguageMovieDataProperty = completeMovieData.GetProperty("original_language");
+
                     var movieDbSeriesProvider = _movieDbAssembly.GetType("MovieDb.MovieDbSeriesProvider");
                     _ensureSeriesInfo = movieDbSeriesProvider.GetMethod("EnsureSeriesInfo",
                         BindingFlags.Instance | BindingFlags.NonPublic);
+                    var seriesRootObject = movieDbSeriesProvider.GetNestedType("SeriesRootObject", BindingFlags.Public);
+                    _tmdbIdSeriesInfoProperty = seriesRootObject.GetProperty("id");
+                    _languagesSeriesInfoProperty = seriesRootObject.GetProperty("languages");
 
                     var embyProvidersAssembly = Assembly.Load("Emby.Providers");
                     var providerManager =
@@ -70,8 +90,8 @@ namespace StrmAssistant.Mod
                             typeof(BaseItem), typeof(LibraryOptions), typeof(RemoteImageQuery),
                             typeof(IDirectoryService), typeof(CancellationToken)
                         }, null);
-                    _indexOfIgnoreCase =
-                        providerManager.GetMethod("IndexOfIgnoreCase", BindingFlags.NonPublic | BindingFlags.Static);
+                    
+                    _remoteImageTaskResult = typeof(Task<IEnumerable<RemoteImageInfo>>).GetField("m_result", BindingFlags.NonPublic | BindingFlags.Instance);
                 }
                 else
                 {
@@ -118,30 +138,22 @@ namespace StrmAssistant.Mod
                                 "EnsureSeriesInfoPostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.logger.Debug(
-                            "Patch MovieDbSeriesProvider.EnsureSeriesInfoPostfix Success by Harmony");
+                            "Patch MovieDbSeriesProvider.EnsureSeriesInfo Success by Harmony");
                     }
                     if (!IsPatched(_getAvailableRemoteImages, typeof(PreferOriginalPoster)))
                     {
                         HarmonyMod.Patch(_getAvailableRemoteImages,
                             prefix: new HarmonyMethod(typeof(PreferOriginalPoster).GetMethod(
-                                "GetAvailableRemoteImagesPrefix",
-                                BindingFlags.Static | BindingFlags.NonPublic)));
+                                "GetAvailableRemoteImagesPrefix", BindingFlags.Static | BindingFlags.NonPublic)),
+                            postfix: new HarmonyMethod(typeof(PreferOriginalPoster).GetMethod(
+                                "GetAvailableRemoteImagesPostfix", BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.logger.Debug(
                             "Patch GetAvailableRemoteImages Success by Harmony");
-                    }
-
-                    if (!IsPatched(_indexOfIgnoreCase, typeof(PreferOriginalPoster)))
-                    {
-                        HarmonyMod.Patch(_indexOfIgnoreCase,
-                            prefix: new HarmonyMethod(typeof(PreferOriginalPoster).GetMethod("IndexOfIgnoreCasePrefix",
-                                BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
-                            "Patch IndexOfIgnoreCase Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch OriginalPoster Failed by Harmony");
+                    Plugin.Instance.logger.Debug("Patch PreferOriginalPoster Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
@@ -157,28 +169,28 @@ namespace StrmAssistant.Mod
                 {
                     if (IsPatched(_getAvailableRemoteImages, typeof(PreferOriginalPoster)))
                     {
-                        HarmonyMod.Unpatch(_getAvailableRemoteImages, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_getAvailableRemoteImages,
+                            AccessTools.Method(typeof(PreferOriginalPoster), "GetAvailableRemoteImagesPrefix"));
+                        HarmonyMod.Unpatch(_getAvailableRemoteImages,
+                            AccessTools.Method(typeof(PreferOriginalPoster), "GetAvailableRemoteImagesPostfix"));
                         Plugin.Instance.logger.Debug("Unpatch GetAvailableRemoteImages Success by Harmony");
                     }
                     if (IsPatched(_ensureSeriesInfo, typeof(PreferOriginalPoster)))
                     {
-                        HarmonyMod.Unpatch(_ensureSeriesInfo, HarmonyPatchType.Postfix);
-                        Plugin.Instance.logger.Debug("Unpatch MovieDbSeriesProvider.EnsureSeriesInfoPostfix Success by Harmony");
+                        HarmonyMod.Unpatch(_ensureSeriesInfo,
+                            AccessTools.Method(typeof(PreferOriginalPoster), "EnsureSeriesInfoPostfix"));
+                        Plugin.Instance.logger.Debug("Unpatch MovieDbSeriesProvider.EnsureSeriesInfo Success by Harmony");
                     }
                     if (IsPatched(_getMovieInfo, typeof(PreferOriginalPoster)))
                     {
-                        HarmonyMod.Unpatch(_getMovieInfo, HarmonyPatchType.Postfix);
+                        HarmonyMod.Unpatch(_getMovieInfo,
+                            AccessTools.Method(typeof(PreferOriginalPoster), "GetMovieInfoPostfix"));
                         Plugin.Instance.logger.Debug("Unpatch MovieDbImageProvider.GetMovieInfo Success by Harmony");
-                    }
-                    if (IsPatched(_indexOfIgnoreCase, typeof(PreferOriginalPoster)))
-                    {
-                        HarmonyMod.Unpatch(_indexOfIgnoreCase, HarmonyPatchType.Prefix);
-                        Plugin.Instance.logger.Debug("Unpatch IndexOfIgnoreCase Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch OriginalPoster Failed by Harmony");
+                    Plugin.Instance.logger.Debug("Unpatch PreferOriginalPoster Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                 }
@@ -231,20 +243,45 @@ namespace StrmAssistant.Mod
             return foundItem;
         }
 
+        private static string GetOriginalLanguage(BaseItem item)
+        {
+            if (item is Movie || item is Series)
+            {
+                var itemLookup = GetAndRemoveItem();
+                return itemLookup?.OriginalLanguage;
+            }
+
+            if (item is Season season)
+            {
+                var series = season.Series;
+                return LanguageUtility.IsChinese(series.OriginalTitle) ? "cn" :
+                    LanguageUtility.IsJapanese(series.OriginalTitle) ? "jp" :
+                    LanguageUtility.IsKorean(series.OriginalTitle) ? "ko" : "en";
+            }
+
+            return null;
+        }
+
         [HarmonyPostfix]
         private static void GetMovieInfoPostfix(BaseItem item, string language, IJsonSerializer jsonSerializer,
             CancellationToken cancellationToken, Task __result)
         {
             __result.ContinueWith(task =>
                 {
-                    var result = task.GetType().GetProperty("Result")?.GetValue(task);
-                    if (result != null)
+                    if (_movieDataTaskResultProperty == null)
+                        _movieDataTaskResultProperty = task.GetType().GetProperty("Result");
+
+                    var movieData = _movieDataTaskResultProperty?.GetValue(task);
+                    if (movieData != null && _tmdbIdMovieDataProperty!=null && _imdbIdMovieDataProperty!=null && _originalLanguageMovieDataProperty!=null)
                     {
-                        var tmdbId = result.GetType().GetProperty("id")?.GetValue(result).ToString();
-                        var imdbId = item.GetProviderId(MetadataProviders.Imdb);
-                        var originalLanguage =
-                            result.GetType().GetProperty("original_language")?.GetValue(result) as string;
-                        UpdateOriginalLanguage(tmdbId, imdbId, originalLanguage);
+                        var tmdbId = _tmdbIdMovieDataProperty.GetValue(movieData).ToString();
+                        var imdbId = _imdbIdMovieDataProperty.GetValue(movieData) as string;
+                        var originalLanguage = _originalLanguageMovieDataProperty.GetValue(movieData) as string;
+                        if ((!string.IsNullOrEmpty(tmdbId) || !string.IsNullOrEmpty(imdbId)) &&
+                            !string.IsNullOrEmpty(originalLanguage))
+                        {
+                            UpdateOriginalLanguage(tmdbId, imdbId, originalLanguage);
+                        }
                     }
                 }, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
                 .ConfigureAwait(false);
@@ -260,14 +297,21 @@ namespace StrmAssistant.Mod
                 {
                     if (WasCalledByFetchImages.Value)
                     {
-                        var result = task.GetType().GetProperty("Result")?.GetValue(task);
-                        if (result != null)
+                        if (_seriesInfoTaskResultProperty == null)
+                            _seriesInfoTaskResultProperty = task.GetType().GetProperty("Result");
+
+                        var seriesInfo = _seriesInfoTaskResultProperty?.GetValue(task);
+                        if (seriesInfo != null && _tmdbIdSeriesInfoProperty != null &&
+                            _languagesSeriesInfoProperty != null)
                         {
-                            var id = result.GetType().GetProperty("id")?.GetValue(result).ToString();
+                            var id = _tmdbIdSeriesInfoProperty.GetValue(seriesInfo).ToString();
                             var originalLanguage =
-                                (result.GetType().GetProperty("languages")?.GetValue(result) as List<string>)
+                                (_languagesSeriesInfoProperty.GetValue(seriesInfo) as List<string>)
                                 ?.FirstOrDefault();
-                            UpdateOriginalLanguage(id, null, originalLanguage);
+                            if (!string.IsNullOrEmpty(id) && !string.IsNullOrEmpty(originalLanguage))
+                            {
+                                UpdateOriginalLanguage(id, null, originalLanguage);
+                            }
                         }
                     }
                 }, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
@@ -287,19 +331,29 @@ namespace StrmAssistant.Mod
             return true;
         }
 
-        [HarmonyPrefix]
-        private static bool IndexOfIgnoreCasePrefix(List<string> list, ReadOnlySpan<char> value)
+        [HarmonyPostfix]
+        private static void GetAvailableRemoteImagesPostfix(BaseItem item, LibraryOptions libraryOptions,
+            ref RemoteImageQuery query, IDirectoryService directoryService, CancellationToken cancellationToken,
+            Task<IEnumerable<RemoteImageInfo>> __result)
         {
-            var lookupItem = GetAndRemoveItem();
-            var originalLanguage = lookupItem?.OriginalLanguage;
+            __result.ContinueWith(task =>
+                {
+                    if (task.IsCompleted)
+                    {
+                        var originalLanguage = GetOriginalLanguage(item);
+                        var remoteImages = task.Result;
 
-            if (!string.IsNullOrEmpty(originalLanguage))
-            {
-                list.Remove(originalLanguage);
-                list.Insert(0, originalLanguage);
-            }
-
-            return true;
+                        if (!string.IsNullOrEmpty(originalLanguage))
+                        {
+                            var orderedImages = remoteImages
+                                .OrderBy(i =>
+                                    string.Equals(i.Language, originalLanguage, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
+                                .ToList();
+                            _remoteImageTaskResult?.SetValue(__result, orderedImages);
+                        }
+                    }
+                }, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
+                .ConfigureAwait(false);
         }
     }
 }

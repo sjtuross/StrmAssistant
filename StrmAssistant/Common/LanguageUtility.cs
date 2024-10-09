@@ -11,6 +11,9 @@ namespace StrmAssistant
         public static bool IsJapanese(string input) =>
             !string.IsNullOrEmpty(input) && new Regex(@"[\u3040-\u309F\u30A0-\u30FF]").IsMatch(input);
 
+        public static bool IsKorean(string input) =>
+            !string.IsNullOrEmpty(input) && new Regex(@"[\uAC00-\uD7A3]").IsMatch(input);
+
         public static bool IsDefaultChineseEpisodeName(string name) =>
             !string.IsNullOrEmpty(name) && new Regex(@"第\s*\d+\s*集").IsMatch(name);
 
