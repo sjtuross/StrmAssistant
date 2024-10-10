@@ -152,4 +152,10 @@
   <data name="ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_" xml:space="preserve">
     <value>優先使用原語言海報，預設關閉。</value>
   </data>
+  <data name="IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced" xml:space="preserve">
+    <value>原生跳片頭增強</value>
+  </data>
+  <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
+    <value>魔改原生跳片頭探測，解鎖Strm支持，預設關閉。</value>
+  </data>
 </root>

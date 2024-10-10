@@ -5,6 +5,7 @@ using MediaBrowser.Model.LocalizationAttributes;
 using StrmAssistant.Properties;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 namespace StrmAssistant
 {
@@ -48,5 +49,14 @@ namespace StrmAssistant
         [SelectItemsSource(nameof(UserList))]
         [VisibleCondition(nameof(EnableIntroSkip), SimpleCondition.IsTrue)]
         public string UserScope { get; set; }
+
+        [DisplayNameL("IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced", typeof(Resources))]
+        [DescriptionL("IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection", typeof(Resources))]
+        [Required]
+        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
+        public bool UnlockIntroSkip { get; set; } = false;
+
+        [Browsable(false)]
+        public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;
     }
 }

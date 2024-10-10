@@ -28,6 +28,7 @@ namespace StrmAssistant.Mod
             ExclusiveExtract.Initialize();
             ChineseMovieDb.Initialize();
             PreferOriginalPoster.Initialize();
+            UnlockIntroSkip.Initialize();
         }
 
         public static bool IsPatched(MethodBase methodInfo, Type type)

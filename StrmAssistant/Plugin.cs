@@ -50,6 +50,7 @@ namespace StrmAssistant
         private bool _currentEnableImageCapture;
         private bool _currentCatchupMode;
         private bool _currentEnableIntroSkip;
+        private bool _currentUnlockIntroSkip;
         private bool _currentMergeMultiVersion;
         private bool _currentChineseMovieDb;
         private bool _currentExclusiveExtract;
@@ -82,6 +83,7 @@ namespace StrmAssistant
             _currentEnableImageCapture = GetOptions().MediaInfoExtractOptions.EnableImageCapture;
             _currentCatchupMode = GetOptions().GeneralOptions.CatchupMode;
             _currentEnableIntroSkip = GetOptions().IntroSkipOptions.EnableIntroSkip;
+            _currentUnlockIntroSkip = GetOptions().IntroSkipOptions.UnlockIntroSkip;
             _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
             _currentChineseMovieDb = GetOptions().ModOptions.ChineseMovieDb;
             _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
@@ -298,6 +300,20 @@ namespace StrmAssistant
                 else
                 {
                     PlaySessionMonitor.Dispose();
+                }
+            }
+
+            logger.Info("UnlockIntroSkip is set to {0}", options.IntroSkipOptions.UnlockIntroSkip);
+            if (_currentUnlockIntroSkip != options.IntroSkipOptions.UnlockIntroSkip)
+            {
+                _currentUnlockIntroSkip = options.IntroSkipOptions.UnlockIntroSkip;
+                if (options.IntroSkipOptions.UnlockIntroSkip)
+                {
+                    UnlockIntroSkip.Patch();
+                }
+                else
+                {
+                    UnlockIntroSkip.Unpatch();
                 }
             }
 
