@@ -22,6 +22,8 @@ namespace StrmAssistant.Mod
         private static PropertyInfo _isShortcutProperty;
         private static MethodInfo _getImage;
         private static MethodInfo _runExtraction;
+        private static Type _quickSingleImageExtractor;
+        private static PropertyInfo _totalTimeoutMs;
 
         private static AsyncLocal<BaseItem> CurrentItem { get; } = new AsyncLocal<BaseItem>();
         private static int _currentMaxConcurrentCount;
@@ -49,6 +51,10 @@ namespace StrmAssistant.Mod
                     typeof(BaseItem).GetProperty("IsShortcut", BindingFlags.Instance | BindingFlags.Public);
                 _runExtraction =
                     imageExtractorBaseType.GetMethod("RunExtraction", BindingFlags.Instance | BindingFlags.Public);
+                _quickSingleImageExtractor =
+                    mediaEncodingAssembly.GetType(
+                        "Emby.Server.MediaEncoding.ImageExtraction.QuickSingleImageExtractor");
+                _totalTimeoutMs = _quickSingleImageExtractor.GetProperty("TotalTimeoutMs");
 
                 var embyProvidersAssembly = Assembly.Load("Emby.Providers");
                 var videoImageProvider = embyProvidersAssembly.GetType("Emby.Providers.MediaInfo.VideoImageProvider");
@@ -306,13 +312,16 @@ namespace StrmAssistant.Mod
                 {
                     if (IsPatched(_staticConstructor, typeof(EnableImageCapture)))
                     {
-                        HarmonyMod.Unpatch(_staticConstructor, HarmonyPatchType.All);
-                        Plugin.Instance.logger.Debug("Unpatch IsShortcut Success by Harmony");
+                        HarmonyMod.Unpatch(_staticConstructor,
+                            AccessTools.Method(typeof(EnableImageCapture), "ResourcePoolPrefix"));
+                        //HarmonyMod.Unpatch(_staticConstructor,
+                        //    AccessTools.Method(typeof(EnableImageCapture), "ResourcePoolTranspiler"));
+                        Plugin.Instance.logger.Debug("Unpatch FFmpeg ResourcePool Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch IsShortcut Failed by Harmony");
+                    Plugin.Instance.logger.Debug("Unpatch FFmpeg ResourcePool Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                 }
@@ -333,7 +342,8 @@ namespace StrmAssistant.Mod
                 {
                     if (IsPatched(_isShortcutGetter, typeof(EnableImageCapture)))
                     {
-                        HarmonyMod.Unpatch(_isShortcutGetter, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_isShortcutGetter,
+                            AccessTools.Method(typeof(EnableImageCapture), "IsShortcutPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch IsShortcut Success by Harmony");
                     }
                 }
@@ -354,7 +364,7 @@ namespace StrmAssistant.Mod
                 {
                     if (IsPatched(_getImage, typeof(EnableImageCapture)))
                     {
-                        HarmonyMod.Unpatch(_getImage, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_getImage, AccessTools.Method(typeof(EnableImageCapture), "GetImagePrefix"));
                         Plugin.Instance.logger.Debug("Unpatch VideoImageProvider.GetImage Success by Harmony");
                     }
                 }
@@ -399,7 +409,8 @@ namespace StrmAssistant.Mod
                 {
                     if (IsPatched(_runExtraction, typeof(EnableImageCapture)))
                     {
-                        HarmonyMod.Unpatch(_runExtraction, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_runExtraction,
+                            AccessTools.Method(typeof(EnableImageCapture), "RunExtractionPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch RunExtraction Success by Harmony");
                     }
                 }
@@ -469,20 +480,11 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool RunExtractionPrefix(object __instance)
         {
-            var imageExtractor = __instance.GetType();
-
-            if (imageExtractor.Name == "QuickSingleImageExtractor")
+            if (_totalTimeoutMs != null && __instance.GetType() == _quickSingleImageExtractor)
             {
-                var totalTimeoutMs =
-                    imageExtractor.GetProperty("TotalTimeoutMs",
-                        BindingFlags.Instance | BindingFlags.Public);
-
-                if (totalTimeoutMs != null)
-                {
-                    var newValue =
-                        60000 * Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
-                    totalTimeoutMs.SetValue(__instance, newValue);
-                }
+                var newValue =
+                    60000 * Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
+                _totalTimeoutMs.SetValue(__instance, newValue);
             }
 
             return true;

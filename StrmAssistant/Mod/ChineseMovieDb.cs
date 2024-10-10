@@ -24,6 +24,7 @@ namespace StrmAssistant.Mod
         private static MethodInfo _genericMovieDbInfoProcessMainInfoMovie;
         private static MethodInfo _genericMovieDbInfoIsCompleteSeries;
         private static MethodInfo _genericMovieDbInfoProcessMainInfoSeries;
+        private static MethodInfo _getTitleMovieData;
 
         private static Type _movieDbProviderBase;
         private static MethodInfo _getMovieDbMetadataLanguages;
@@ -33,14 +34,31 @@ namespace StrmAssistant.Mod
         private static MethodInfo _movieDbSeriesProviderIsComplete;
         private static MethodInfo _movieDbSeriesProviderImportData;
         private static MethodInfo _ensureSeriesInfo;
+        private static MethodInfo _getTitleSeriesInfo;
+        private static PropertyInfo _nameSeriesInfoProperty;
+        private static PropertyInfo _alternativeTitleSeriesInfoProperty;
+        private static PropertyInfo _alternativeTitleListProperty;
+        private static PropertyInfo _alternativeTitle;
+        private static PropertyInfo _alternativeTitleCountryCode;
+        private static PropertyInfo _genresProperty;
+        private static PropertyInfo _genreNameProperty;
 
         private static MethodInfo _movieDbSeasonProviderIsComplete;
         private static MethodInfo _movieDbSeasonProviderImportData;
+        private static PropertyInfo _nameSeasonInfoProperty;
+        private static PropertyInfo _overviewSeasonInfoProperty;
 
         private static MethodInfo _movieDbEpisodeProviderIsComplete;
         private static MethodInfo _movieDbEpisodeProviderImportData;
+        private static PropertyInfo _nameEpisodeInfoProperty;
+        private static PropertyInfo _overviewEpisodeInfoProperty;
 
         private static MethodInfo _movieDbPersonProviderImportData;
+        private static PropertyInfo _nameProperty;
+        private static PropertyInfo _alsoKnownAsProperty;
+        private static PropertyInfo _biographyProperty;
+
+        private static PropertyInfo _seriesInfoTaskResultProperty;
 
         private static readonly AsyncLocal<bool> WasCalledByFetchImages = new AsyncLocal<bool>();
         private static readonly AsyncLocal<string> CurrentLookupCountryCode = new AsyncLocal<string>();
@@ -62,6 +80,9 @@ namespace StrmAssistant.Mod
                         BindingFlags.NonPublic | BindingFlags.Instance);
                     _genericMovieDbInfoProcessMainInfoMovie = genericMovieDbInfoMovie.GetMethod("ProcessMainInfo",
                         BindingFlags.NonPublic | BindingFlags.Instance);
+                    var completeMovieData = _movieDbAssembly.GetType("MovieDb.MovieDbProvider")
+                        .GetNestedType("CompleteMovieData", BindingFlags.NonPublic);
+                    _getTitleMovieData = completeMovieData.GetMethod("GetTitle");
 
                     var genericMovieDbInfoSeries = genericMovieDbInfo.MakeGenericType(typeof(Series));
                     _genericMovieDbInfoIsCompleteSeries = genericMovieDbInfoSeries.GetMethod("IsComplete",
@@ -84,22 +105,43 @@ namespace StrmAssistant.Mod
                         movieDbSeriesProvider.GetMethod("ImportData", BindingFlags.NonPublic | BindingFlags.Instance);
                     _ensureSeriesInfo = movieDbSeriesProvider.GetMethod("EnsureSeriesInfo",
                         BindingFlags.Instance | BindingFlags.NonPublic);
+                    var seriesRootObject = movieDbSeriesProvider.GetNestedType("SeriesRootObject", BindingFlags.Public);
+                    _getTitleSeriesInfo = seriesRootObject.GetMethod("GetTitle");
+                    _nameSeriesInfoProperty = seriesRootObject.GetProperty("name");
+                    _alternativeTitleSeriesInfoProperty = seriesRootObject.GetProperty("alternative_titles");
+                    _alternativeTitleListProperty = _movieDbAssembly.GetType("MovieDb.TmdbAlternativeTitles")
+                        .GetProperty("results");
+                    var tmdbTitleType = _movieDbAssembly.GetType("MovieDb.TmdbTitle");
+                    _alternativeTitle = tmdbTitleType.GetProperty("title");
+                    _alternativeTitleCountryCode = tmdbTitleType.GetProperty("iso_3166_1");
+                    _genresProperty = seriesRootObject.GetProperty("genres");
+                    _genreNameProperty = _movieDbAssembly.GetType("MovieDb.TmdbGenre").GetProperty("name");
 
                     var movieDbSeasonProvider = _movieDbAssembly.GetType("MovieDb.MovieDbSeasonProvider");
                     _movieDbSeasonProviderIsComplete =
                         movieDbSeasonProvider.GetMethod("IsComplete", BindingFlags.NonPublic | BindingFlags.Instance);
                     _movieDbSeasonProviderImportData =
                         movieDbSeasonProvider.GetMethod("ImportData", BindingFlags.NonPublic | BindingFlags.Instance);
+                    var seasonRootObject = movieDbSeasonProvider.GetNestedType("SeasonRootObject", BindingFlags.Public);
+                    _nameSeasonInfoProperty=seasonRootObject.GetProperty("name");
+                    _overviewSeasonInfoProperty = seasonRootObject.GetProperty("overview");
 
                     var movieDbEpisodeProvider = _movieDbAssembly.GetType("MovieDb.MovieDbEpisodeProvider");
                     _movieDbEpisodeProviderIsComplete =
                         movieDbEpisodeProvider.GetMethod("IsComplete", BindingFlags.NonPublic | BindingFlags.Instance);
                     _movieDbEpisodeProviderImportData =
                         movieDbEpisodeProvider.GetMethod("ImportData", BindingFlags.NonPublic | BindingFlags.Instance);
+                    var episodeRootObject = _movieDbProviderBase.GetNestedType("RootObject", BindingFlags.Public);
+                    _nameEpisodeInfoProperty=episodeRootObject.GetProperty("name");
+                    _overviewEpisodeInfoProperty = episodeRootObject.GetProperty("overview");
 
                     var movieDbPersonProvider = _movieDbAssembly.GetType("MovieDb.MovieDbPersonProvider");
                     _movieDbPersonProviderImportData = movieDbPersonProvider.GetMethod("ImportData",
                         BindingFlags.NonPublic | BindingFlags.Instance);
+                    var personResult = movieDbPersonProvider.GetNestedType("PersonResult", BindingFlags.Public);
+                    _nameProperty = personResult.GetProperty("name");
+                    _alsoKnownAsProperty = personResult.GetProperty("also_known_as");
+                    _biographyProperty = personResult.GetProperty("biography");
                 }
                 else
                 {
@@ -212,7 +254,7 @@ namespace StrmAssistant.Mod
                                     "EnsureSeriesInfoPostfix",
                                     BindingFlags.Static | BindingFlags.NonPublic)));
                             Plugin.Instance.logger.Debug(
-                                "Patch MovieDbSeriesProvider.EnsureSeriesInfoPostfix Success by Harmony");
+                                "Patch MovieDbSeriesProvider.EnsureSeriesInfoSuccess by Harmony");
                         }
                         if (!IsPatched(_movieDbSeasonProviderIsComplete, typeof(ChineseMovieDb)))
                         {
@@ -276,74 +318,87 @@ namespace StrmAssistant.Mod
                 {
                     if (IsPatched(_genericMovieDbInfoIsCompleteMovie, typeof(ChineseMovieDb)))
                     {
-                        HarmonyMod.Unpatch(_genericMovieDbInfoIsCompleteMovie, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_genericMovieDbInfoIsCompleteMovie,
+                            AccessTools.Method(typeof(ChineseMovieDb), "IsCompletePrefix"));
                         Plugin.Instance.logger.Debug("Unpatch GenericMovieDbInfo.IsComplete for Movie Success by Harmony");
                     }
                     if (IsPatched(_genericMovieDbInfoProcessMainInfoMovie, typeof(ChineseMovieDb)))
                     {
-                        HarmonyMod.Unpatch(_genericMovieDbInfoProcessMainInfoMovie, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_genericMovieDbInfoProcessMainInfoMovie,
+                            AccessTools.Method(typeof(ChineseMovieDb), "ProcessMainInfoMoviePrefix"));
                         Plugin.Instance.logger.Debug("Unpatch GenericMovieDbInfo.ProcessMainInfo for Movie Success by Harmony");
                     }
                     //if (IsPatched(_genericMovieDbInfoIsCompleteSeries, typeof(ChineseMovieDb)))
                     //{
-                    //    HarmonyMod.Unpatch(_genericMovieDbInfoIsCompleteSeries, HarmonyPatchType.Prefix);
+                    //    HarmonyMod.Unpatch(_genericMovieDbInfoIsCompleteSeries,
+                    //        AccessTools.Method(typeof(ChineseMovieDb), "IsCompletePrefix"));
                     //    Plugin.Instance.logger.Debug("Unpatch GenericMovieDbInfo.IsComplete for Series Success by Harmony");
                     //}
-
                     //if (IsPatched(_genericMovieDbInfoProcessMainInfoSeries, typeof(ChineseMovieDb)))
                     //{
-                    //    HarmonyMod.Unpatch(_genericMovieDbInfoProcessMainInfoSeries, HarmonyPatchType.Prefix);
+                    //    HarmonyMod.Unpatch(_genericMovieDbInfoProcessMainInfoSeries,
+                    //        AccessTools.Method(typeof(ChineseMovieDb), "ProcessMainInfoSeriesPrefix"));
                     //    Plugin.Instance.logger.Debug("Unpatch GenericMovieDbInfo.ProcessMainInfo for Series Success by Harmony");
                     //}
                     if (IsPatched(_getMovieDbMetadataLanguages, typeof(ChineseMovieDb)))
                     {
-                        HarmonyMod.Unpatch(_getMovieDbMetadataLanguages, HarmonyPatchType.Postfix);
+                        HarmonyMod.Unpatch(_getMovieDbMetadataLanguages,
+                            AccessTools.Method(typeof(ChineseMovieDb), "MetadataLanguagesPostfix"));
                         Plugin.Instance.logger.Debug("Unpatch MovieDbProviderBase.GetMovieDbMetadataLanguages Success by Harmony");
                     }
 
                     if (IsPatched(_getImageLanguagesParam, typeof(ChineseMovieDb)))
                     {
-                        HarmonyMod.Unpatch(_getImageLanguagesParam, HarmonyPatchType.Postfix);
+                        HarmonyMod.Unpatch(_getImageLanguagesParam,
+                            AccessTools.Method(typeof(ChineseMovieDb), "GetImageLanguagesParamPostfix"));
                         Plugin.Instance.logger.Debug("Unpatch MovieDbProviderBase.GetImageLanguagesParam Success by Harmony");
                     }
                     if (IsPatched(_movieDbSeriesProviderIsComplete, typeof(ChineseMovieDb)))
                     {
-                        HarmonyMod.Unpatch(_movieDbSeriesProviderIsComplete, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_movieDbSeriesProviderIsComplete,
+                            AccessTools.Method(typeof(ChineseMovieDb), "IsCompletePrefix"));
                         Plugin.Instance.logger.Debug("Unpatch MovieDbSeriesProvider.IsComplete Success by Harmony");
                     }
                     if (IsPatched(_movieDbSeriesProviderImportData, typeof(ChineseMovieDb)))
                     {
-                        HarmonyMod.Unpatch(_movieDbSeriesProviderImportData, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_movieDbSeriesProviderImportData,
+                            AccessTools.Method(typeof(ChineseMovieDb), "SeriesImportDataPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch MovieDbSeriesProvider.ImportData Success by Harmony");
                     }
                     if (IsPatched(_ensureSeriesInfo, typeof(ChineseMovieDb)))
                     {
-                        HarmonyMod.Unpatch(_ensureSeriesInfo, HarmonyPatchType.Postfix);
-                        Plugin.Instance.logger.Debug("Unpatch MovieDbSeriesProvider.EnsureSeriesInfoPostfix Success by Harmony");
+                        HarmonyMod.Unpatch(_ensureSeriesInfo,
+                            AccessTools.Method(typeof(ChineseMovieDb), "EnsureSeriesInfoPostfix"));
+                        Plugin.Instance.logger.Debug("Unpatch MovieDbSeriesProvider.EnsureSeriesInfo Success by Harmony");
                     }
                     if (IsPatched(_movieDbSeasonProviderIsComplete, typeof(ChineseMovieDb)))
                     {
-                        HarmonyMod.Unpatch(_movieDbSeasonProviderIsComplete, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_movieDbSeasonProviderIsComplete,
+                            AccessTools.Method(typeof(ChineseMovieDb), "IsCompletePrefix"));
                         Plugin.Instance.logger.Debug("Unpatch MovieDbSeasonProvider.IsComplete Success by Harmony");
                     }
                     if (IsPatched(_movieDbSeasonProviderImportData, typeof(ChineseMovieDb)))
                     {
-                        HarmonyMod.Unpatch(_movieDbSeasonProviderImportData, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_movieDbSeasonProviderImportData,
+                            AccessTools.Method(typeof(ChineseMovieDb), "SeasonImportDataPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch MovieDbSeasonProvider.ImportData Success by Harmony");
                     }
                     if (IsPatched(_movieDbEpisodeProviderIsComplete, typeof(ChineseMovieDb)))
                     {
-                        HarmonyMod.Unpatch(_movieDbEpisodeProviderIsComplete, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_movieDbEpisodeProviderIsComplete,
+                            AccessTools.Method(typeof(ChineseMovieDb), "IsCompletePrefix"));
                         Plugin.Instance.logger.Debug("Unpatch MovieDbEpisodeProvider.IsComplete Success by Harmony");
                     }
                     if (IsPatched(_movieDbEpisodeProviderImportData, typeof(ChineseMovieDb)))
                     {
-                        HarmonyMod.Unpatch(_movieDbEpisodeProviderImportData, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_movieDbEpisodeProviderImportData,
+                            AccessTools.Method(typeof(ChineseMovieDb), "EpisodeImportDataPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch MovieDbEpisodeProvider.ImportData Success by Harmony");
                     }
                     if (IsPatched(_movieDbPersonProviderImportData, typeof(ChineseMovieDb)))
                     {
-                        HarmonyMod.Unpatch(_movieDbPersonProviderImportData, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_movieDbPersonProviderImportData,
+                            AccessTools.Method(typeof(ChineseMovieDb), "PersonImportDataPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch MovieDbPersonProvider.ImportData Success by Harmony");
                     }
                 }
@@ -379,13 +434,9 @@ namespace StrmAssistant.Mod
         {
             var item = resultItem.Item;
 
-            if (IsUpdateNeeded(item.Name, false))
+            if (_getTitleMovieData != null && IsUpdateNeeded(item.Name, false))
             {
-                var getTitleMethod = movieData.GetType().GetMethod("GetTitle");
-                if (getTitleMethod != null)
-                {
-                    item.Name = getTitleMethod.Invoke(movieData, null) as string;
-                }
+                item.Name = _getTitleMovieData.Invoke(movieData, null) as string;
             }
 
             return true;
@@ -432,13 +483,9 @@ namespace StrmAssistant.Mod
         {
             var item = resultItem.Item;
 
-            if (IsUpdateNeeded(item.Name, false))
+            if (_getTitleMovieData != null && IsUpdateNeeded(item.Name, false))
             {
-                var getTitleMethod = movieData.GetType().GetMethod("GetTitle");
-                if (getTitleMethod != null)
-                {
-                    item.Name = getTitleMethod.Invoke(movieData, null) as string;
-                }
+                item.Name = _getTitleMovieData.Invoke(movieData, null) as string;
             }
 
             return true;
@@ -450,39 +497,28 @@ namespace StrmAssistant.Mod
         {
             var item = seriesResult.Item;
 
-            if (IsUpdateNeeded(item.Name, false))
+            if (_getTitleSeriesInfo != null && IsUpdateNeeded(item.Name, false))
             {
-                var getTitleMethod = seriesInfo.GetType().GetMethod("GetTitle");
-                if (getTitleMethod != null)
-                {
-                    item.Name = getTitleMethod.Invoke(seriesInfo, null) as string;
-                }
+                item.Name = _getTitleSeriesInfo.Invoke(seriesInfo, null) as string;
             }
 
-            if (isFirstLanguage && string.Equals(CurrentLookupCountryCode.Value, "CN", StringComparison.OrdinalIgnoreCase))
+            if (_genresProperty != null && _genreNameProperty != null && isFirstLanguage &&
+                string.Equals(CurrentLookupCountryCode.Value, "CN", StringComparison.OrdinalIgnoreCase))
             {
-                var genresProperty = seriesInfo.GetType().GetProperty("genres");
-                if (genresProperty != null)
+                if (_genresProperty.GetValue(seriesInfo) is IList genres)
                 {
-                    if (genresProperty.GetValue(seriesInfo) is IList genres)
+                    foreach (var genre in genres)
                     {
-                        foreach (var genre in genres)
+                        var genreValue = _genreNameProperty.GetValue(genre)?.ToString();
+                        if (!string.IsNullOrEmpty(genreValue))
                         {
-                            var genreNameProperty = genre.GetType().GetProperty("name");
-                            if (genreNameProperty != null)
-                            {
-                                var genreValue = genreNameProperty.GetValue(genre)?.ToString();
-                                if (genreValue != null)
-                                {
-                                    if (string.Equals(genreValue, "Sci-Fi & Fantasy",
-                                            StringComparison.OrdinalIgnoreCase))
-                                        genreNameProperty.SetValue(genre, "科幻奇幻");
+                            if (string.Equals(genreValue, "Sci-Fi & Fantasy",
+                                    StringComparison.OrdinalIgnoreCase))
+                                _genreNameProperty.SetValue(genre, "科幻奇幻");
 
-                                    if (string.Equals(genreValue, "War & Politics",
-                                            StringComparison.OrdinalIgnoreCase))
-                                        genreNameProperty.SetValue(genre, "战争政治");
-                                }
-                            }
+                            if (string.Equals(genreValue, "War & Politics",
+                                    StringComparison.OrdinalIgnoreCase))
+                                _genreNameProperty.SetValue(genre, "战争政治");
                         }
                     }
                 }
@@ -505,44 +541,31 @@ namespace StrmAssistant.Mod
                         var isJapaneseFallback =
                             GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase);
 
-                        var result = task.GetType().GetProperty("Result")?.GetValue(task);
-                        if (result != null)
+                        if (_seriesInfoTaskResultProperty == null)
+                            _seriesInfoTaskResultProperty = task.GetType().GetProperty("Result");
+
+                        var seriesInfo = _seriesInfoTaskResultProperty?.GetValue(task);
+                        if (seriesInfo != null && _nameSeriesInfoProperty != null)
                         {
-                            var nameProperty = result.GetType().GetProperty("name");
-                            if (nameProperty != null)
+                            var name = _nameSeriesInfoProperty.GetValue(seriesInfo) as string;
+                            if (!IsChinese(name) && (!isJapaneseFallback || !IsJapanese(name)) &&
+                                _alternativeTitleSeriesInfoProperty != null && _alternativeTitleListProperty != null &&
+                                _alternativeTitleCountryCode != null && _alternativeTitle != null)
                             {
-                                var name = nameProperty.GetValue(result) as string;
-                                if (!IsChinese(name) && (!isJapaneseFallback || !IsJapanese(name)))
+                                var alternativeTitles = _alternativeTitleSeriesInfoProperty.GetValue(seriesInfo);
+                                if (_alternativeTitleListProperty.GetValue(alternativeTitles) is IList altTitles)
                                 {
-                                    var alternativeTitlesProperty = result.GetType().GetProperty("alternative_titles");
-                                    if (alternativeTitlesProperty != null)
+                                    foreach (var altTitle in altTitles)
                                     {
-                                        var alternativeTitles = alternativeTitlesProperty.GetValue(result);
-                                        var resultsProperty = alternativeTitles?.GetType().GetProperty("results");
-
-                                        if (resultsProperty?.GetValue(alternativeTitles) is IList altTitles)
+                                        var iso3166Value = _alternativeTitleCountryCode.GetValue(altTitle)?.ToString();
+                                        var titleValue = _alternativeTitle.GetValue(altTitle)?.ToString();
+                                        if (!string.IsNullOrEmpty(iso3166Value) && !string.IsNullOrEmpty(titleValue) &&
+                                            CurrentLookupCountryCode.Value != null &&
+                                            string.Equals(iso3166Value, CurrentLookupCountryCode.Value,
+                                                StringComparison.OrdinalIgnoreCase))
                                         {
-                                            foreach (var altTitle in altTitles)
-                                            {
-                                                var iso3166Property = altTitle.GetType().GetProperty("iso_3166_1");
-                                                var titleProperty = altTitle.GetType().GetProperty("title");
-
-                                                if (iso3166Property != null && titleProperty != null)
-                                                {
-                                                    var iso3166Value = iso3166Property.GetValue(altTitle)?.ToString();
-                                                    if (iso3166Value != null && CurrentLookupCountryCode.Value != null &&
-                                                        string.Equals(iso3166Value, CurrentLookupCountryCode.Value,
-                                                            StringComparison.OrdinalIgnoreCase))
-                                                    {
-                                                        var titleValue = titleProperty.GetValue(altTitle)?.ToString();
-                                                        if (titleValue != null)
-                                                        {
-                                                            nameProperty.SetValue(result, titleValue);
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                            }
+                                            _nameSeriesInfoProperty.SetValue(seriesInfo, titleValue);
+                                            break;
                                         }
                                     }
                                 }
@@ -557,22 +580,14 @@ namespace StrmAssistant.Mod
         private static bool SeasonImportDataPrefix(Season item, object seasonInfo, string name, int seasonNumber,
             bool isFirstLanguage)
         {
-            if (IsUpdateNeeded(item.Name, false))
+            if (_nameSeasonInfoProperty != null && IsUpdateNeeded(item.Name, false))
             {
-                var nameProperty = seasonInfo.GetType().GetProperty("name");
-                if (nameProperty != null)
-                {
-                    item.Name = nameProperty.GetValue(seasonInfo) as string;
-                }
+                item.Name = _nameSeasonInfoProperty.GetValue(seasonInfo) as string;
             }
 
-            if (IsUpdateNeeded(item.Overview, false))
+            if (_overviewSeasonInfoProperty != null && IsUpdateNeeded(item.Overview, false))
             {
-                var overviewProperty = seasonInfo.GetType().GetProperty("overview");
-                if (overviewProperty != null)
-                {
-                    item.Overview = overviewProperty.GetValue(seasonInfo) as string;
-                }
+                item.Overview = _overviewSeasonInfoProperty.GetValue(seasonInfo) as string;
             }
 
             return true;
@@ -587,28 +602,20 @@ namespace StrmAssistant.Mod
 
             var item = result.Item;
 
-            if (IsUpdateNeeded(item.Name, true))
+            if (_nameEpisodeInfoProperty != null && IsUpdateNeeded(item.Name, true))
             {
-                var nameProperty = response.GetType().GetProperty("name");
-                if (nameProperty != null)
+                var nameValue = _nameEpisodeInfoProperty.GetValue(response) as string;
+                if (string.IsNullOrEmpty(item.Name) || !isJapaneseFallback ||
+                    (IsChinese(item.Name) && IsDefaultChineseEpisodeName(item.Name) && IsJapanese(nameValue) &&
+                     !IsDefaultJapaneseEpisodeName(nameValue)))
                 {
-                    var nameValue = nameProperty.GetValue(response) as string;
-                    if (string.IsNullOrEmpty(item.Name) || !isJapaneseFallback ||
-                        (IsChinese(item.Name) && IsDefaultChineseEpisodeName(item.Name) && IsJapanese(nameValue) &&
-                         !IsDefaultJapaneseEpisodeName(nameValue)))
-                    {
-                        item.Name = nameValue;
-                    }
+                    item.Name = nameValue;
                 }
             }
 
-            if (IsUpdateNeeded(item.Overview, true))
+            if (_overviewEpisodeInfoProperty != null && IsUpdateNeeded(item.Overview, true))
             {
-                var overviewProperty = response.GetType().GetProperty("overview");
-                if (overviewProperty != null)
-                {
-                    item.Overview = overviewProperty.GetValue(response) as string;
-                }
+                item.Overview = _overviewEpisodeInfoProperty.GetValue(response) as string;
             }
 
             return true;
@@ -669,21 +676,19 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool PersonImportDataPrefix(Person item, object info, bool isFirstLanguage)
         {
-            var nameProperty = info.GetType().GetProperty("name");
-            if (nameProperty?.GetValue(info) is string infoName)
+            if (_nameProperty?.GetValue(info) is string infoPersonName)
             {
-                var updateNameResult = Plugin.MetadataApi.UpdateAsExpected(infoName);
+                var updateNameResult = Plugin.MetadataApi.UpdateAsExpected(infoPersonName);
 
                 if (updateNameResult.Item2)
                 {
-                    if (!string.Equals(infoName, Plugin.MetadataApi.CleanPersonName(updateNameResult.Item1),
+                    if (!string.Equals(infoPersonName, Plugin.MetadataApi.CleanPersonName(updateNameResult.Item1),
                             StringComparison.Ordinal))
-                        nameProperty.SetValue(info, updateNameResult.Item1);
+                        _nameProperty.SetValue(info, updateNameResult.Item1);
                 }
                 else
                 {
-                    var alsoKnownAsProperty = info.GetType().GetProperty("also_known_as");
-                    if (alsoKnownAsProperty?.GetValue(info) is List<object> alsoKnownAsList)
+                    if (_alsoKnownAsProperty?.GetValue(info) is List<object> alsoKnownAsList)
                     {
                         foreach (var alias in alsoKnownAsList)
                         {
@@ -692,7 +697,7 @@ namespace StrmAssistant.Mod
                                 var updateAliasResult = Plugin.MetadataApi.UpdateAsExpected(aliasString);
                                 if (updateAliasResult.Item2)
                                 {
-                                    nameProperty.SetValue(info, updateAliasResult.Item1);
+                                    _nameProperty.SetValue(info, updateAliasResult.Item1);
                                     break;
                                 }
                             }
@@ -701,15 +706,14 @@ namespace StrmAssistant.Mod
                 }
             }
 
-            var biographyProperty = info.GetType().GetProperty("biography");
-            if (biographyProperty?.GetValue(info) is string infoBiography)
+            if (_biographyProperty?.GetValue(info) is string infoBiography)
             {
                 var updateBiographyResult = Plugin.MetadataApi.UpdateAsExpected(infoBiography);
 
                 if (updateBiographyResult.Item2)
                 {
                     if (!string.Equals(infoBiography, updateBiographyResult.Item1, StringComparison.Ordinal))
-                        biographyProperty.SetValue(info, updateBiographyResult.Item1);
+                        _biographyProperty.SetValue(info, updateBiographyResult.Item1);
                 }
             }
 

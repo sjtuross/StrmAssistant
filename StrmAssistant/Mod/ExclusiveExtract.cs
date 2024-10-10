@@ -5,6 +5,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using static StrmAssistant.Mod.PatchManager;
@@ -30,6 +31,9 @@ namespace StrmAssistant.Mod
         private static MethodInfo _removeVirtualFolder;
         private static MethodInfo _addMediaPath;
         private static MethodInfo _removeMediaPath;
+
+        private static readonly Dictionary<Type, PropertyInfo> RefreshLibraryPropertyCache =
+            new Dictionary<Type, PropertyInfo>();
 
         private static AsyncLocal<BaseItem> CurrentItem { get; } = new AsyncLocal<BaseItem>();
 
@@ -63,15 +67,15 @@ namespace StrmAssistant.Mod
                     mediaProbeManager.GetMethod("RunFfProcess", BindingFlags.Instance | BindingFlags.NonPublic);
 
                 var embyApi = Assembly.Load("Emby.Api");
-                Type[] addVirtualFolderType = { embyApi.GetType("Emby.Api.Library.AddVirtualFolder") };
-                Type[] removeVirtualFolderType = { embyApi.GetType("Emby.Api.Library.RemoveVirtualFolder") };
-                Type[] addMediaPathType = { embyApi.GetType("Emby.Api.Library.AddMediaPath") };
-                Type[] removeMediaPathType = { embyApi.GetType("Emby.Api.Library.RemoveMediaPath") };
                 var libraryStructureService = embyApi.GetType("Emby.Api.Library.LibraryStructureService");
-                _addVirtualFolder = libraryStructureService.GetMethod("Post", addVirtualFolderType);
-                _removeVirtualFolder = libraryStructureService.GetMethod("Any", removeVirtualFolderType);
-                _addMediaPath = libraryStructureService.GetMethod("Post", addMediaPathType);
-                _removeMediaPath = libraryStructureService.GetMethod("Any", removeMediaPathType);
+                _addVirtualFolder = libraryStructureService.GetMethod("Post",
+                    new[] { embyApi.GetType("Emby.Api.Library.AddVirtualFolder") });
+                _removeVirtualFolder = libraryStructureService.GetMethod("Any",
+                    new[] { embyApi.GetType("Emby.Api.Library.RemoveVirtualFolder") });
+                _addMediaPath = libraryStructureService.GetMethod("Post",
+                    new[] { embyApi.GetType("Emby.Api.Library.AddMediaPath") });
+                _removeMediaPath = libraryStructureService.GetMethod("Any",
+                    new[] { embyApi.GetType("Emby.Api.Library.RemoveMediaPath") });
             }
             catch (Exception e)
             {
@@ -208,32 +212,38 @@ namespace StrmAssistant.Mod
                 {
                     if (IsPatched(_canRefreshMetadata, typeof(ExclusiveExtract)))
                     {
-                        HarmonyMod.Unpatch(_canRefreshMetadata, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_canRefreshMetadata,
+                            AccessTools.Method(typeof(ExclusiveExtract), "CanRefreshMetadataPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch CanRefreshMetadata Success by Harmony");
                     }
                     if (IsPatched(_canRefreshImage, typeof(ExclusiveExtract)))
                     {
-                        HarmonyMod.Unpatch(_canRefreshImage, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_canRefreshImage,
+                            AccessTools.Method(typeof(ExclusiveExtract), "CanRefreshImagePrefix"));
                         Plugin.Instance.logger.Debug("Unpatch CanRefreshImage Success by Harmony");
                     }
                     if (IsPatched(_addVirtualFolder, typeof(ExclusiveExtract)))
                     {
-                        HarmonyMod.Unpatch(_addVirtualFolder, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_addVirtualFolder,
+                            AccessTools.Method(typeof(ExclusiveExtract), "RefreshLibraryPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch AddVirtualFolder Success by Harmony");
                     }
                     if (IsPatched(_removeVirtualFolder, typeof(ExclusiveExtract)))
                     {
-                        HarmonyMod.Unpatch(_removeVirtualFolder, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_removeVirtualFolder,
+                            AccessTools.Method(typeof(ExclusiveExtract), "RefreshLibraryPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch RemoveVirtualFolder Success by Harmony");
                     }
                     if (IsPatched(_addMediaPath, typeof(ExclusiveExtract)))
                     {
-                        HarmonyMod.Unpatch(_addMediaPath, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_addMediaPath,
+                            AccessTools.Method(typeof(ExclusiveExtract), "RefreshLibraryPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch AddMediaPath Success by Harmony");
                     }
                     if (IsPatched(_removeMediaPath, typeof(ExclusiveExtract)))
                     {
-                        HarmonyMod.Unpatch(_removeMediaPath, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_removeMediaPath,
+                            AccessTools.Method(typeof(ExclusiveExtract), "RefreshLibraryPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch RemoveMediaPath Success by Harmony");
                     }
                 }
@@ -351,15 +361,17 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool RefreshLibraryPrefix(object request)
         {
-            if (request != null)
-            {
-                var requestType = request.GetType();
-                var refreshLibraryProperty = requestType.GetProperty("RefreshLibrary");
+            var requestType = request.GetType();
 
-                if (refreshLibraryProperty != null && refreshLibraryProperty.CanWrite)
-                {
-                    refreshLibraryProperty.SetValue(request, false);
-                }
+            if (!RefreshLibraryPropertyCache.TryGetValue(requestType, out var refreshLibraryProperty))
+            {
+                refreshLibraryProperty = requestType.GetProperty("RefreshLibrary");
+                RefreshLibraryPropertyCache[requestType] = refreshLibraryProperty;
+            }
+
+            if (refreshLibraryProperty != null && refreshLibraryProperty.CanWrite)
+            {
+                refreshLibraryProperty.SetValue(request, false);
             }
 
             return true;

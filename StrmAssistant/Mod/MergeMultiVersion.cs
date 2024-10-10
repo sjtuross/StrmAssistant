@@ -70,7 +70,8 @@ namespace StrmAssistant.Mod
                 {
                     if (IsPatched(_isEligibleForMultiVersion, typeof(MergeMultiVersion)))
                     {
-                        HarmonyMod.Unpatch(_isEligibleForMultiVersion, HarmonyPatchType.Prefix);
+                        HarmonyMod.Unpatch(_isEligibleForMultiVersion,
+                            AccessTools.Method(typeof(MergeMultiVersion), "IsEligibleForMultiVersionPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch IsEligibleForMultiVersion Success by Harmony");
                     }
                 }

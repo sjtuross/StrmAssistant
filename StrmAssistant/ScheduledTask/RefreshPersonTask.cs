@@ -92,7 +92,7 @@ namespace StrmAssistant
                     try
                     {
                         var result = await Plugin.MetadataApi
-                            .GetPersonMetadataFromMovieDb(taskItem as Person, cancellationToken)
+                            .GetPersonMetadataFromMovieDb(taskItem, cancellationToken)
                             .ConfigureAwait(false);
 
                         if (result?.Item != null)
@@ -125,11 +125,11 @@ namespace StrmAssistant
                     }
                     catch (TaskCanceledException)
                     {
-                        _logger.Info("RefreshPerson - Task Cancelled: " + taskItem.Name);
+                        _logger.Info("RefreshPerson - Item Cancelled: " + taskItem.Name);
                     }
                     catch (Exception e)
                     {
-                        _logger.Info("RefreshPerson - Task Failed: " + taskItem.Name);
+                        _logger.Info("RefreshPerson - Item Failed: " + taskItem.Name);
                         _logger.Debug(e.Message);
                         _logger.Debug(e.StackTrace);
                     }
@@ -142,6 +142,7 @@ namespace StrmAssistant
                     }
                 }, cancellationToken);
                 tasks.Add(task);
+                Task.Delay(10).Wait();
             }
             await Task.WhenAll(tasks);
 

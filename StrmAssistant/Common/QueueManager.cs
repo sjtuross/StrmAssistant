@@ -140,9 +140,11 @@ namespace StrmAssistant
                                 {
                                     _logger.Info("MediaInfoExtract - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
                                 }
-                                catch
+                                catch (Exception e)
                                 {
                                     _logger.Info("MediaInfoExtract - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
+                                    _logger.Debug(e.Message);
+                                    _logger.Debug(e.StackTrace);
                                 }
                                 finally
                                 {
@@ -183,9 +185,11 @@ namespace StrmAssistant
                                 {
                                     _logger.Info("ExternalSubtitle - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
                                 }
-                                catch
+                                catch (Exception e)
                                 {
                                     _logger.Info("ExternalSubtitle - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
+                                    _logger.Debug(e.Message);
+                                    _logger.Debug(e.StackTrace);
                                 }
                             });
                         }

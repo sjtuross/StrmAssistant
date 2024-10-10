@@ -55,9 +55,11 @@ namespace StrmAssistant
                     {
                         _logger.Info("ExternalSubtitle - Item cancelled: " + taskItem.Name + " - " + taskItem.Path);
                     }
-                    catch
+                    catch (Exception e)
                     {
                         _logger.Info("ExternalSubtitle - Item failed: " + taskItem.Name + " - " + taskItem.Path);
+                        _logger.Debug(e.Message);
+                        _logger.Debug(e.StackTrace);
                     }
                     finally
                     {
