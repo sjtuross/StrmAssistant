@@ -43,6 +43,8 @@ namespace StrmAssistant.Mod
 
         public static void Patch()
         {
+            EnableImageCapture.PatchIsShortcut();
+
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
@@ -72,6 +74,8 @@ namespace StrmAssistant.Mod
 
         public static void Unpatch()
         {
+            EnableImageCapture.UnpatchIsShortcut();
+
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try

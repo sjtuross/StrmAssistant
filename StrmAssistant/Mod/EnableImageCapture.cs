@@ -27,6 +27,7 @@ namespace StrmAssistant.Mod
 
         private static AsyncLocal<BaseItem> CurrentItem { get; } = new AsyncLocal<BaseItem>();
         private static int _currentMaxConcurrentCount;
+        private static int _isShortcutPatchUsageCount;
 
         private static SemaphoreSlim SemaphoreFFmpeg;
 
@@ -179,9 +180,9 @@ namespace StrmAssistant.Mod
             }
         }
 
-        private static void PatchIsShortcut()
+        public static void PatchIsShortcut()
         {
-            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony && _isShortcutPatchUsageCount == 0)
             {
                 try
                 {
@@ -202,6 +203,8 @@ namespace StrmAssistant.Mod
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
+
+            _isShortcutPatchUsageCount++;
         }
 
         public static void UpdateResourcePool(int maxConcurrentCount)
@@ -336,7 +339,9 @@ namespace StrmAssistant.Mod
 
         public static void UnpatchIsShortcut()
         {
-            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
+            _isShortcutPatchUsageCount--;
+
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony && _isShortcutPatchUsageCount == 0)
             {
                 try
                 {
