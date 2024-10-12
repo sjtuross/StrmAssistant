@@ -95,7 +95,7 @@ namespace StrmAssistant
             NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
             SubtitleApi = new SubtitleApi(libraryManager, fileSystem, mediaProbeManager, localizationManager,
                 itemRepository);
-            MetadataApi = new MetadataApi(libraryManager, fileSystem, configurationManager);
+            MetadataApi = new MetadataApi(libraryManager, fileSystem, configurationManager, localizationManager);
 
             PatchManager.Initialize();
             if (_currentCatchupMode) InitializeCatchupMode();

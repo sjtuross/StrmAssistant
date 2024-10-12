@@ -96,7 +96,7 @@ namespace StrmAssistant
                 ReplaceAllImages = true
             };
 
-            if (Plugin.Instance.ApplicationHost.ApplicationVersion > new Version("4.9.0.14"))
+            if (Plugin.Instance.ApplicationHost.ApplicationVersion > new Version("4.9.0.23"))
             {
                 try
                 {

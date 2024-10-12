@@ -1,7 +1,9 @@
-﻿using MediaBrowser.Controller.Configuration;
+﻿extern alias SystemMemory;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using StrmAssistant.Mod;
@@ -19,15 +21,17 @@ namespace StrmAssistant
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
+        private readonly ILocalizationManager _localizationManager;
 
         public static MetadataRefreshOptions PersonRefreshOptions;
 
         public MetadataApi(ILibraryManager libraryManager, IFileSystem fileSystem,
-            IServerConfigurationManager configurationManager)
+            IServerConfigurationManager configurationManager, ILocalizationManager localizationManager)
         {
             _logger = Plugin.Instance.logger;
             _libraryManager = libraryManager;
             _configurationManager = configurationManager;
+            _localizationManager = localizationManager;
 
             PersonRefreshOptions = new MetadataRefreshOptions(fileSystem)
             {
@@ -142,6 +146,21 @@ namespace StrmAssistant
         public string CleanPersonName(string input)
         {
             return Regex.Replace(input, @"\s+", "");
+        }
+
+        public string ConvertToServerLanguage(string language)
+        {
+            if (string.Equals(language, "pt", StringComparison.OrdinalIgnoreCase))
+                return "pt-br";
+            if (string.Equals(language, "por", StringComparison.OrdinalIgnoreCase))
+                return "pt";
+            if (string.Equals(language, "zhtw", StringComparison.OrdinalIgnoreCase))
+                return "zh-tw";
+            if (string.Equals(language, "zho", StringComparison.OrdinalIgnoreCase))
+                return "zh-hk";
+            var languageInfo =
+                _localizationManager.FindLanguageInfo(SystemMemory::System.MemoryExtensions.AsSpan(language));
+            return languageInfo != null ? languageInfo.TwoLetterISOLanguageName : language;
         }
     }
 }

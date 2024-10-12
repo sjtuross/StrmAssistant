@@ -138,7 +138,7 @@
     <value>Support image capture for Strm. Skip embedded image. Default is OFF.</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
-    <value>Enable Intro Skip</value>
+    <value>Adaptive Intro Skip</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__Default_is_False_" xml:space="preserve">
     <value>Playback behavior-based intro and credits detection for episodes. Default is OFF.</value>
@@ -234,13 +234,13 @@
     <value>Users allowed to detect. Blank includes all users.</value>
   </data>
   <data name="ModOptions_OriginalPoster_Original_Poster" xml:space="preserve">
-    <value>Original Language Poster (TMDB)</value>
+    <value>Original Language Poster</value>
   </data>
   <data name="ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_" xml:space="preserve">
-    <value>Prefer original poster based on the original language. Default is OFF.</value>
+    <value>Prefer original poster based on the original language. Support TMDB, TVDB and FANART. Default is OFF.</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced" xml:space="preserve">
-    <value>Built-in Intro Skip Enhanced</value>
+    <value>Built-in Intro Detection Unlock</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
     <value>Unlock Strm support for built-in intro skip detection</value>

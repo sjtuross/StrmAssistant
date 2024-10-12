@@ -51,7 +51,7 @@
     <value>魔改支持Strm视频截图，跳过内嵌封面，默认关闭。</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
-    <value>启用跳片头功能</value>
+    <value>播放行为片头探测</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__Default_is_False_" xml:space="preserve">
     <value>基于播放行为的剧集片头片尾探测，默认关闭。</value>
@@ -147,13 +147,13 @@
     <value>允许的用户范围，留空包含所有用户。</value>
   </data>
   <data name="ModOptions_OriginalPoster_Original_Poster" xml:space="preserve">
-    <value>原语言海报 TMDB</value>
+    <value>原语言海报</value>
   </data>
   <data name="ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_" xml:space="preserve">
-    <value>优先使用原语言海报，默认关闭。</value>
+    <value>优先使用原语言海报，支持 TMDB, TVDB, Fanart，默认关闭。</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced" xml:space="preserve">
-    <value>原生跳片头增强</value>
+    <value>原生片头探测解锁</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
     <value>魔改原生跳片头探测，解锁Strm支持，默认关闭。</value>
