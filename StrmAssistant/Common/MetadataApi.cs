@@ -148,6 +148,18 @@ namespace StrmAssistant
             return Regex.Replace(input, @"\s+", "");
         }
 
+        public string GetCollectionOriginalLanguage(BoxSet collection)
+        {
+            var children = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                CollectionIds = new[] { collection.InternalId }
+            });
+
+            var concatenatedTitles = string.Join("|", children.Select(c => c.OriginalTitle));
+
+            return GetLanguageByTitle(concatenatedTitles);
+        }
+
         public string ConvertToServerLanguage(string language)
         {
             if (string.Equals(language, "pt", StringComparison.OrdinalIgnoreCase))

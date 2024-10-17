@@ -56,11 +56,6 @@ namespace StrmAssistant
             RuntimeInformation.ProcessArchitecture == Architecture.X64;
 
         [Browsable(false)]
-        public bool IsTvdbPluginLoaded { get; } =
-            AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "Tvdb") &&
-            RuntimeInformation.ProcessArchitecture == Architecture.X64;
-
-        [Browsable(false)]
         public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;
     }
 }

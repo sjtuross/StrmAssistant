@@ -169,7 +169,7 @@ namespace StrmAssistant.Mod
         private static void PatchMovieDb()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony &&
-                Plugin.Instance.GetPluginOptions().ModOptions.IsMovieDbPluginLoaded)
+                _movieDbAssembly != null)
             {
                 try
                 {
@@ -206,7 +206,7 @@ namespace StrmAssistant.Mod
         private static void UnpatchMovieDb()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony &&
-                Plugin.Instance.GetPluginOptions().ModOptions.IsMovieDbPluginLoaded)
+                _movieDbAssembly != null)
             {
                 try
                 {
@@ -217,6 +217,7 @@ namespace StrmAssistant.Mod
                         Plugin.Instance.logger.Debug(
                             "Unpatch MovieDbSeriesProvider.EnsureSeriesInfo Success by Harmony");
                     }
+
                     if (IsPatched(_getMovieInfo, typeof(PreferOriginalPoster)))
                     {
                         HarmonyMod.Unpatch(_getMovieInfo,
@@ -236,7 +237,7 @@ namespace StrmAssistant.Mod
         private static void PatchTvdb()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony &&
-                Plugin.Instance.GetPluginOptions().ModOptions.IsTvdbPluginLoaded)
+                _tvdbAssembly != null)
             {
                 try
                 {
@@ -273,7 +274,7 @@ namespace StrmAssistant.Mod
         private static void UnpatchTvdb()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony &&
-                Plugin.Instance.GetPluginOptions().ModOptions.IsTvdbPluginLoaded)
+                _tvdbAssembly != null)
             {
                 try
                 {
@@ -416,12 +417,15 @@ namespace StrmAssistant.Mod
                 return itemLookup.OriginalLanguage;
 
             var fallbackItem = item is Movie || item is Series ? item : item is Season season ? season.Series : null;
-
+            
             if (fallbackItem != null)
             {
-                return LanguageUtility.IsChinese(fallbackItem.OriginalTitle) ? "zh" :
-                    LanguageUtility.IsJapanese(fallbackItem.OriginalTitle) ? "jp" :
-                    LanguageUtility.IsKorean(fallbackItem.OriginalTitle) ? "ko" : "en";
+                return LanguageUtility.GetLanguageByTitle(fallbackItem.OriginalTitle);
+            }
+
+            if (item is BoxSet collection)
+            {
+                return Plugin.MetadataApi.GetCollectionOriginalLanguage(collection);
             }
 
             return null;
@@ -531,7 +535,7 @@ namespace StrmAssistant.Mod
 
                         var seriesData = _seriesDataTvdbTaskResult?.GetValue(task);
                         if (seriesData != null && _tvdbIdSeriesDataTvdb != null &&
-                            _languagesSeriesDataTmdb != null)
+                            _originalLanguageSeriesDataTvdb != null)
                         {
                             var id = _tvdbIdSeriesDataTvdb.GetValue(seriesData).ToString();
                             var originalLanguage = _originalLanguageSeriesDataTvdb.GetValue(seriesData) as string;
