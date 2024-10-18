@@ -16,6 +16,7 @@
 8. 自定义`TMDB`备选语言
 9. 刷新`TMDB`中文演员
 10. 获取原语言海报
+11. 中文搜索增强
 
 ## 更新
 
@@ -35,6 +36,7 @@
 14. 刷新`TMDB`中文演员并修复相关问题，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文演员-(Chinese-Actor))
 15. 优先使用原语言海报，支持`TMDB`, `TVDB`, `Fanart`，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/原语言海报--(Original-Poster))
 16. `TMDB`备选语言元数据以及中文演员繁转简
+17. 支持中文模糊搜索和拼音搜索，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文搜索增强)
 
 **注意**: Emby最低版本要求 `4.8.0.80`
 
