@@ -7,13 +7,19 @@
     <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Tokenizer\linux\libsimple.so" />
+    <None Remove="Tokenizer\win\libsimple.so" />
+  </ItemGroup>
+  <ItemGroup>
     <EmbeddedResource Include="Properties\thumb.png" />
+    <EmbeddedResource Include="Tokenizer\linux\libsimple.so" />
+    <EmbeddedResource Include="Tokenizer\win\libsimple.so" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CHTCHSConv" Version="1.0.0">
       <GeneratePathProperty>True</GeneratePathProperty>
     </PackageReference>
-    <PackageReference Include="ILRepack" Version="2.0.34">
+    <PackageReference Include="ILRepack" Version="2.0.35">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -30,6 +36,7 @@
       <Aliases>SystemMemory</Aliases>
     </PackageReference>
     <PackageReference Include="System.Text.Json" Version="4.7.2" />
+    <PackageReference Include="SQLitePCL.pretty.core" Version="1.2.2" />
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">

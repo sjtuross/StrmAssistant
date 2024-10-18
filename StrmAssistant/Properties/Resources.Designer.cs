@@ -144,7 +144,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Built-in Intro Skip Enhanced.
+        ///   Looks up a localized string similar to Built-in Intro Detection Unlock.
         /// </summary>
         public static string IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced {
             get {
@@ -199,6 +199,25 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enhance Chinese Search.
+        /// </summary>
+        public static string ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search {
+            get {
+                return ResourceManager.GetString("ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Support Chinese fuzzy search and Pinyin search. Default is OFF..
+        /// </summary>
+        public static string ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__D" +
+                        "efault_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exclusive MediaInfo Extract.
         /// </summary>
         public static string ModOptions_ExclusiveExtract_Exclusive_Extract {
@@ -236,7 +255,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Original Language Poster (TMDB).
+        ///   Looks up a localized string similar to Original Language Poster.
         /// </summary>
         public static string ModOptions_OriginalPoster_Original_Poster {
             get {
@@ -245,7 +264,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Prefer original poster based on the original language. Default is OFF..
+        ///   Looks up a localized string similar to Prefer original poster based on the original language. Support TMDB, TVDB and FANART. Default is OFF..
         /// </summary>
         public static string ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_ {
             get {
@@ -374,7 +393,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable Intro Skip.
+        ///   Looks up a localized string similar to Adaptive Intro Skip.
         /// </summary>
         public static string PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_ {
             get {

@@ -158,4 +158,10 @@
   <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
     <value>魔改原生跳片頭探測，解鎖Strm支持，預設關閉。</value>
   </data>
+  <data name="ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_" xml:space="preserve">
+    <value>支援中文模糊搜尋和拼音搜索，預設為關閉。</value>
+  </data>
+  <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
+    <value>中文搜尋增強</value>
+  </data>
 </root>

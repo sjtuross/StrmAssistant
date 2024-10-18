@@ -24,6 +24,7 @@ namespace StrmAssistant.Mod
             }
 
             EnableImageCapture.Initialize();
+            EnhanceChineseSearch.Initialize();
             MergeMultiVersion.Initialize();
             ExclusiveExtract.Initialize();
             ChineseMovieDb.Initialize();

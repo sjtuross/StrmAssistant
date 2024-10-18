@@ -1,4 +1,4 @@
-﻿using Emby.Web.GenericEdit;
+using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Common;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
@@ -50,6 +50,15 @@ namespace StrmAssistant
         [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool ExclusiveExtract { get; set; } = false;
 
+        [DisplayNameL("ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search", typeof(Resources))]
+        [DescriptionL("ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_", typeof(Resources))]
+        [Required]
+        [EnabledCondition(nameof(IsChineseSearchSupported), SimpleCondition.IsTrue)]
+        public bool EnhanceChineseSearch { get; set; } = false;
+
+        [Browsable(false)]
+        public bool EnhanceChineseSearchRestore { get; set; } = false;
+
         [Browsable(false)]
         public bool IsMovieDbPluginLoaded { get; } =
             AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "MovieDb") &&
@@ -57,5 +66,14 @@ namespace StrmAssistant
 
         [Browsable(false)]
         public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;
+
+        [Browsable(false)]
+        public bool IsChineseSearchSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64 &&
+                                                        (Plugin.Instance.ApplicationHost.ApplicationVersion >=
+                                                         new Version("4.8.3.0") &&
+                                                         Plugin.Instance.ApplicationHost.ApplicationVersion <
+                                                         new Version("4.9.0.0") ||
+                                                         Plugin.Instance.ApplicationHost.ApplicationVersion ==
+                                                         new Version("4.9.0.30"));
     }
 }

@@ -245,4 +245,10 @@
   <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
     <value>Unlock Strm support for built-in intro skip detection</value>
   </data>
+  <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
+    <value>Enhance Chinese Search</value>
+  </data>
+  <data name="ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_" xml:space="preserve">
+    <value>Support Chinese fuzzy search and Pinyin search. Default is OFF.</value>
+  </data>
 </root>

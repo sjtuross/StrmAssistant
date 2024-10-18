@@ -2,6 +2,7 @@ using Emby.Web.GenericEdit.Common;
 using Emby.Web.GenericEdit.Elements;
 using Emby.Web.GenericEdit.Elements.List;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
@@ -42,10 +43,13 @@ namespace StrmAssistant
 
         public readonly ILogger logger;
         public readonly IApplicationHost ApplicationHost;
+        public readonly IApplicationPaths ApplicationPaths;
+
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
 
+        private bool _currentSuppressOnOptionsSaved;
         private int _currentMaxConcurrentCount;
         private bool _currentEnableImageCapture;
         private bool _currentCatchupMode;
@@ -55,8 +59,10 @@ namespace StrmAssistant
         private bool _currentChineseMovieDb;
         private bool _currentExclusiveExtract;
         private bool _currentPreferOriginalPoster;
+        private bool _currentEnhanceChineseSearch;
 
         public Plugin(IApplicationHost applicationHost,
+            IApplicationPaths applicationPaths,
             ILogManager logManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
@@ -74,6 +80,7 @@ namespace StrmAssistant
             logger = logManager.GetLogger(Name);
             logger.Info("Plugin is getting loaded.");
             ApplicationHost = applicationHost;
+            ApplicationPaths = applicationPaths;
 
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -88,6 +95,7 @@ namespace StrmAssistant
             _currentChineseMovieDb = GetOptions().ModOptions.ChineseMovieDb;
             _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
             _currentPreferOriginalPoster = GetOptions().ModOptions.PreferOriginalPoster;
+            _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
@@ -180,8 +188,20 @@ namespace StrmAssistant
             return GetOptions();
         }
 
+        public void SavePluginOptionsSuppress()
+        {
+            _currentSuppressOnOptionsSaved = true;
+            SaveOptions(GetOptions());
+        }
+
         protected override void OnOptionsSaved(PluginOptions options)
         {
+            if (_currentSuppressOnOptionsSaved)
+            {
+                _currentSuppressOnOptionsSaved = false;
+                return;
+            }
+
             logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
             logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
 
@@ -204,6 +224,7 @@ namespace StrmAssistant
                 if (_currentEnableImageCapture)
                 {
                     EnableImageCapture.Patch();
+                    if (_currentMaxConcurrentCount > 1) ApplicationHost.NotifyPendingRestart();
                 }
                 else
                 {
@@ -269,6 +290,20 @@ namespace StrmAssistant
                 {
                     PreferOriginalPoster.Unpatch();
                 }
+            }
+
+            logger.Info("EnhanceChineseSearch is set to {0}", options.ModOptions.EnhanceChineseSearch);
+            if (_currentEnhanceChineseSearch != GetOptions().ModOptions.EnhanceChineseSearch)
+            {
+                _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
+
+                if (!_currentEnhanceChineseSearch)
+                {
+                    GetOptions().ModOptions.EnhanceChineseSearchRestore = true;
+                    SavePluginOptionsSuppress();
+                }
+
+                ApplicationHost.NotifyPendingRestart();
             }
 
             logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
