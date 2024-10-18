@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common;
+using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
-    public class UpdatePluginTask : IScheduledTask
+    public class UpdatePluginTask: IScheduledTask
     {
         private readonly ILogger _logger;
         private readonly IApplicationHost _applicationHost;

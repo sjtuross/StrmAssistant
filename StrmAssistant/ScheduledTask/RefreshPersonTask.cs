@@ -28,10 +28,11 @@ namespace StrmAssistant
             await Task.Yield();
             progress.Report(0);
 
-            var personItems = _libraryManager.GetItemList(new InternalItemsQuery
+            var personQuery = new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { "Person" }
-            }).Cast<Person>().ToList();
+            };
+            var personItems = _libraryManager.GetItemList(personQuery).Cast<Person>().ToList();
             _logger.Info("RefreshPerson - Number of Persons Before: " + personItems.Count);
 
             var checkKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "tmdb", "imdb", "tvdb" };
@@ -43,9 +44,9 @@ namespace StrmAssistant
                 .GroupBy(kvp => new { kvp.Key, kvp.Value })
                 .Where(group => group.Count() > 1)
                 .SelectMany(group => group.Select(g => g.item))
-                .ToArray();
+                .ToList();
 
-            if (dupPersonItems.Length > 0)
+            if (dupPersonItems.Count > 0)
             {
                 foreach (var dupItem in dupPersonItems)
                 {
@@ -65,86 +66,100 @@ namespace StrmAssistant
                 _libraryManager.DeleteItems(dupPersonItems.Select(i => i.InternalId).ToArray());
             }
 
-            _logger.Info("RefreshPerson - Number of Duplicate Persons Deleted: " + dupPersonItems.Length);
+            _logger.Info("RefreshPerson - Number of Duplicate Persons Deleted: " + dupPersonItems.Count);
+            var remainingCount = personItems.Count - dupPersonItems.Count;
+            _logger.Info("RefreshPerson - Number of Persons After: " + remainingCount);
 
-            var dupItemIds = new HashSet<long>(dupPersonItems.Select(d => d.InternalId));
-            var remainingPersonItems = personItems.Where(i => !dupItemIds.Contains(i.InternalId))
-                .OrderByDescending(i => i.DateCreated).ToList();
-            _logger.Info("RefreshPerson - Number of Persons After: " + remainingPersonItems.Count);
+            personItems.Clear();
+            personItems.TrimExcess();
 
-            double total = remainingPersonItems.Count;
+            double total = remainingCount;
             var current = 0;
+            const int batchSize = 100;
             var tasks = new List<Task>();
 
-            foreach (var item in remainingPersonItems)
+            for (var startIndex = 0; startIndex < remainingCount; startIndex += batchSize)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    _logger.Info("RefreshPerson - Task Cancelled");
-                    break;
-                }
+                personQuery.Limit = batchSize;
+                personQuery.StartIndex = startIndex;
+                personItems = _libraryManager.GetItemList(personQuery).Cast<Person>().ToList();
+                
+                if (personItems.Count == 0) break;
 
-                await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
-
-                var taskItem = item;
-                var task = Task.Run(async () =>
+                foreach (var item in personItems)
                 {
-                    try
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        var result = await Plugin.MetadataApi
-                            .GetPersonMetadataFromMovieDb(taskItem, cancellationToken)
-                            .ConfigureAwait(false);
+                        _logger.Info("RefreshPerson - Task Cancelled");
+                        break;
+                    }
 
-                        if (result?.Item != null)
+                    await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+
+                    var taskItem = item;
+                    var task = Task.Run(async () =>
+                    {
+                        try
                         {
-                            var newName = result.Item.Name;
-                            if (!string.IsNullOrEmpty(newName))
+                            var result = await Plugin.MetadataApi
+                                .GetPersonMetadataFromMovieDb(taskItem, cancellationToken)
+                                .ConfigureAwait(false);
+
+                            if (result?.Item != null)
                             {
-                                var updateResult = Plugin.MetadataApi.UpdateAsExpected(taskItem, newName);
-                                if (updateResult.Item2)
+                                var newName = result.Item.Name;
+                                if (!string.IsNullOrEmpty(newName))
                                 {
-                                    taskItem.Name = taskItem.SortName =
-                                        Plugin.MetadataApi.CleanPersonName(updateResult.Item1);
+                                    var updateResult = Plugin.MetadataApi.UpdateAsExpected(taskItem, newName);
+                                    if (updateResult.Item2)
+                                    {
+                                        taskItem.Name = taskItem.SortName =
+                                            Plugin.MetadataApi.CleanPersonName(updateResult.Item1);
+                                    }
                                 }
+
+                                var newOverview = result.Item.Overview;
+                                if (!string.IsNullOrEmpty(newOverview))
+                                {
+                                    var updateResult = Plugin.MetadataApi.UpdateAsExpected(taskItem, newOverview);
+                                    if (updateResult.Item2) taskItem.Overview = updateResult.Item1;
+                                }
+
+                                _libraryManager.UpdateItem(taskItem, null, ItemUpdateType.MetadataEdit);
                             }
 
-                            var newOverview = result.Item.Overview;
-                            if (!string.IsNullOrEmpty(newOverview))
+                            if (!taskItem.HasImage(ImageType.Primary))
                             {
-                                var updateResult = Plugin.MetadataApi.UpdateAsExpected(taskItem, newOverview);
-                                if (updateResult.Item2) taskItem.Overview = updateResult.Item1;
+                                await taskItem.RefreshMetadata(MetadataApi.PersonRefreshOptions, cancellationToken)
+                                    .ConfigureAwait(false);
                             }
-
-                            _libraryManager.UpdateItem(taskItem, null, ItemUpdateType.MetadataEdit);
                         }
-
-                        if (!taskItem.HasImage(ImageType.Primary))
+                        catch (TaskCanceledException)
                         {
-                            await taskItem.RefreshMetadata(MetadataApi.PersonRefreshOptions, cancellationToken).ConfigureAwait(false);
+                            _logger.Info("RefreshPerson - Item Cancelled: " + taskItem.Name);
                         }
-                    }
-                    catch (TaskCanceledException)
-                    {
-                        _logger.Info("RefreshPerson - Item Cancelled: " + taskItem.Name);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.Info("RefreshPerson - Item Failed: " + taskItem.Name);
-                        _logger.Debug(e.Message);
-                        _logger.Debug(e.StackTrace);
-                    }
-                    finally
-                    {
-                        Interlocked.Increment(ref current);
-                        progress.Report(current / total * 100);
-                        _logger.Info("RefreshPerson - Task " + current + "/" + total + " - " + taskItem.Name);
-                        QueueManager.SemaphoreMaster.Release();
-                    }
-                }, cancellationToken);
-                tasks.Add(task);
-                Task.Delay(10).Wait();
+                        catch (Exception e)
+                        {
+                            _logger.Info("RefreshPerson - Item Failed: " + taskItem.Name);
+                            _logger.Debug(e.Message);
+                            _logger.Debug(e.StackTrace);
+                        }
+                        finally
+                        {
+                            Interlocked.Increment(ref current);
+                            progress.Report(current / total * 100);
+                            _logger.Info("RefreshPerson - Task " + current + "/" + total + " - " + taskItem.Name);
+                            QueueManager.SemaphoreMaster.Release();
+                        }
+                    }, cancellationToken);
+
+                    tasks.Add(task);
+                    Task.Delay(10).Wait();
+                }
+                await Task.WhenAll(tasks);
+                tasks.Clear();
+                personItems.Clear();
             }
-            await Task.WhenAll(tasks);
 
             progress.Report(100.0);
             _logger.Info("RefreshPerson - Task Complete");
