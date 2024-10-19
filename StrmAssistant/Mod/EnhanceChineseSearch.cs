@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using static StrmAssistant.Mod.PatchManager;
+using static StrmAssistant.ModOptions;
 
 namespace StrmAssistant.Mod
 {
@@ -25,11 +26,12 @@ namespace StrmAssistant.Mod
 
         private static string _tokenizerPath;
         private static bool _patchPhase2Initialized;
+        private static string[] _includeItemTypes = Array.Empty<string>();
 
         public static void Initialize()
         {
             _tokenizerPath = Path.Combine(Plugin.Instance.ApplicationPaths.PluginsPath, "libsimple.so");
-            
+
             try
             {
                 var sqlitePCLEx = Assembly.Load("SQLitePCLRawEx.core");
@@ -70,6 +72,7 @@ namespace StrmAssistant.Mod
                 (Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearch ||
                  Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearchRestore))
             {
+                UpdateSearchScope();
                 PatchPhase1();
             }
         }
@@ -151,7 +154,20 @@ namespace StrmAssistant.Mod
 
                 if (!string.Equals(tokenizerName, "unknown", StringComparison.Ordinal))
                 {
-                    if (Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearch)
+                    if (Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearchRestore)
+                    {
+                        if (string.Equals(tokenizerName, "simple", StringComparison.Ordinal))
+                        {
+                            rebuildFtsResult = RebuildFts(connection, ftsTableName, "unicode61 remove_diacritics 2");
+                        }
+
+                        if (rebuildFtsResult)
+                        {
+                            Plugin.Instance.logger.Info("EnhanceChineseSearch - Restore Success");
+                            ResetOptions();
+                        }
+                    }
+                    else if (Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearch)
                     {
                         patchSearchFunctionsResult = PatchSearchFunctions();
 
@@ -166,18 +182,6 @@ namespace StrmAssistant.Mod
                             {
                                 Plugin.Instance.logger.Info("EnhanceChineseSearch - Load Success");
                             }
-                        }
-                    }
-                    else
-                    {
-                        if (string.Equals(tokenizerName, "simple", StringComparison.Ordinal))
-                        {
-                            rebuildFtsResult = RebuildFts(connection, ftsTableName, "unicode61 remove_diacritics 2");
-                        }
-
-                        if (rebuildFtsResult)
-                        {
-                            Plugin.Instance.logger.Info("EnhanceChineseSearch - Restore Success");
                         }
                     }
                 }
@@ -415,6 +419,77 @@ namespace StrmAssistant.Mod
             }
         }
         
+        public static void UpdateSearchScope()
+        {
+            var searchScope = Plugin.Instance.GetPluginOptions().ModOptions.SearchScope?
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+
+            var includeItemTypes = new List<string>();
+            
+            foreach (var scope in searchScope)
+            {
+                if (Enum.TryParse(scope, true, out SearchItemType type))
+                {
+                    switch (type)
+                    {
+                        case SearchItemType.Book:
+                            includeItemTypes.AddRange(new[] { "Book" });
+                            break;
+                        case SearchItemType.Collection:
+                            includeItemTypes.AddRange(new[] { "BoxSet" });
+                            break;
+                        case SearchItemType.Episode:
+                            includeItemTypes.AddRange(new[] { "Episode" });
+                            break;
+                        case SearchItemType.Game:
+                            includeItemTypes.AddRange(new[] { "Game", "GameSystem" });
+                            break;
+                        case SearchItemType.Genre:
+                            includeItemTypes.AddRange(new[] { "MusicGenre", "GameGenre", "Genre" });
+                            break;
+                        case SearchItemType.LiveTv:
+                            includeItemTypes.AddRange(new[] { "LiveTvChannel", "LiveTvProgram", "LiveTvSeries" });
+                            break;
+                        case SearchItemType.Movie:
+                            includeItemTypes.AddRange(new[] { "Movie" });
+                            break;
+                        case SearchItemType.Music:
+                            includeItemTypes.AddRange(new[] { "Audio","MusicVideo" });
+                            break;
+                        case SearchItemType.MusicAlbum:
+                            includeItemTypes.AddRange(new[] { "MusicAlbum" });
+                            break;
+                        case SearchItemType.Person:
+                            includeItemTypes.AddRange(new[] { "MusicArtist", "Person" });
+                            break;
+                        case SearchItemType.Photo:
+                            includeItemTypes.AddRange(new[] { "Photo" });
+                            break;
+                        case SearchItemType.PhotoAlbum:
+                            includeItemTypes.AddRange(new[] { "PhotoAlbum" });
+                            break;
+                        case SearchItemType.Playlist:
+                            includeItemTypes.AddRange(new[] { "Playlist" });
+                            break;
+                        case SearchItemType.Series:
+                            includeItemTypes.AddRange(new[] { "Series" });
+                            break;
+                        case SearchItemType.Studio:
+                            includeItemTypes.AddRange(new[] { "Studio" });
+                            break;
+                        case SearchItemType.Tag:
+                            includeItemTypes.AddRange(new[] { "Tag" });
+                            break;
+                        case SearchItemType.Trailer:
+                            includeItemTypes.AddRange(new[] { "Trailer" });
+                            break;
+                    }
+                }
+            }
+
+            _includeItemTypes = includeItemTypes.ToArray();
+        }
+
         private static string GetSearchColumnNormalization(string columnName)
         {
             return "replace(replace(" + columnName + ",'''',''),'.','')";
@@ -422,9 +497,11 @@ namespace StrmAssistant.Mod
 
         private static bool EnableJoinFtsSearch(InternalItemsQuery query)
         {
-            return (query.Limit == 30 || query.Limit == 50) &&
-                   (query.PersonTypes == null || query.PersonTypes.Length == 0) &&
-                   !string.IsNullOrEmpty(query.SearchTerm);
+            var result = (query.Limit == 30 || query.Limit == 50) &&
+                         (query.PersonTypes == null || query.PersonTypes.Length == 0) &&
+                         !string.IsNullOrEmpty(query.SearchTerm);
+
+            return result;
         }
 
         [HarmonyPostfix]
@@ -468,8 +545,7 @@ namespace StrmAssistant.Mod
 
                 if (query.IncludeItemTypes.Length == 0 && !string.IsNullOrEmpty(query.SearchTerm))
                 {
-                    query.IncludeItemTypes = new[]
-                        { "Movie", "Series", "BoxSet", "Audio", "MusicAlbum", "MusicArtist" };
+                    query.IncludeItemTypes = _includeItemTypes;
                 }
             }
 

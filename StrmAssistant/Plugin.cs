@@ -1,3 +1,4 @@
+using Emby.Media.Common.Extensions;
 using Emby.Web.GenericEdit.Common;
 using Emby.Web.GenericEdit.Elements;
 using Emby.Web.GenericEdit.Elements.List;
@@ -26,6 +27,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using static StrmAssistant.ModOptions;
 
 namespace StrmAssistant
 {
@@ -60,6 +62,7 @@ namespace StrmAssistant
         private bool _currentExclusiveExtract;
         private bool _currentPreferOriginalPoster;
         private bool _currentEnhanceChineseSearch;
+        private string _currentSearchScope;
 
         public Plugin(IApplicationHost applicationHost,
             IApplicationPaths applicationPaths,
@@ -96,6 +99,7 @@ namespace StrmAssistant
             _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
             _currentPreferOriginalPoster = GetOptions().ModOptions.PreferOriginalPoster;
             _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
+            _currentSearchScope = GetOptions().ModOptions.SearchScope;
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
@@ -353,14 +357,14 @@ namespace StrmAssistant
             }
 
             var libraryScope = string.Join(", ",
-                options.MediaInfoExtractOptions.LibraryScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                options.MediaInfoExtractOptions.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(v =>
                         options.MediaInfoExtractOptions.LibraryList.FirstOrDefault(option => option.Value == v)?.Name));
             logger.Info("MediaInfoExtract - LibraryScope is set to {0}",
                 string.IsNullOrEmpty(libraryScope) ? "ALL" : libraryScope);
 
             var intoSkipLibraryScope = string.Join(", ",
-                options.IntroSkipOptions.LibraryScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                options.IntroSkipOptions.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(v => options.IntroSkipOptions.LibraryList
                         .FirstOrDefault(option => option.Value == v)
                         ?.Name));
@@ -369,13 +373,30 @@ namespace StrmAssistant
             PlaySessionMonitor.UpdateLibraryPathsInScope();
             
             var introSkipUserScope= string.Join(", ",
-                options.IntroSkipOptions.UserScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                options.IntroSkipOptions.UserScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(v => options.IntroSkipOptions.UserList
                         .FirstOrDefault(option => option.Value == v)
                         ?.Name));
             logger.Info("IntroSkip - UserScope is set to {0}",
                 string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
             PlaySessionMonitor.UpdateUsersInScope();
+
+            var searchScope = string.Join(", ",
+                options.ModOptions.SearchScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(s =>
+                        Enum.TryParse(s.Trim(), true, out SearchItemType type)
+                            ? EnumExtensions.GetDescription(type)
+                            : null)
+                    .Where(d => d != null));
+            logger.Info("EnhanceChineseSearch - SearchScope is set to {0}",
+                string.IsNullOrEmpty(searchScope) ? "ALL" : searchScope);
+            if (_currentSearchScope != options.ModOptions.SearchScope)
+            {
+                _currentSearchScope = options.ModOptions.SearchScope;
+
+                if (options.ModOptions.EnhanceChineseSearch)
+                    EnhanceChineseSearch.UpdateSearchScope();
+            }
 
             base.OnOptionsSaved(options);
         }
@@ -491,6 +512,21 @@ namespace StrmAssistant
             }
 
             options.IntroSkipOptions.UserList = userList;
+
+            var searchItemTypeList = new List<EditorSelectOption>();
+            foreach (Enum item in Enum.GetValues(typeof(SearchItemType)))
+            {
+                var selectOption = new EditorSelectOption
+                {
+                    Value = item.ToString(),
+                    Name=EnumExtensions.GetDescription(item),
+                    IsEnabled = true,
+                };
+
+                searchItemTypeList.Add(selectOption);
+            }
+
+            options.ModOptions.SearchItemTypeList = searchItemTypeList;
 
             return base.OnBeforeShowUI(options);
         }

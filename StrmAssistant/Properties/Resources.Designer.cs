@@ -181,6 +181,159 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Book.
+        /// </summary>
+        public static string ItemType_Book_Book {
+            get {
+                return ResourceManager.GetString("ItemType_Book_Book", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Collection.
+        /// </summary>
+        public static string ItemType_Collection_Collection {
+            get {
+                return ResourceManager.GetString("ItemType_Collection_Collection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Episode.
+        /// </summary>
+        public static string ItemType_Episode_Episode {
+            get {
+                return ResourceManager.GetString("ItemType_Episode_Episode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Game.
+        /// </summary>
+        public static string ItemType_Game_Game {
+            get {
+                return ResourceManager.GetString("ItemType_Game_Game", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Genre.
+        /// </summary>
+        public static string ItemType_Genre_Genre {
+            get {
+                return ResourceManager.GetString("ItemType_Genre_Genre", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to LiveTv.
+        /// </summary>
+        public static string ItemType_LiveTv_LiveTv {
+            get {
+                return ResourceManager.GetString("ItemType_LiveTv_LiveTv", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Movie.
+        /// </summary>
+        public static string ItemType_Movie_Movie {
+            get {
+                return ResourceManager.GetString("ItemType_Movie_Movie", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Music.
+        /// </summary>
+        public static string ItemType_Music_Music {
+            get {
+                return ResourceManager.GetString("ItemType_Music_Music", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MusicAlbum.
+        /// </summary>
+        public static string ItemType_MusicAlbum_MusicAlbum {
+            get {
+                return ResourceManager.GetString("ItemType_MusicAlbum_MusicAlbum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Person.
+        /// </summary>
+        public static string ItemType_Person_Person {
+            get {
+                return ResourceManager.GetString("ItemType_Person_Person", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Photo.
+        /// </summary>
+        public static string ItemType_Photo_Photo {
+            get {
+                return ResourceManager.GetString("ItemType_Photo_Photo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PhotoAlbum.
+        /// </summary>
+        public static string ItemType_PhotoAlbum_PhotoAlbum {
+            get {
+                return ResourceManager.GetString("ItemType_PhotoAlbum_PhotoAlbum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Playlist.
+        /// </summary>
+        public static string ItemType_Playlist_Playlist {
+            get {
+                return ResourceManager.GetString("ItemType_Playlist_Playlist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Series.
+        /// </summary>
+        public static string ItemType_Series_Series {
+            get {
+                return ResourceManager.GetString("ItemType_Series_Series", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Studio.
+        /// </summary>
+        public static string ItemType_Studio_Studio {
+            get {
+                return ResourceManager.GetString("ItemType_Studio_Studio", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tag.
+        /// </summary>
+        public static string ItemType_Tag_Tag {
+            get {
+                return ResourceManager.GetString("ItemType_Tag_Tag", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Trailer.
+        /// </summary>
+        public static string ItemType_Trailer_Trailer {
+            get {
+                return ResourceManager.GetString("ItemType_Trailer_Trailer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Customize MovieDb Fallback Language.
         /// </summary>
         public static string ModOptions_ChineseMovieDb_Chinese_MovieDb {
@@ -270,6 +423,24 @@ namespace StrmAssistant.Properties {
             get {
                 return ResourceManager.GetString("ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Defaul" +
                         "t_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Include item types. Blank includes all..
+        /// </summary>
+        public static string ModOptions_SearchScope_Include_item_types__Blank_includes_all_ {
+            get {
+                return ResourceManager.GetString("ModOptions_SearchScope_Include_item_types__Blank_includes_all_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search Scope.
+        /// </summary>
+        public static string ModOptions_SearchScope_Search_Scope {
+            get {
+                return ResourceManager.GetString("ModOptions_SearchScope_Search_Scope", resourceCulture);
             }
         }
         

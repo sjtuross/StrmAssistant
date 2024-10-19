@@ -58,6 +58,38 @@ namespace StrmAssistant
 
         [Browsable(false)]
         public bool EnhanceChineseSearchRestore { get; set; } = false;
+        
+        public enum SearchItemType
+        {
+            [DescriptionL("ItemType_Movie_Movie", typeof(Resources))] Movie,
+            [DescriptionL("ItemType_Collection_Collection", typeof(Resources))] Collection,
+            [DescriptionL("ItemType_Series_Series", typeof(Resources))] Series,
+            [DescriptionL("ItemType_Episode_Episode", typeof(Resources))] Episode,
+            [DescriptionL("ItemType_Person_Person", typeof(Resources))] Person,
+            [DescriptionL("ItemType_LiveTv_LiveTv", typeof(Resources))] LiveTv,
+            [DescriptionL("ItemType_Music_Music", typeof(Resources))] Music,
+            [DescriptionL("ItemType_MusicAlbum_MusicAlbum", typeof(Resources))] MusicAlbum,
+            [DescriptionL("ItemType_Playlist_Playlist", typeof(Resources))] Playlist,
+            [DescriptionL("ItemType_Photo_Photo", typeof(Resources))] Photo,
+            [DescriptionL("ItemType_PhotoAlbum_PhotoAlbum", typeof(Resources))] PhotoAlbum,
+            [DescriptionL("ItemType_Genre_Genre", typeof(Resources))] Genre,
+            [DescriptionL("ItemType_Book_Book", typeof(Resources))] Book,
+            [DescriptionL("ItemType_Game_Game", typeof(Resources))] Game,
+            [DescriptionL("ItemType_Trailer_Trailer", typeof(Resources))] Trailer,
+            [DescriptionL("ItemType_Tag_Tag", typeof(Resources))] Tag,
+            [DescriptionL("ItemType_Studio_Studio", typeof(Resources))] Studio
+        }
+
+        [Browsable(false)]
+        public IEnumerable<EditorSelectOption> SearchItemTypeList { get; set; }
+
+        [DisplayNameL("ModOptions_SearchScope_Search_Scope", typeof(Resources))]
+        [DescriptionL("ModOptions_SearchScope_Include_item_types__Blank_includes_all_", typeof(Resources))]
+        [EditMultilSelect]
+        [SelectItemsSource(nameof(SearchItemTypeList))]
+        [VisibleCondition(nameof(EnhanceChineseSearch), SimpleCondition.IsTrue)]
+        public string SearchScope { get; set; } =
+            string.Join(",", new[] { SearchItemType.Movie, SearchItemType.Collection, SearchItemType.Series });
 
         [Browsable(false)]
         public bool IsMovieDbPluginLoaded { get; } =

@@ -164,4 +164,61 @@
   <data name="ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_" xml:space="preserve">
     <value>支持中文模糊搜索和拼音搜索，默认关闭。</value>
   </data>
+  <data name="ItemType_Movie_Movie" xml:space="preserve">
+    <value>电影</value>
+  </data>
+  <data name="ItemType_Book_Book" xml:space="preserve">
+    <value>书籍</value>
+  </data>
+  <data name="ItemType_Collection_Collection" xml:space="preserve">
+    <value>合集</value>
+  </data>
+  <data name="ItemType_Episode_Episode" xml:space="preserve">
+    <value>集</value>
+  </data>
+  <data name="ItemType_Game_Game" xml:space="preserve">
+    <value>游戏</value>
+  </data>
+  <data name="ItemType_Genre_Genre" xml:space="preserve">
+    <value>类型风格</value>
+  </data>
+  <data name="ItemType_LiveTv_LiveTv" xml:space="preserve">
+    <value>电视直播</value>
+  </data>
+  <data name="ItemType_Music_Music" xml:space="preserve">
+    <value>音乐</value>
+  </data>
+  <data name="ItemType_MusicAlbum_MusicAlbum" xml:space="preserve">
+    <value>专辑</value>
+  </data>
+  <data name="ItemType_Person_Person" xml:space="preserve">
+    <value>人物</value>
+  </data>
+  <data name="ItemType_Photo_Photo" xml:space="preserve">
+    <value>照片</value>
+  </data>
+  <data name="ItemType_PhotoAlbum_PhotoAlbum" xml:space="preserve">
+    <value>相册</value>
+  </data>
+  <data name="ItemType_Playlist_Playlist" xml:space="preserve">
+    <value>播放列表</value>
+  </data>
+  <data name="ItemType_Series_Series" xml:space="preserve">
+    <value>电视节目</value>
+  </data>
+  <data name="ItemType_Studio_Studio" xml:space="preserve">
+    <value>工作室</value>
+  </data>
+  <data name="ItemType_Tag_Tag" xml:space="preserve">
+    <value>标签</value>
+  </data>
+  <data name="ItemType_Trailer_Trailer" xml:space="preserve">
+    <value>预告片</value>
+  </data>
+  <data name="ModOptions_SearchScope_Search_Scope" xml:space="preserve">
+    <value>搜索范围</value>
+  </data>
+  <data name="ModOptions_SearchScope_Include_item_types__Blank_includes_all_" xml:space="preserve">
+    <value>搜索包含的类型，默认为电影，合集，电视节目，留空包含所有。</value>
+  </data>
 </root>

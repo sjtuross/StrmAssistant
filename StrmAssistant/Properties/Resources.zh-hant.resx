@@ -164,4 +164,61 @@
   <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
     <value>中文搜尋增強</value>
   </data>
+  <data name="ItemType_Movie_Movie" xml:space="preserve">
+    <value>電影</value>
+  </data>
+  <data name="ItemType_Book_Book" xml:space="preserve">
+    <value>書籍</value>
+  </data>
+  <data name="ItemType_Collection_Collection" xml:space="preserve">
+    <value>合集</value>
+  </data>
+  <data name="ItemType_Episode_Episode" xml:space="preserve">
+    <value>集</value>
+  </data>
+  <data name="ItemType_Game_Game" xml:space="preserve">
+    <value>遊戲</value>
+  </data>
+  <data name="ItemType_Genre_Genre" xml:space="preserve">
+    <value>類型風格</value>
+  </data>
+  <data name="ItemType_LiveTv_LiveTv" xml:space="preserve">
+    <value>電視直播</value>
+  </data>
+  <data name="ItemType_Music_Music" xml:space="preserve">
+    <value>音樂</value>
+  </data>
+  <data name="ItemType_MusicAlbum_MusicAlbum" xml:space="preserve">
+    <value>專輯</value>
+  </data>
+  <data name="ItemType_Person_Person" xml:space="preserve">
+    <value>人物</value>
+  </data>
+  <data name="ItemType_Photo_Photo" xml:space="preserve">
+    <value>照片</value>
+  </data>
+  <data name="ItemType_PhotoAlbum_PhotoAlbum" xml:space="preserve">
+    <value>相簿</value>
+  </data>
+  <data name="ItemType_Playlist_Playlist" xml:space="preserve">
+    <value>播放清單</value>
+  </data>
+  <data name="ItemType_Series_Series" xml:space="preserve">
+    <value>電視節目</value>
+  </data>
+  <data name="ItemType_Studio_Studio" xml:space="preserve">
+    <value>工作室</value>
+  </data>
+  <data name="ItemType_Tag_Tag" xml:space="preserve">
+    <value>標籤</value>
+  </data>
+  <data name="ItemType_Trailer_Trailer" xml:space="preserve">
+    <value>預告片</value>
+  </data>
+  <data name="ModOptions_SearchScope_Search_Scope" xml:space="preserve">
+    <value>搜尋範圍</value>
+  </data>
+  <data name="ModOptions_SearchScope_Include_item_types__Blank_includes_all_" xml:space="preserve">
+    <value>搜尋包含的類型，預設為電影，合集，電視節目，留空包含所有。</value>
+  </data>
 </root>
