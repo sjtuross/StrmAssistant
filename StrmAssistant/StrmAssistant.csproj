@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <AssemblyVersion>1.0.0.22</AssemblyVersion>
-    <FileVersion>1.0.0.22</FileVersion>
+    <AssemblyVersion>1.0.0.29</AssemblyVersion>
+    <FileVersion>1.0.0.29</FileVersion>
     <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
     <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
     <AssemblyName>$(MSBuildProjectName)Lite</AssemblyName>
@@ -11,7 +11,10 @@
     <EmbeddedResource Include="Properties\thumb.png" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="ILRepack" Version="2.0.34">
+    <PackageReference Include="CHTCHSConv" Version="1.0.0">
+      <GeneratePathProperty>True</GeneratePathProperty>
+    </PackageReference>
+    <PackageReference Include="ILRepack" Version="2.0.35">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
@@ -46,6 +49,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy &quot;$(TargetPath)&quot; &quot;%25AppData%25\Emby-Server\programdata\plugins\&quot; /y" />
+    <Exec Command="$(ILRepack) /out:%25AppData%25\Emby-Server\programdata\plugins\$(TargetFileName) $(TargetPath) $(PkgCHTCHSConv)\lib\netstandard2.0\ChineseConverter.dll /lib:$(TargetDir)" />
   </Target>
 </Project>

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
-    public class ClearChapterMarkersTask : IScheduledTask
+    public class ClearChapterMarkersTask: IScheduledTask
     {
         private readonly ILogger _logger;
 

@@ -74,9 +74,9 @@ namespace StrmAssistant
                     }
                     finally
                     {
-                        Interlocked.Increment(ref current);
-                        progress.Report(current / total * 100);
-                        _logger.Info("MediaInfoExtract - Scheduled Task " + current + "/" + total + " - " + "Task " + taskIndex + ": " +
+                        var currentCount = Interlocked.Increment(ref current);
+                        progress.Report(currentCount / total * 100);
+                        _logger.Info("MediaInfoExtract - Scheduled Task " + currentCount + "/" + total + " - " + "Task " + taskIndex + ": " +
                                      taskItem.Path);
                         QueueManager.SemaphoreMaster.Release();
                     }

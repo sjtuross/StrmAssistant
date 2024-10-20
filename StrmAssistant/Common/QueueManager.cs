@@ -1,6 +1,5 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Collections.Concurrent;
@@ -116,9 +115,11 @@ namespace StrmAssistant
                                 {
                                     _logger.Info("MediaInfoExtract - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
                                 }
-                                catch
+                                catch (Exception e)
                                 {
                                     _logger.Info("MediaInfoExtract - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
+                                    _logger.Debug(e.Message);
+                                    _logger.Debug(e.StackTrace);
                                 }
                             });
                         }
@@ -154,9 +155,11 @@ namespace StrmAssistant
                                 {
                                     _logger.Info("ExternalSubtitle - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
                                 }
-                                catch
+                                catch (Exception e)
                                 {
                                     _logger.Info("ExternalSubtitle - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
+                                    _logger.Debug(e.Message);
+                                    _logger.Debug(e.StackTrace);
                                 }
                             });
                         }

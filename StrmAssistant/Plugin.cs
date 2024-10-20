@@ -2,7 +2,9 @@ using Emby.Web.GenericEdit.Common;
 using Emby.Web.GenericEdit.Elements;
 using Emby.Web.GenericEdit.Elements.List;
 using MediaBrowser.Common;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -34,21 +36,26 @@ namespace StrmAssistant
         public static NotificationApi NotificationApi { get; private set; }
         public static SubtitleApi SubtitleApi { get; private set; }
         public static PlaySessionMonitor PlaySessionMonitor { get; private set; }
+        public static MetadataApi MetadataApi { get; private set; }
 
         private readonly Guid _id = new Guid("63c322b7-a371-41a3-b11f-04f8418b37d8");
 
         public readonly ILogger logger;
         public readonly IApplicationHost ApplicationHost;
+        public readonly IApplicationPaths ApplicationPaths;
+
         private readonly ILibraryManager _libraryManager;
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
 
+        private bool _currentSuppressOnOptionsSaved;
         private int _currentMaxConcurrentCount;
         private bool _currentEnableImageCapture;
         private bool _currentCatchupMode;
         private bool _currentEnableIntroSkip;
 
         public Plugin(IApplicationHost applicationHost,
+            IApplicationPaths applicationPaths,
             ILogManager logManager,
             IFileSystem fileSystem,
             ILibraryManager libraryManager,
@@ -59,12 +66,14 @@ namespace StrmAssistant
             IMediaProbeManager mediaProbeManager,
             ILocalizationManager localizationManager,
             IUserManager userManager,
-            IUserDataManager userDataManager) : base(applicationHost)
+            IUserDataManager userDataManager,
+            IServerConfigurationManager configurationManager) : base(applicationHost)
         {
             Instance = this;
             logger = logManager.GetLogger(Name);
             logger.Info("Plugin is getting loaded.");
             ApplicationHost = applicationHost;
+            ApplicationPaths = applicationPaths;
 
             _libraryManager = libraryManager;
             _userManager = userManager;
@@ -81,6 +90,7 @@ namespace StrmAssistant
             NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
             SubtitleApi = new SubtitleApi(libraryManager, fileSystem, mediaProbeManager, localizationManager,
                 itemRepository);
+            MetadataApi = new MetadataApi(libraryManager, fileSystem, configurationManager, localizationManager);
 
             if (_currentCatchupMode) InitializeCatchupMode();
             if (_currentEnableIntroSkip) PlaySessionMonitor.Initialize();
@@ -164,8 +174,20 @@ namespace StrmAssistant
             return GetOptions();
         }
 
+        public void SavePluginOptionsSuppress()
+        {
+            _currentSuppressOnOptionsSaved = true;
+            SaveOptions(GetOptions());
+        }
+
         protected override void OnOptionsSaved(PluginOptions options)
         {
+            if (_currentSuppressOnOptionsSaved)
+            {
+                _currentSuppressOnOptionsSaved = false;
+                return;
+            }
+
             logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
             logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
 
@@ -212,26 +234,28 @@ namespace StrmAssistant
             }
 
             var libraryScope = string.Join(", ",
-                options.MediaInfoExtractOptions.LibraryScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                options.MediaInfoExtractOptions.LibraryScope
+                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(v =>
-                        options.MediaInfoExtractOptions.LibraryList.FirstOrDefault(option => option.Value == v)?.Name));
+                        options.MediaInfoExtractOptions.LibraryList.FirstOrDefault(option => option.Value == v)
+                            ?.Name) ?? Enumerable.Empty<string>());
             logger.Info("MediaInfoExtract - LibraryScope is set to {0}",
                 string.IsNullOrEmpty(libraryScope) ? "ALL" : libraryScope);
 
             var intoSkipLibraryScope = string.Join(", ",
-                options.IntroSkipOptions.LibraryScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                options.IntroSkipOptions.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(v => options.IntroSkipOptions.LibraryList
                         .FirstOrDefault(option => option.Value == v)
-                        ?.Name));
+                        ?.Name) ?? Enumerable.Empty<string>());
             logger.Info("IntroSkip - LibraryScope is set to {0}",
                 string.IsNullOrEmpty(intoSkipLibraryScope) ? "ALL" : intoSkipLibraryScope);
             PlaySessionMonitor.UpdateLibraryPathsInScope();
-            
-            var introSkipUserScope= string.Join(", ",
-                options.IntroSkipOptions.UserScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+
+            var introSkipUserScope = string.Join(", ",
+                options.IntroSkipOptions.UserScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(v => options.IntroSkipOptions.UserList
                         .FirstOrDefault(option => option.Value == v)
-                        ?.Name));
+                        ?.Name) ?? Enumerable.Empty<string>());
             logger.Info("IntroSkip - UserScope is set to {0}",
                 string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
             PlaySessionMonitor.UpdateUsersInScope();

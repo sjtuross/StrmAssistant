@@ -51,7 +51,7 @@
     <value>魔改支持Strm视频截图，跳过内嵌封面，默认关闭。</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
-    <value>启用跳片头功能</value>
+    <value>播放行为片头探测</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__Default_is_False_" xml:space="preserve">
     <value>基于播放行为的剧集片头片尾探测，默认关闭。</value>
@@ -114,13 +114,13 @@
     <value>自定义 TMDB 备选语言</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
-    <value>尽可能从 TMDB 获取中文或日文元数据，默认关闭。</value>
+    <value>尽可能从 TMDB 获取中文或日文元数据，包括演员，默认关闭。</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
     <value>备选语言</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_" xml:space="preserve">
-    <value>备选元数据语言，可多选</value>
+    <value>备选元数据语言，可多选。</value>
   </data>
   <data name="Favorites" xml:space="preserve">
     <value>❤️最爱</value>
@@ -145,5 +145,80 @@
   </data>
   <data name="IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all" xml:space="preserve">
     <value>允许的用户范围，留空包含所有用户。</value>
+  </data>
+  <data name="ModOptions_OriginalPoster_Original_Poster" xml:space="preserve">
+    <value>原语言海报</value>
+  </data>
+  <data name="ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_" xml:space="preserve">
+    <value>优先使用原语言海报，支持 TMDB, TVDB, Fanart，默认关闭。</value>
+  </data>
+  <data name="IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced" xml:space="preserve">
+    <value>原生片头探测解锁</value>
+  </data>
+  <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
+    <value>魔改原生跳片头探测，解锁Strm支持，默认关闭。</value>
+  </data>
+  <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
+    <value>中文搜索增强</value>
+  </data>
+  <data name="ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_" xml:space="preserve">
+    <value>支持中文模糊搜索和拼音搜索，默认关闭。</value>
+  </data>
+  <data name="ItemType_Movie_Movie" xml:space="preserve">
+    <value>电影</value>
+  </data>
+  <data name="ItemType_Book_Book" xml:space="preserve">
+    <value>书籍</value>
+  </data>
+  <data name="ItemType_Collection_Collection" xml:space="preserve">
+    <value>合集</value>
+  </data>
+  <data name="ItemType_Episode_Episode" xml:space="preserve">
+    <value>集</value>
+  </data>
+  <data name="ItemType_Game_Game" xml:space="preserve">
+    <value>游戏</value>
+  </data>
+  <data name="ItemType_Genre_Genre" xml:space="preserve">
+    <value>类型风格</value>
+  </data>
+  <data name="ItemType_LiveTv_LiveTv" xml:space="preserve">
+    <value>电视直播</value>
+  </data>
+  <data name="ItemType_Music_Music" xml:space="preserve">
+    <value>音乐</value>
+  </data>
+  <data name="ItemType_MusicAlbum_MusicAlbum" xml:space="preserve">
+    <value>专辑</value>
+  </data>
+  <data name="ItemType_Person_Person" xml:space="preserve">
+    <value>人物</value>
+  </data>
+  <data name="ItemType_Photo_Photo" xml:space="preserve">
+    <value>照片</value>
+  </data>
+  <data name="ItemType_PhotoAlbum_PhotoAlbum" xml:space="preserve">
+    <value>相册</value>
+  </data>
+  <data name="ItemType_Playlist_Playlist" xml:space="preserve">
+    <value>播放列表</value>
+  </data>
+  <data name="ItemType_Series_Series" xml:space="preserve">
+    <value>电视节目</value>
+  </data>
+  <data name="ItemType_Studio_Studio" xml:space="preserve">
+    <value>工作室</value>
+  </data>
+  <data name="ItemType_Tag_Tag" xml:space="preserve">
+    <value>标签</value>
+  </data>
+  <data name="ItemType_Trailer_Trailer" xml:space="preserve">
+    <value>预告片</value>
+  </data>
+  <data name="ModOptions_SearchScope_Search_Scope" xml:space="preserve">
+    <value>搜索范围</value>
+  </data>
+  <data name="ModOptions_SearchScope_Include_item_types__Blank_includes_all_" xml:space="preserve">
+    <value>搜索包含的类型，默认为电影，合集，电视节目，留空包含所有。</value>
   </data>
 </root>

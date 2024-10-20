@@ -138,7 +138,7 @@
     <value>Support image capture for Strm. Skip embedded image. Default is OFF.</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
-    <value>Enable Intro Skip</value>
+    <value>Adaptive Intro Skip</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__Default_is_False_" xml:space="preserve">
     <value>Playback behavior-based intro and credits detection for episodes. Default is OFF.</value>
@@ -201,7 +201,7 @@
     <value>Customize MovieDb Fallback Language</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
-    <value>Try to get Chinese or Japanese metadata from MovieDb. Default is OFF.</value>
+    <value>Try to get Chinese or Japanese metadata from MovieDb, including actors. Default is OFF.</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
     <value>Fallback Languages</value>
@@ -232,5 +232,80 @@
   </data>
   <data name="IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all" xml:space="preserve">
     <value>Users allowed to detect. Blank includes all users.</value>
+  </data>
+  <data name="ModOptions_OriginalPoster_Original_Poster" xml:space="preserve">
+    <value>Original Language Poster</value>
+  </data>
+  <data name="ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_" xml:space="preserve">
+    <value>Prefer original poster based on the original language. Support TMDB, TVDB and FANART. Default is OFF.</value>
+  </data>
+  <data name="IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced" xml:space="preserve">
+    <value>Built-in Intro Detection Unlock</value>
+  </data>
+  <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
+    <value>Unlock Strm support for built-in intro skip detection</value>
+  </data>
+  <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
+    <value>Enhance Chinese Search</value>
+  </data>
+  <data name="ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_" xml:space="preserve">
+    <value>Support Chinese fuzzy search and Pinyin search. Default is OFF.</value>
+  </data>
+  <data name="ItemType_Movie_Movie" xml:space="preserve">
+    <value>Movie</value>
+  </data>
+  <data name="ItemType_Book_Book" xml:space="preserve">
+    <value>Book</value>
+  </data>
+  <data name="ItemType_Collection_Collection" xml:space="preserve">
+    <value>Collection</value>
+  </data>
+  <data name="ItemType_Episode_Episode" xml:space="preserve">
+    <value>Episode</value>
+  </data>
+  <data name="ItemType_Game_Game" xml:space="preserve">
+    <value>Game</value>
+  </data>
+  <data name="ItemType_Genre_Genre" xml:space="preserve">
+    <value>Genre</value>
+  </data>
+  <data name="ItemType_LiveTv_LiveTv" xml:space="preserve">
+    <value>LiveTv</value>
+  </data>
+  <data name="ItemType_Music_Music" xml:space="preserve">
+    <value>Music</value>
+  </data>
+  <data name="ItemType_MusicAlbum_MusicAlbum" xml:space="preserve">
+    <value>MusicAlbum</value>
+  </data>
+  <data name="ItemType_Person_Person" xml:space="preserve">
+    <value>Person</value>
+  </data>
+  <data name="ItemType_Photo_Photo" xml:space="preserve">
+    <value>Photo</value>
+  </data>
+  <data name="ItemType_PhotoAlbum_PhotoAlbum" xml:space="preserve">
+    <value>PhotoAlbum</value>
+  </data>
+  <data name="ItemType_Playlist_Playlist" xml:space="preserve">
+    <value>Playlist</value>
+  </data>
+  <data name="ItemType_Series_Series" xml:space="preserve">
+    <value>Series</value>
+  </data>
+  <data name="ItemType_Studio_Studio" xml:space="preserve">
+    <value>Studio</value>
+  </data>
+  <data name="ItemType_Tag_Tag" xml:space="preserve">
+    <value>Tag</value>
+  </data>
+  <data name="ItemType_Trailer_Trailer" xml:space="preserve">
+    <value>Trailer</value>
+  </data>
+  <data name="ModOptions_SearchScope_Search_Scope" xml:space="preserve">
+    <value>Search Scope</value>
+  </data>
+  <data name="ModOptions_SearchScope_Include_item_types__Blank_includes_all_" xml:space="preserve">
+    <value>Include search item types. Default is Movie, Collection, Series. Blank includes all.</value>
   </data>
 </root>

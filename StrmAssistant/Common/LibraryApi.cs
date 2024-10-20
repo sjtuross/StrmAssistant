@@ -9,6 +9,7 @@ using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Querying;
 using System;
 using System.Collections.Generic;
@@ -31,16 +32,19 @@ namespace StrmAssistant
         public static MetadataRefreshOptions MediaInfoRefreshOptions;
         public static MetadataRefreshOptions ImageCaptureRefreshOptions;
         public static MetadataRefreshOptions FullRefreshOptions;
-        public static ExtraType[] IncludeExtraType = { ExtraType.AdditionalPart,
-                                                                ExtraType.BehindTheScenes,
-                                                                ExtraType.Clip,
-                                                                ExtraType.DeletedScene,
-                                                                ExtraType.Interview,
-                                                                ExtraType.Sample,
-                                                                ExtraType.Scene,
-                                                                ExtraType.ThemeSong,
-                                                                ExtraType.ThemeVideo,
-                                                                ExtraType.Trailer };
+
+        public static ExtraType[] IncludeExtraTypes =
+        {
+            ExtraType.AdditionalPart, ExtraType.BehindTheScenes, ExtraType.Clip, ExtraType.DeletedScene,
+            ExtraType.Interview, ExtraType.Sample, ExtraType.Scene, ExtraType.ThemeSong, ExtraType.ThemeVideo,
+            ExtraType.Trailer
+        };
+
+        public static MediaContainers[] ExcludeMediaContainers =
+        {
+            MediaContainers.MpegTs, MediaContainers.Ts, MediaContainers.M2Ts
+        };
+
         public static Dictionary<User, bool> AllUsers = new Dictionary<User, bool>();
 
         private readonly bool _fallbackProbeApproach;
@@ -92,7 +96,7 @@ namespace StrmAssistant
                 ReplaceAllImages = true
             };
 
-            if (Plugin.Instance.ApplicationHost.ApplicationVersion > new Version("4.9.0.14"))
+            if (Plugin.Instance.ApplicationHost.ApplicationVersion > new Version("4.9.0.23"))
             {
                 try
                 {
@@ -186,7 +190,7 @@ namespace StrmAssistant
             resultItems = resultItems.GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
 
             var unprocessedItems = FilterUnprocessed(resultItems
-                .Concat(includeExtra ? resultItems.SelectMany(f => f.GetExtras(IncludeExtraType)) : Enumerable.Empty<BaseItem>())
+                .Concat(includeExtra ? resultItems.SelectMany(f => f.GetExtras(IncludeExtraTypes)) : Enumerable.Empty<BaseItem>())
                 .ToList());
             var orderedItems = OrderUnprocessed(unprocessedItems);
 
@@ -222,7 +226,7 @@ namespace StrmAssistant
                 var expanded = ExpandFavorites(favorites, false);
 
                 favoritesWithExtra = expanded.Concat(includeExtra
-                        ? expanded.SelectMany(f => f.GetExtras(IncludeExtraType))
+                        ? expanded.SelectMany(f => f.GetExtras(IncludeExtraTypes))
                         : Enumerable.Empty<BaseItem>())
                     .ToArray();
             }
@@ -276,12 +280,12 @@ namespace StrmAssistant
 
                 if (includeExtra)
                 {
-                    itemsMediaInfoQuery.ExtraTypes = IncludeExtraType;
+                    itemsMediaInfoQuery.ExtraTypes = IncludeExtraTypes;
                     var extrasMediaInfo = _libraryManager.GetItemList(itemsMediaInfoQuery);
 
                     if (enableImageCapture && librariesWithImageCapture.Any())
                     {
-                        itemsImageCaptureQuery.ExtraTypes = IncludeExtraType;
+                        itemsImageCaptureQuery.ExtraTypes = IncludeExtraTypes;
                         var extrasImageCapture = _libraryManager.GetItemList(itemsImageCaptureQuery);
                         extras = extrasImageCapture.Concat(extrasMediaInfo).GroupBy(i => i.InternalId)
                             .Select(g => g.First()).ToArray();
@@ -317,15 +321,13 @@ namespace StrmAssistant
             var strmOnly = Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly;
             _logger.Info("Strm Only: " + strmOnly);
 
-            List<BaseItem> results = new List<BaseItem>();
+            var results = new List<BaseItem>();
 
             foreach (var item in items)
             {
-                if (strmOnly ? item.IsShortcut : true && !HasMediaStream(item))
-                {
-                    results.Add(item);
-                }
-                else if (strmOnly ? item.IsShortcut : true && !item.HasImage(ImageType.Primary))
+                if ((!strmOnly || item.IsShortcut) && (!HasMediaStream(item) || !item.HasImage(ImageType.Primary) &&
+                        !(HasMediaStream(item) && item.MediaContainer.HasValue &&
+                          ExcludeMediaContainers.Contains(item.MediaContainer.Value))))
                 {
                     results.Add(item);
                 }
@@ -334,6 +336,7 @@ namespace StrmAssistant
                     _logger.Debug("MediaInfoExtract - Item dropped: " + item.Name + " - " + item.Path);
                 }
             }
+
             _logger.Info("MediaInfoExtract - Number of items: " + results.Count);
 
             return results;
@@ -434,9 +437,9 @@ namespace StrmAssistant
             {
                 await Task.WhenAll(probeMediaSources.Select(async probeMediaSource =>
                 {
-                    var resultMediaSources = (await _mediaSourceManager
+                    var resultMediaSources = await _mediaSourceManager
                         .GetPlayackMediaSources(item, null, true, probeMediaSource.Id, true, cancellationToken)
-                        .ConfigureAwait(false));
+                        .ConfigureAwait(false);
 
                     foreach (var resultMediaSource in resultMediaSources)
                     {
@@ -450,9 +453,10 @@ namespace StrmAssistant
             {
                 await Task.WhenAll(probeMediaSources.Select(async probeMediaSource =>
                 {
-                    var resultMediaSources = await (Task<List<MediaSourceInfo>>)GetPlayackMediaSources.Invoke(
-                        _mediaSourceManager,
-                        new object[] { item, null, true, probeMediaSource.Id, true, false, cancellationToken });
+                    var resultMediaSources = await ((Task<List<MediaSourceInfo>>)GetPlayackMediaSources.Invoke(
+                            _mediaSourceManager,
+                            new object[] { item, null, true, probeMediaSource.Id, true, false, cancellationToken }))
+                        .ConfigureAwait(false);
 
                     foreach (var resultMediaSource in resultMediaSources)
                     {

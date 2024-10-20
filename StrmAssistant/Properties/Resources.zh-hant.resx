@@ -51,7 +51,7 @@
     <value>魔改支援Strm影片截圖，跳過內嵌封面，預設關閉。</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
-    <value>啟用跳片頭功能</value>
+    <value>播放行為片頭探測</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__Default_is_False_" xml:space="preserve">
     <value>基於播放行為的劇集片頭片尾探測，預設為關閉。</value>
@@ -114,13 +114,13 @@
     <value>自訂 TMDB 備選語言</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
-    <value>盡可能從 TMDB 取得中文或日文元數據，預設為關閉。</value>
+    <value>盡可能從 TMDB 獲取中文或日文元數據，包括演員，預設為關閉。</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
     <value>備選語言</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_" xml:space="preserve">
-    <value>備選元資料語言，可多選</value>
+    <value>備選元資料語言，可多選。</value>
   </data>
   <data name="Favorites" xml:space="preserve">
     <value>❤️最愛</value>
@@ -142,5 +142,83 @@
   </data>
   <data name="IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all" xml:space="preserve">
     <value>允許的使用者範圍，留空包含所有使用者。</value>
+  </data>
+  <data name="ModOptions_OriginalPoster_Original_Poster" xml:space="preserve">
+    <value>原語言海報</value>
+  </data>
+  <data name="Wiki_Link" xml:space="preserve">
+    <value>功能介紹</value>
+  </data>
+  <data name="ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_" xml:space="preserve">
+    <value>優先使用原語言海報，支援 TMDB, TVDB, Fanart，預設為關閉。</value>
+  </data>
+  <data name="IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced" xml:space="preserve">
+    <value>原生片頭探測解鎖</value>
+  </data>
+  <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
+    <value>魔改原生跳片頭探測，解鎖Strm支持，預設關閉。</value>
+  </data>
+  <data name="ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_" xml:space="preserve">
+    <value>支援中文模糊搜尋和拼音搜索，預設為關閉。</value>
+  </data>
+  <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
+    <value>中文搜尋增強</value>
+  </data>
+  <data name="ItemType_Movie_Movie" xml:space="preserve">
+    <value>電影</value>
+  </data>
+  <data name="ItemType_Book_Book" xml:space="preserve">
+    <value>書籍</value>
+  </data>
+  <data name="ItemType_Collection_Collection" xml:space="preserve">
+    <value>合集</value>
+  </data>
+  <data name="ItemType_Episode_Episode" xml:space="preserve">
+    <value>集</value>
+  </data>
+  <data name="ItemType_Game_Game" xml:space="preserve">
+    <value>遊戲</value>
+  </data>
+  <data name="ItemType_Genre_Genre" xml:space="preserve">
+    <value>類型風格</value>
+  </data>
+  <data name="ItemType_LiveTv_LiveTv" xml:space="preserve">
+    <value>電視直播</value>
+  </data>
+  <data name="ItemType_Music_Music" xml:space="preserve">
+    <value>音樂</value>
+  </data>
+  <data name="ItemType_MusicAlbum_MusicAlbum" xml:space="preserve">
+    <value>專輯</value>
+  </data>
+  <data name="ItemType_Person_Person" xml:space="preserve">
+    <value>人物</value>
+  </data>
+  <data name="ItemType_Photo_Photo" xml:space="preserve">
+    <value>照片</value>
+  </data>
+  <data name="ItemType_PhotoAlbum_PhotoAlbum" xml:space="preserve">
+    <value>相簿</value>
+  </data>
+  <data name="ItemType_Playlist_Playlist" xml:space="preserve">
+    <value>播放清單</value>
+  </data>
+  <data name="ItemType_Series_Series" xml:space="preserve">
+    <value>電視節目</value>
+  </data>
+  <data name="ItemType_Studio_Studio" xml:space="preserve">
+    <value>工作室</value>
+  </data>
+  <data name="ItemType_Tag_Tag" xml:space="preserve">
+    <value>標籤</value>
+  </data>
+  <data name="ItemType_Trailer_Trailer" xml:space="preserve">
+    <value>預告片</value>
+  </data>
+  <data name="ModOptions_SearchScope_Search_Scope" xml:space="preserve">
+    <value>搜尋範圍</value>
+  </data>
+  <data name="ModOptions_SearchScope_Include_item_types__Blank_includes_all_" xml:space="preserve">
+    <value>搜尋包含的類型，預設為電影，合集，電視節目，留空包含所有。</value>
   </data>
 </root>

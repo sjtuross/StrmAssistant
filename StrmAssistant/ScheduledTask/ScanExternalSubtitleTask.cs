@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
-    public class ScanExternalSubtitleTask : IScheduledTask
+    public class ScanExternalSubtitleTask: IScheduledTask
     {
         private readonly ILogger _logger;
 
@@ -55,14 +55,16 @@ namespace StrmAssistant
                     {
                         _logger.Info("ExternalSubtitle - Item cancelled: " + taskItem.Name + " - " + taskItem.Path);
                     }
-                    catch
+                    catch (Exception e)
                     {
                         _logger.Info("ExternalSubtitle - Item failed: " + taskItem.Name + " - " + taskItem.Path);
+                        _logger.Debug(e.Message);
+                        _logger.Debug(e.StackTrace);
                     }
                     finally
                     {
-                        Interlocked.Increment(ref current);
-                        progress.Report(current / total * 100);
+                        var currentCount = Interlocked.Increment(ref current);
+                        progress.Report(currentCount / total * 100);
                         QueueManager.SemaphoreMaster.Release();
                     }
                 }, cancellationToken);
@@ -79,7 +81,7 @@ namespace StrmAssistant
 
         public string Key => "ScanExternalSubtitleTask";
 
-        public string Description => "Scan external subtitles for videos";
+        public string Description => "Scans external subtitles for videos";
 
         public string Name => "Scan External Subtitles";
 
