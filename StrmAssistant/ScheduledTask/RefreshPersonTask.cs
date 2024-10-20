@@ -146,9 +146,9 @@ namespace StrmAssistant
                         }
                         finally
                         {
-                            Interlocked.Increment(ref current);
-                            progress.Report(current / total * 100);
-                            _logger.Info("RefreshPerson - Task " + current + "/" + total + " - " + taskItem.Name);
+                            var currentCount = Interlocked.Increment(ref current);
+                            progress.Report(currentCount / total * 100);
+                            _logger.Info("RefreshPerson - Task " + currentCount + "/" + total + " - " + taskItem.Name);
                             QueueManager.SemaphoreMaster.Release();
                         }
                     }, cancellationToken);

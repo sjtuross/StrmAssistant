@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
-    public class ScanExternalSubtitleTask : IScheduledTask
+    public class ScanExternalSubtitleTask: IScheduledTask
     {
         private readonly ILogger _logger;
 
@@ -63,8 +63,8 @@ namespace StrmAssistant
                     }
                     finally
                     {
-                        Interlocked.Increment(ref current);
-                        progress.Report(current / total * 100);
+                        var currentCount = Interlocked.Increment(ref current);
+                        progress.Report(currentCount / total * 100);
                         QueueManager.SemaphoreMaster.Release();
                     }
                 }, cancellationToken);
