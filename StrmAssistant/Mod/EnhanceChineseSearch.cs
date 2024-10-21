@@ -4,9 +4,9 @@ using SQLitePCL.pretty;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
-using System.Text.RegularExpressions;
 using static StrmAssistant.Mod.PatchManager;
 using static StrmAssistant.ModOptions;
 
@@ -494,27 +494,15 @@ namespace StrmAssistant.Mod
         {
             return "replace(replace(" + columnName + ",'''',''),'.','')";
         }
-
-        private static bool EnableJoinFtsSearch(InternalItemsQuery query)
-        {
-            var result = (query.Limit == 30 || query.Limit == 50) &&
-                         (query.PersonTypes == null || query.PersonTypes.Length == 0) &&
-                         !string.IsNullOrEmpty(query.SearchTerm);
-
-            return result;
-        }
-
+        
         [HarmonyPostfix]
         private static void GetJoinCommandTextPostfix(InternalItemsQuery query,
             List<KeyValuePair<string, string>> bindParams,
             string mediaItemsTableQualifier, ref string __result)
         {
-            if (EnableJoinFtsSearch(query))
+            if (!string.IsNullOrEmpty(query.SearchTerm) && __result.Contains("match @SearchTerm"))
             {
-                if (__result.Contains("match @SearchTerm"))
-                {
-                    __result = __result.Replace("match @SearchTerm", "match simple_query(@SearchTerm)");
-                }
+                __result = __result.Replace("match @SearchTerm", "match simple_query(@SearchTerm)");
             }
         }
 
@@ -522,10 +510,8 @@ namespace StrmAssistant.Mod
         private static bool CreateSearchTermPrefix(string searchTerm, ref string __result)
         {
             var newSearchTerm = searchTerm;
-            if (Regex.Matches(searchTerm, "'").Count >= 3)
-            {
-                newSearchTerm = searchTerm.Replace("'", "");
-            }
+            var quoteCount = searchTerm.Count(c => c == '\'');
+            if (quoteCount >= 3) newSearchTerm = searchTerm.Replace("'", "");
 
             __result = newSearchTerm;
             return false;
@@ -534,16 +520,17 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool CacheIdsFromTextParamsPrefix(InternalItemsQuery query, IDatabaseConnection db)
         {
-            if ((query.Limit == 30 || query.Limit == 50) &&
-                (query.PersonTypes == null || query.PersonTypes.Length == 0))
+            if ((query.PersonTypes?.Length ?? 0) == 0)
             {
-                if (!string.IsNullOrEmpty(query.NameStartsWith))
+                var nameStartsWith = query.NameStartsWith;
+                if (!string.IsNullOrEmpty(nameStartsWith))
                 {
-                    query.SearchTerm = query.NameStartsWith;
+                    query.SearchTerm = nameStartsWith;
                     query.NameStartsWith = null;
                 }
 
-                if (query.IncludeItemTypes.Length == 0 && !string.IsNullOrEmpty(query.SearchTerm))
+                var searchTerm = query.SearchTerm;
+                if (query.IncludeItemTypes.Length == 0 && !string.IsNullOrEmpty(searchTerm))
                 {
                     query.IncludeItemTypes = _includeItemTypes;
                 }

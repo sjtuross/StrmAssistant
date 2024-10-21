@@ -71,18 +71,16 @@ namespace StrmAssistant.Mod
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
-            if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None)
+            if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
+                Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture)
             {
                 SemaphoreFFmpeg = new SemaphoreSlim(_currentMaxConcurrentCount);
                 PatchResourcePool();
-                var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
+                var resourcePool = (SemaphoreSlim)_resourcePoolField?.GetValue(null);
                 Plugin.Instance.logger.Info(
                     "Current FFmpeg ResourcePool: " + resourcePool?.CurrentCount ?? string.Empty);
 
-                if (Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture)
-                {
-                    Patch();
-                }
+                Patch();
             }
         }
 
