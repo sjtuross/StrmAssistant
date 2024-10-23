@@ -65,13 +65,21 @@ namespace StrmAssistant
                 }
                 _libraryManager.DeleteItems(dupPersonItems.Select(i => i.InternalId).ToArray());
             }
-
             _logger.Info("RefreshPerson - Number of Duplicate Persons Deleted: " + dupPersonItems.Count);
-            var remainingCount = personItems.Count - dupPersonItems.Count;
+
+            var skipCount = personItems
+                .Count(item => item.ProviderIds != null &&
+                               !item.ProviderIds.Keys.Any(key =>
+                                   string.Equals(key, "tmdb", StringComparison.OrdinalIgnoreCase)));
+            _logger.Info("RefreshPerson - Number of Persons without TmdbId Skipped: " + skipCount);
+
+            var remainingCount = personItems.Count - dupPersonItems.Count - skipCount;
             _logger.Info("RefreshPerson - Number of Persons After: " + remainingCount);
 
             personItems.Clear();
             personItems.TrimExcess();
+
+            personQuery.HasAnyProviderId = new[] { "tmdb" };
 
             double total = remainingCount;
             var current = 0;

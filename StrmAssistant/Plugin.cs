@@ -200,16 +200,20 @@ namespace StrmAssistant
 
         protected override void OnOptionsSaved(PluginOptions options)
         {
-            if (_currentSuppressOnOptionsSaved)
+            if (!_currentSuppressOnOptionsSaved)
             {
-                _currentSuppressOnOptionsSaved = false;
-                return;
+                logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
+                logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
+                logger.Info("MaxConcurrentCount is set to {0}", options.MediaInfoExtractOptions.MaxConcurrentCount);
+                var libraryScope = string.Join(", ",
+                    options.MediaInfoExtractOptions.LibraryScope
+                        ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(v =>
+                            options.MediaInfoExtractOptions.LibraryList.FirstOrDefault(option => option.Value == v)
+                                ?.Name) ?? Enumerable.Empty<string>());
+                logger.Info("MediaInfoExtract - LibraryScope is set to {0}",
+                    string.IsNullOrEmpty(libraryScope) ? "ALL" : libraryScope);
             }
-
-            logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
-            logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
-
-            logger.Info("MaxConcurrentCount is set to {0}", options.MediaInfoExtractOptions.MaxConcurrentCount);
             if (_currentMaxConcurrentCount != options.MediaInfoExtractOptions.MaxConcurrentCount)
             {
                 _currentMaxConcurrentCount = options.MediaInfoExtractOptions.MaxConcurrentCount;
@@ -220,7 +224,8 @@ namespace StrmAssistant
                     EnableImageCapture.UpdateResourcePool(_currentMaxConcurrentCount);
             }
 
-            logger.Info("EnableImageCapture is set to {0}", options.MediaInfoExtractOptions.EnableImageCapture);
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("EnableImageCapture is set to {0}", options.MediaInfoExtractOptions.EnableImageCapture);
             if (_currentEnableImageCapture != options.MediaInfoExtractOptions.EnableImageCapture)
             {
                 _currentEnableImageCapture = options.MediaInfoExtractOptions.EnableImageCapture;
@@ -236,7 +241,8 @@ namespace StrmAssistant
                 }
             }
 
-            logger.Info("MergeMultiVersion is set to {0}", options.ModOptions.MergeMultiVersion);
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("MergeMultiVersion is set to {0}", options.ModOptions.MergeMultiVersion);
             if (_currentMergeMultiVersion!= GetOptions().ModOptions.MergeMultiVersion)
             {
                 _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
@@ -251,7 +257,8 @@ namespace StrmAssistant
                 }
             }
 
-            logger.Info("ExclusiveExtract is set to {0}", options.ModOptions.ExclusiveExtract);
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("ExclusiveExtract is set to {0}", options.ModOptions.ExclusiveExtract);
             if (_currentExclusiveExtract != GetOptions().ModOptions.ExclusiveExtract)
             {
                 _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
@@ -266,7 +273,8 @@ namespace StrmAssistant
                 }
             }
 
-            logger.Info("ChineseMovieDb is set to {0}", options.ModOptions.ChineseMovieDb);
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("ChineseMovieDb is set to {0}", options.ModOptions.ChineseMovieDb);
             if (_currentChineseMovieDb != GetOptions().ModOptions.ChineseMovieDb)
             {
                 _currentChineseMovieDb = GetOptions().ModOptions.ChineseMovieDb;
@@ -281,7 +289,8 @@ namespace StrmAssistant
                 }
             }
 
-            logger.Info("PreferOriginalPoster is set to {0}", options.ModOptions.PreferOriginalPoster);
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("PreferOriginalPoster is set to {0}", options.ModOptions.PreferOriginalPoster);
             if (_currentPreferOriginalPoster != GetOptions().ModOptions.PreferOriginalPoster)
             {
                 _currentPreferOriginalPoster = GetOptions().ModOptions.PreferOriginalPoster;
@@ -296,7 +305,8 @@ namespace StrmAssistant
                 }
             }
 
-            logger.Info("EnhanceChineseSearch is set to {0}", options.ModOptions.EnhanceChineseSearch);
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("EnhanceChineseSearch is set to {0}", options.ModOptions.EnhanceChineseSearch);
             if (_currentEnhanceChineseSearch != GetOptions().ModOptions.EnhanceChineseSearch)
             {
                 _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
@@ -310,7 +320,8 @@ namespace StrmAssistant
                 ApplicationHost.NotifyPendingRestart();
             }
 
-            logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
             if (_currentCatchupMode != options.GeneralOptions.CatchupMode)
             {
                 _currentCatchupMode = options.GeneralOptions.CatchupMode;
@@ -325,10 +336,12 @@ namespace StrmAssistant
                 }
             }
 
-            logger.Info("EnableIntroSkip is set to {0}", options.IntroSkipOptions.EnableIntroSkip);
-            logger.Info("MaxIntroDurationSeconds is set to {0}", options.IntroSkipOptions.MaxIntroDurationSeconds);
-            logger.Info("MaxCreditsDurationSeconds is set to {0}", options.IntroSkipOptions.MaxCreditsDurationSeconds);
-            
+            if (!_currentSuppressOnOptionsSaved)
+            {
+                logger.Info("EnableIntroSkip is set to {0}", options.IntroSkipOptions.EnableIntroSkip);
+                logger.Info("MaxIntroDurationSeconds is set to {0}", options.IntroSkipOptions.MaxIntroDurationSeconds);
+                logger.Info("MaxCreditsDurationSeconds is set to {0}", options.IntroSkipOptions.MaxCreditsDurationSeconds);
+            }
             if (_currentEnableIntroSkip != options.IntroSkipOptions.EnableIntroSkip)
             {
                 _currentEnableIntroSkip = options.IntroSkipOptions.EnableIntroSkip;
@@ -342,7 +355,8 @@ namespace StrmAssistant
                 }
             }
 
-            logger.Info("UnlockIntroSkip is set to {0}", options.IntroSkipOptions.UnlockIntroSkip);
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("UnlockIntroSkip is set to {0}", options.IntroSkipOptions.UnlockIntroSkip);
             if (_currentUnlockIntroSkip != options.IntroSkipOptions.UnlockIntroSkip)
             {
                 _currentUnlockIntroSkip = options.IntroSkipOptions.UnlockIntroSkip;
@@ -356,40 +370,39 @@ namespace StrmAssistant
                 }
             }
 
-            var libraryScope = string.Join(", ",
-                options.MediaInfoExtractOptions.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(v =>
-                        options.MediaInfoExtractOptions.LibraryList.FirstOrDefault(option => option.Value == v)?.Name));
-            logger.Info("MediaInfoExtract - LibraryScope is set to {0}",
-                string.IsNullOrEmpty(libraryScope) ? "ALL" : libraryScope);
+            if (!_currentSuppressOnOptionsSaved)
+            {
+                var intoSkipLibraryScope = string.Join(", ",
+                    options.IntroSkipOptions.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(v => options.IntroSkipOptions.LibraryList
+                            .FirstOrDefault(option => option.Value == v)
+                            ?.Name) ?? Enumerable.Empty<string>());
+                logger.Info("IntroSkip - LibraryScope is set to {0}",
+                        string.IsNullOrEmpty(intoSkipLibraryScope) ? "ALL" : intoSkipLibraryScope);
 
-            var intoSkipLibraryScope = string.Join(", ",
-                options.IntroSkipOptions.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(v => options.IntroSkipOptions.LibraryList
-                        .FirstOrDefault(option => option.Value == v)
-                        ?.Name));
-            logger.Info("IntroSkip - LibraryScope is set to {0}",
-                string.IsNullOrEmpty(intoSkipLibraryScope) ? "ALL" : intoSkipLibraryScope);
+                var introSkipUserScope = string.Join(", ",
+                    options.IntroSkipOptions.UserScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(v => options.IntroSkipOptions.UserList
+                            .FirstOrDefault(option => option.Value == v)
+                            ?.Name) ?? Enumerable.Empty<string>());
+                logger.Info("IntroSkip - UserScope is set to {0}",
+                        string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
+            }
             PlaySessionMonitor.UpdateLibraryPathsInScope();
-            
-            var introSkipUserScope= string.Join(", ",
-                options.IntroSkipOptions.UserScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(v => options.IntroSkipOptions.UserList
-                        .FirstOrDefault(option => option.Value == v)
-                        ?.Name));
-            logger.Info("IntroSkip - UserScope is set to {0}",
-                string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
             PlaySessionMonitor.UpdateUsersInScope();
 
-            var searchScope = string.Join(", ",
-                options.ModOptions.SearchScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(s =>
-                        Enum.TryParse(s.Trim(), true, out SearchItemType type)
-                            ? EnumExtensions.GetDescription(type)
-                            : null)
-                    .Where(d => d != null));
-            logger.Info("EnhanceChineseSearch - SearchScope is set to {0}",
-                string.IsNullOrEmpty(searchScope) ? "ALL" : searchScope);
+            if (!_currentSuppressOnOptionsSaved)
+            {
+                var searchScope = string.Join(", ",
+                    options.ModOptions.SearchScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s =>
+                            Enum.TryParse(s.Trim(), true, out SearchItemType type)
+                                ? EnumExtensions.GetDescription(type)
+                                : null)
+                        .Where(d => d != null));
+                logger.Info("EnhanceChineseSearch - SearchScope is set to {0}",
+                        string.IsNullOrEmpty(searchScope) ? "ALL" : searchScope);
+            }
             if (_currentSearchScope != options.ModOptions.SearchScope)
             {
                 _currentSearchScope = options.ModOptions.SearchScope;
@@ -397,6 +410,8 @@ namespace StrmAssistant
                 if (options.ModOptions.EnhanceChineseSearch)
                     EnhanceChineseSearch.UpdateSearchScope();
             }
+
+            if (_currentSuppressOnOptionsSaved) _currentSuppressOnOptionsSaved = false;
 
             base.OnOptionsSaved(options);
         }

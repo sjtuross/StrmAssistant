@@ -160,12 +160,11 @@ namespace StrmAssistant.Mod
                         {
                             rebuildFtsResult = RebuildFts(connection, ftsTableName, "unicode61 remove_diacritics 2");
                         }
-
                         if (rebuildFtsResult)
                         {
                             Plugin.Instance.logger.Info("EnhanceChineseSearch - Restore Success");
-                            ResetOptions();
                         }
+                        ResetOptions();
                     }
                     else if (Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearch)
                     {
@@ -254,6 +253,11 @@ namespace StrmAssistant.Mod
             }
 
             return false;
+        }
+        
+        private static string GetSearchColumnNormalization(string columnName)
+        {
+            return "replace(replace(" + columnName + ",'''',''),'.','')";
         }
 
         private static bool EnsureTokenizerExists()
@@ -373,6 +377,7 @@ namespace StrmAssistant.Mod
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.logger.Debug("Patch CacheIdsFromTextParams Success by Harmony");
                     }
+
                     return true;
                 }
                 catch (Exception he)
@@ -391,6 +396,9 @@ namespace StrmAssistant.Mod
         {
             try
             {
+                
+                var db = sqlite3_db.GetValue(connection);
+                sqlite3_enable_load_extension.Invoke(raw, new[] { db, 1 });
                 connection.Execute("SELECT load_extension('" + _tokenizerPath + "')");
 
                 return true;
@@ -408,14 +416,15 @@ namespace StrmAssistant.Mod
         [HarmonyPostfix]
         private static void CreateConnectionPostfix(bool isReadOnly, ref IDatabaseConnection __result)
         {
-            var db = sqlite3_db.GetValue(__result);
-            sqlite3_enable_load_extension.Invoke(raw, new[] { db, 1 });
-            var tokenizerLoaded = LoadTokenizerExtension(__result);
-
-            if (!isReadOnly && !_patchPhase2Initialized && tokenizerLoaded)
+            if (!isReadOnly && !_patchPhase2Initialized)
             {
-                PatchPhase2(__result);
-                _patchPhase2Initialized = true;
+                var tokenizerLoaded = LoadTokenizerExtension(__result);
+
+                if (tokenizerLoaded)
+                {
+                    PatchPhase2(__result);
+                    _patchPhase2Initialized = true;
+                }
             }
         }
         
@@ -490,19 +499,36 @@ namespace StrmAssistant.Mod
             _includeItemTypes = includeItemTypes.ToArray();
         }
 
-        private static string GetSearchColumnNormalization(string columnName)
-        {
-            return "replace(replace(" + columnName + ",'''',''),'.','')";
-        }
-        
         [HarmonyPostfix]
         private static void GetJoinCommandTextPostfix(InternalItemsQuery query,
-            List<KeyValuePair<string, string>> bindParams,
-            string mediaItemsTableQualifier, ref string __result)
+            List<KeyValuePair<string, string>> bindParams, string mediaItemsTableQualifier, ref string __result)
         {
             if (!string.IsNullOrEmpty(query.SearchTerm) && __result.Contains("match @SearchTerm"))
             {
                 __result = __result.Replace("match @SearchTerm", "match simple_query(@SearchTerm)");
+            }
+
+            if (!string.IsNullOrEmpty(query.Name) && __result.Contains("match @SearchTerm"))
+            {
+                __result = __result.Replace("match @SearchTerm", "match 'Name:' || simple_query(@SearchTerm)");
+
+                for (var i = 0; i < bindParams.Count; i++)
+                {
+                    var kvp = bindParams[i];
+                    if (kvp.Key == "@SearchTerm")
+                    {
+                        var currentValue = kvp.Value;
+
+                        if (currentValue.StartsWith("Name:", StringComparison.Ordinal))
+                        {
+                            currentValue = currentValue
+                                .Substring(currentValue.IndexOf(":", StringComparison.Ordinal) + 1)
+                                .Trim('\"', '^', '$');
+                        }
+
+                        bindParams[i] = new KeyValuePair<string, string>(kvp.Key, currentValue);
+                    }
+                }
             }
         }
 
