@@ -17,6 +17,7 @@
 9. 刷新`TMDB`中文演员
 10. 获取原语言海报
 11. 中文搜索增强
+12. 拼音首字母排序
 
 ## 更新
 
@@ -37,14 +38,15 @@
 15. 优先使用原语言海报，支持`TMDB`, `TVDB`, `Fanart`，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/原语言海报--(Original-Poster))
 16. `TMDB`备选语言元数据以及中文演员繁转简
 17. 支持中文模糊搜索和拼音搜索，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文搜索增强)
-
-**注意**: Emby最低版本要求 `4.8.0.80`
+18. 刷新元数据时自动生成拼音首字母为排序标题，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/拼音首字母排序)
 
 ## 安装
 
 1. 下载 `StrmAssistant.dll` 放入配置目录中的 `plugins` 目录
 2. 重启Emby
 3. 至插件页面检查版本及设置
+
+**注意**: Emby最低版本要求 `4.8.0.80`
 
 ## 赞赏
 

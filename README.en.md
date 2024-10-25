@@ -22,10 +22,10 @@
 8. Playback behavior-based intro and credits detection for episodes (default is False), check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/片头探测-(Intro-Detection)) for details.
 9. Independent external subtitle scan, check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/独立的外挂字幕扫描-(External-Subtitle-Scan)) for details.
 
-**Note**: The minimum required Emby version is 4.8.0.80.
-
 ## Install
 
 1. Download `StrmAssistant.dll` to the `plugins` folder
 2. Restart Emby
 3. Go to the Plugins page and check the plugin version and settings
+
+**Note**: The minimum required Emby version is 4.8.0.80.
