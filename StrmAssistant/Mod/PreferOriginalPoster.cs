@@ -575,16 +575,18 @@ namespace StrmAssistant.Mod
                     if (task.IsCompleted)
                     {
                         var originalLanguage = GetOriginalLanguage(item);
+                        var libraryPreferredImageLanguage = libraryOptions.PreferredImageLanguage?.Split('-')[0];
+
                         var remoteImages = task.Result;
 
-                        if (!string.IsNullOrEmpty(originalLanguage))
-                        {
-                            var orderedImages = remoteImages
-                                .OrderBy(i =>
-                                    string.Equals(i.Language, originalLanguage, StringComparison.OrdinalIgnoreCase) ? 0 : 1)
-                                .ToList();
-                            _remoteImageTaskResult?.SetValue(__result, orderedImages);
-                        }
+                        var orderedImages = remoteImages.OrderBy(i =>
+                                !string.IsNullOrEmpty(libraryPreferredImageLanguage) && string.Equals(i.Language,
+                                    libraryPreferredImageLanguage, StringComparison.OrdinalIgnoreCase) ? 0 :
+                                !string.IsNullOrEmpty(originalLanguage) && string.Equals(i.Language, originalLanguage,
+                                    StringComparison.OrdinalIgnoreCase) ? 1 : 2)
+                            .ToList();
+
+                        _remoteImageTaskResult?.SetValue(__result, orderedImages);
                     }
                 }, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
                 .ConfigureAwait(false);
