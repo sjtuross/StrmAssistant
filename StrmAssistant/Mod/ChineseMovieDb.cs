@@ -159,8 +159,7 @@ namespace StrmAssistant.Mod
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().ModOptions.ChineseMovieDb &&
-                Plugin.Instance.GetPluginOptions().ModOptions.IsMovieDbPluginLoaded)
+                Plugin.Instance.GetPluginOptions().ModOptions.ChineseMovieDb)
             {
                 Patch();
             }
@@ -168,136 +167,144 @@ namespace StrmAssistant.Mod
 
         public static void Patch()
         {
-            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony && _movieDbAssembly != null)
             {
                 try
                 {
-                    if (Plugin.Instance.GetPluginOptions().ModOptions.IsMovieDbPluginLoaded)
+                    if (!IsPatched(_genericMovieDbInfoIsCompleteMovie, typeof(ChineseMovieDb)))
                     {
-                        if (!IsPatched(_genericMovieDbInfoIsCompleteMovie, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_genericMovieDbInfoIsCompleteMovie,
-                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
-                                    "IsCompletePrefix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch GenericMovieDbInfo.IsComplete for Movie Success by Harmony");
-                        }
-                        if (!IsPatched(_genericMovieDbInfoProcessMainInfoMovie, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_genericMovieDbInfoProcessMainInfoMovie,
-                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("ProcessMainInfoMoviePrefix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch GenericMovieDbInfo.ProcessMainInfo for Movie Success by Harmony");
-                        }
-                        /* Not actually needed because a non-generic class is only patched with the last generic concrete type
-                         * It's fine here because the patch logic is the same and the intention is to patch the generic method
-                         * https://github.com/pardeike/Harmony/issues/201#issuecomment-821980884
-                        if (!IsPatched(_genericMovieDbInfoIsCompleteSeries, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_genericMovieDbInfoIsCompleteSeries,
-                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
-                                    "IsCompletePrefix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch GenericMovieDbInfo.IsComplete for Series Success by Harmony");
-                        }
-                        if (!IsPatched(_genericMovieDbInfoProcessMainInfoSeries, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_genericMovieDbInfoProcessMainInfoSeries,
-                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("ProcessMainInfoSeriesPrefix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch GenericMovieDbInfo.ProcessMainInfo for Series Success by Harmony");
-                        }
-                        */
-                        if (!IsPatched(_getMovieDbMetadataLanguages, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_getMovieDbMetadataLanguages,
-                                postfix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
-                                    "MetadataLanguagesPostfix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch MovieDbProviderBase.GetMovieDbMetadataLanguages Success by Harmony");
-                        }
-                        if (!IsPatched(_getImageLanguagesParam, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_getImageLanguagesParam,
-                                postfix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
-                                    "GetImageLanguagesParamPostfix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch MovieDbProviderBase.GetImageLanguagesParam Success by Harmony");
-                        }
-                        if (!IsPatched(_movieDbSeriesProviderIsComplete, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_movieDbSeriesProviderIsComplete,
-                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
-                                    "IsCompletePrefix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch MovieDbSeriesProvider.IsComplete Success by Harmony");
-                        }
-                        if (!IsPatched(_movieDbSeriesProviderImportData, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_movieDbSeriesProviderImportData,
-                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("SeriesImportDataPrefix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch MovieDbSeriesProvider.ImportData Success by Harmony");
-                        }
-                        if (!IsPatched(_ensureSeriesInfo, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_ensureSeriesInfo,
-                                postfix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
-                                    "EnsureSeriesInfoPostfix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch MovieDbSeriesProvider.EnsureSeriesInfoSuccess by Harmony");
-                        }
-                        if (!IsPatched(_movieDbSeasonProviderIsComplete, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_movieDbSeasonProviderIsComplete,
-                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
-                                    "IsCompletePrefix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch MovieDbSeasonProvider.IsComplete Success by Harmony");
-                        }
-                        if (!IsPatched(_movieDbSeasonProviderImportData, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_movieDbSeasonProviderImportData,
-                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("SeasonImportDataPrefix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch MovieDbSeasonProvider.ImportData Success by Harmony");
-                        }
-                        if (!IsPatched(_movieDbEpisodeProviderIsComplete, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_movieDbEpisodeProviderIsComplete,
-                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
-                                    "IsCompletePrefix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch MovieDbEpisodeProvider.IsComplete Success by Harmony");
-                        }
-                        if (!IsPatched(_movieDbEpisodeProviderImportData, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_movieDbEpisodeProviderImportData,
-                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("EpisodeImportDataPrefix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch MovieDbEpisodeProvider.ImportData Success by Harmony");
-                        }
-                        if (!IsPatched(_movieDbPersonProviderImportData, typeof(ChineseMovieDb)))
-                        {
-                            HarmonyMod.Patch(_movieDbPersonProviderImportData,
-                                prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("PersonImportDataPrefix",
-                                    BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug(
-                                "Patch MovieDbPersonProvider.ImportData Success by Harmony");
-                        }
+                        HarmonyMod.Patch(_genericMovieDbInfoIsCompleteMovie,
+                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
+                                "IsCompletePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch GenericMovieDbInfo.IsComplete for Movie Success by Harmony");
+                    }
+
+                    if (!IsPatched(_genericMovieDbInfoProcessMainInfoMovie, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_genericMovieDbInfoProcessMainInfoMovie,
+                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("ProcessMainInfoMoviePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch GenericMovieDbInfo.ProcessMainInfo for Movie Success by Harmony");
+                    }
+
+                    /* Not actually needed because a non-generic class is only patched with the last generic concrete type
+                     * It's fine here because the patch logic is the same and the intention is to patch the generic method
+                     * https://github.com/pardeike/Harmony/issues/201#issuecomment-821980884
+                    if (!IsPatched(_genericMovieDbInfoIsCompleteSeries, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_genericMovieDbInfoIsCompleteSeries,
+                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
+                                "IsCompletePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch GenericMovieDbInfo.IsComplete for Series Success by Harmony");
+                    }
+                    if (!IsPatched(_genericMovieDbInfoProcessMainInfoSeries, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_genericMovieDbInfoProcessMainInfoSeries,
+                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("ProcessMainInfoSeriesPrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch GenericMovieDbInfo.ProcessMainInfo for Series Success by Harmony");
+                    }
+                    */
+                    if (!IsPatched(_getMovieDbMetadataLanguages, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_getMovieDbMetadataLanguages,
+                            postfix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
+                                "MetadataLanguagesPostfix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch MovieDbProviderBase.GetMovieDbMetadataLanguages Success by Harmony");
+                    }
+
+                    if (!IsPatched(_getImageLanguagesParam, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_getImageLanguagesParam,
+                            postfix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
+                                "GetImageLanguagesParamPostfix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch MovieDbProviderBase.GetImageLanguagesParam Success by Harmony");
+                    }
+
+                    if (!IsPatched(_movieDbSeriesProviderIsComplete, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_movieDbSeriesProviderIsComplete,
+                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
+                                "IsCompletePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch MovieDbSeriesProvider.IsComplete Success by Harmony");
+                    }
+
+                    if (!IsPatched(_movieDbSeriesProviderImportData, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_movieDbSeriesProviderImportData,
+                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("SeriesImportDataPrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch MovieDbSeriesProvider.ImportData Success by Harmony");
+                    }
+
+                    if (!IsPatched(_ensureSeriesInfo, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_ensureSeriesInfo,
+                            postfix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
+                                "EnsureSeriesInfoPostfix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch MovieDbSeriesProvider.EnsureSeriesInfoSuccess by Harmony");
+                    }
+
+                    if (!IsPatched(_movieDbSeasonProviderIsComplete, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_movieDbSeasonProviderIsComplete,
+                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
+                                "IsCompletePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch MovieDbSeasonProvider.IsComplete Success by Harmony");
+                    }
+
+                    if (!IsPatched(_movieDbSeasonProviderImportData, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_movieDbSeasonProviderImportData,
+                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("SeasonImportDataPrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch MovieDbSeasonProvider.ImportData Success by Harmony");
+                    }
+
+                    if (!IsPatched(_movieDbEpisodeProviderIsComplete, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_movieDbEpisodeProviderIsComplete,
+                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
+                                "IsCompletePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch MovieDbEpisodeProvider.IsComplete Success by Harmony");
+                    }
+
+                    if (!IsPatched(_movieDbEpisodeProviderImportData, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_movieDbEpisodeProviderImportData,
+                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("EpisodeImportDataPrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch MovieDbEpisodeProvider.ImportData Success by Harmony");
+                    }
+
+                    if (!IsPatched(_movieDbPersonProviderImportData, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_movieDbPersonProviderImportData,
+                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("PersonImportDataPrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch MovieDbPersonProvider.ImportData Success by Harmony");
                     }
                 }
                 catch (Exception he)

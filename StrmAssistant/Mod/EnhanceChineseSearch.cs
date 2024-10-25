@@ -39,9 +39,8 @@ namespace StrmAssistant.Mod
                 sqlite3_enable_load_extension = raw.GetMethod("sqlite3_enable_load_extension",
                     BindingFlags.Static | BindingFlags.Public);
 
-                var sqlitePCLPretty = Assembly.Load("SQLitePCL.pretty");
-                var sQLiteDatabaseConnection = sqlitePCLPretty.GetType("SQLitePCL.pretty.SQLiteDatabaseConnection");
-                sqlite3_db = sQLiteDatabaseConnection.GetField("db", BindingFlags.NonPublic | BindingFlags.Instance);
+                sqlite3_db =
+                    typeof(SQLiteDatabaseConnection).GetField("db", BindingFlags.NonPublic | BindingFlags.Instance);
 
                 var embySqlite = Assembly.Load("Emby.Sqlite");
                 var baseSqliteRepository = embySqlite.GetType("Emby.Sqlite.BaseSqliteRepository");
@@ -463,7 +462,7 @@ namespace StrmAssistant.Mod
                             includeItemTypes.AddRange(new[] { "Movie" });
                             break;
                         case SearchItemType.Music:
-                            includeItemTypes.AddRange(new[] { "Audio","MusicVideo" });
+                            includeItemTypes.AddRange(new[] { "Audio", "MusicVideo" });
                             break;
                         case SearchItemType.MusicAlbum:
                             includeItemTypes.AddRange(new[] { "MusicAlbum" });
