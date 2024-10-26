@@ -30,6 +30,7 @@ namespace StrmAssistant.Mod
             ChineseMovieDb.Initialize();
             PreferOriginalPoster.Initialize();
             UnlockIntroSkip.Initialize();
+            PinyinSortName.Initialize();
         }
 
         public static bool IsPatched(MethodBase methodInfo, Type type)

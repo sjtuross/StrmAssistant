@@ -427,7 +427,25 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include item types. Blank includes all..
+        ///   Looks up a localized string similar to Auto generate pinyin initials as sort title.
+        /// </summary>
+        public static string ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title {
+            get {
+                return ResourceManager.GetString("ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pinyin Initials Sort Title.
+        /// </summary>
+        public static string ModOptions_PinyinSortName_Pinyin_Sort_Title {
+            get {
+                return ResourceManager.GetString("ModOptions_PinyinSortName_Pinyin_Sort_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Include search item types. Default is Movie, Collection, Series. Blank includes all..
         /// </summary>
         public static string ModOptions_SearchScope_Include_item_types__Blank_includes_all_ {
             get {

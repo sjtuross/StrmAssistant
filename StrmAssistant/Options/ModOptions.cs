@@ -49,6 +49,11 @@ namespace StrmAssistant
         [Required]
         [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool ExclusiveExtract { get; set; } = false;
+        
+        [DisplayNameL("ModOptions_PinyinSortName_Pinyin_Sort_Title", typeof(Resources))]
+        [DescriptionL("ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title", typeof(Resources))]
+        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
+        public bool PinyinSortName { get; set; } = false;
 
         [DisplayNameL("ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search", typeof(Resources))]
         [DescriptionL("ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_", typeof(Resources))]

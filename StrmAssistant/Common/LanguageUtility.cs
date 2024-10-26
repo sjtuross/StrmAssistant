@@ -1,5 +1,6 @@
 ﻿using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
 using System.Text.RegularExpressions;
+using TinyPinyin;
 
 namespace StrmAssistant
 {
@@ -9,7 +10,7 @@ namespace StrmAssistant
             !string.IsNullOrEmpty(input) && new Regex(@"[\u4E00-\u9FFF]").IsMatch(input);
 
         public static bool IsJapanese(string input) =>
-            !string.IsNullOrEmpty(input) && new Regex(@"[\u3040-\u309F\u30A0-\u30FF]").IsMatch(input);
+            !string.IsNullOrEmpty(input) && new Regex(@"[\u3040-\u30FF]").IsMatch(input);
 
         public static bool IsKorean(string input) =>
             !string.IsNullOrEmpty(input) && new Regex(@"[\uAC00-\uD7A3]").IsMatch(input);
@@ -30,6 +31,16 @@ namespace StrmAssistant
             if (string.IsNullOrEmpty(input)) return null;
 
             return IsChinese(input) ? "zh" : IsJapanese(input) ? "jp" : IsKorean(input) ? "ko" : "en";
+        }
+
+        public static string ConvertToPinyinInitials(string input)
+        {
+            return PinyinHelper.GetPinyinInitials(input);
+        }
+
+        public static string RemoveDefaultCollectionName(string input)
+        {
+            return Regex.Replace(input, "（系列）$", "").Trim();
         }
     }
 }

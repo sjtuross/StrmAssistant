@@ -308,4 +308,10 @@
   <data name="ModOptions_SearchScope_Include_item_types__Blank_includes_all_" xml:space="preserve">
     <value>Include search item types. Default is Movie, Collection, Series. Blank includes all.</value>
   </data>
+  <data name="ModOptions_PinyinSortName_Pinyin_Sort_Title" xml:space="preserve">
+    <value>Pinyin Initials Sort Title</value>
+  </data>
+  <data name="ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title" xml:space="preserve">
+    <value>Auto generate pinyin initials as sort title when metadata update. Default is OFF.</value>
+  </data>
 </root>

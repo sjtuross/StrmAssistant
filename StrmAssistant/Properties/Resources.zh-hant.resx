@@ -221,4 +221,10 @@
   <data name="ModOptions_SearchScope_Include_item_types__Blank_includes_all_" xml:space="preserve">
     <value>搜尋包含的類型，預設為電影，合集，電視節目，留空包含所有。</value>
   </data>
+  <data name="ModOptions_PinyinSortName_Pinyin_Sort_Title" xml:space="preserve">
+    <value>拼音首字母排序</value>
+  </data>
+  <data name="ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title" xml:space="preserve">
+    <value>刷新元資料時自動把標題中的中文轉換為拼音首字母作為排序標題，預設為關閉。</value>
+  </data>
 </root>

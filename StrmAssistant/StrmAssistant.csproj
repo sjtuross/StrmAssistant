@@ -37,6 +37,9 @@
     </PackageReference>
     <PackageReference Include="System.Text.Json" Version="4.7.2" />
     <PackageReference Include="SQLitePCL.pretty.core" Version="1.2.2" />
+    <PackageReference Include="TinyPinyin.Net" Version="1.0.2">
+      <GeneratePathProperty>True</GeneratePathProperty>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <Compile Update="Properties\Resources.Designer.cs">
@@ -58,6 +61,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="$(ILRepack) /out:%25AppData%25\Emby-Server\programdata\plugins\$(TargetFileName) $(TargetPath) $(PkgLib_Harmony_Thin)\lib\net6.0\0Harmony.dll $(TargetDir)Mono*.dll $(PkgCHTCHSConv)\lib\netstandard2.0\ChineseConverter.dll /lib:$(TargetDir) /wildcards" />
+    <Exec Command="$(ILRepack) /out:%25AppData%25\Emby-Server\programdata\plugins\$(TargetFileName) $(TargetPath) $(PkgLib_Harmony_Thin)\lib\net6.0\0Harmony.dll $(TargetDir)Mono*.dll $(PkgCHTCHSConv)\lib\netstandard2.0\ChineseConverter.dll $(PkgTinyPinyin_Net)\lib\netstandard2.0\TinyPinyin.dll /lib:$(TargetDir) /wildcards" />
   </Target>
 </Project>

@@ -63,6 +63,7 @@ namespace StrmAssistant
         private bool _currentPreferOriginalPoster;
         private bool _currentEnhanceChineseSearch;
         private string _currentSearchScope;
+        private bool _currentPinyinSortName;
 
         public Plugin(IApplicationHost applicationHost,
             IApplicationPaths applicationPaths,
@@ -100,6 +101,7 @@ namespace StrmAssistant
             _currentPreferOriginalPoster = GetOptions().ModOptions.PreferOriginalPoster;
             _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
             _currentSearchScope = GetOptions().ModOptions.SearchScope;
+            _currentPinyinSortName = GetOptions().ModOptions.PinyinSortName;
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
@@ -318,6 +320,22 @@ namespace StrmAssistant
                 }
 
                 ApplicationHost.NotifyPendingRestart();
+            }
+
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("PinyinSortName is set to {0}", options.ModOptions.PinyinSortName);
+            if (_currentPinyinSortName != GetOptions().ModOptions.PinyinSortName)
+            {
+                _currentPinyinSortName = GetOptions().ModOptions.PinyinSortName;
+
+                if (_currentPinyinSortName)
+                {
+                    PinyinSortName.Patch();
+                }
+                else
+                {
+                    PinyinSortName.Unpatch();
+                }
             }
 
             if (!_currentSuppressOnOptionsSaved)
