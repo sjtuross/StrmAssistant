@@ -1,4 +1,5 @@
 ﻿using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
+using System.Linq;
 using System.Text.RegularExpressions;
 using TinyPinyin;
 
@@ -6,20 +7,24 @@ namespace StrmAssistant
 {
     public static class LanguageUtility
     {
-        public static bool IsChinese(string input) =>
-            !string.IsNullOrEmpty(input) && new Regex(@"[\u4E00-\u9FFF]").IsMatch(input);
+        private static readonly Regex ChineseRegex = new Regex(@"[\u4E00-\u9FFF]", RegexOptions.Compiled);
+        private static readonly Regex JapaneseRegex = new Regex(@"[\u3040-\u30FF]", RegexOptions.Compiled);
+        private static readonly Regex KoreanRegex = new Regex(@"[\uAC00-\uD7A3]", RegexOptions.Compiled);
+        private static readonly Regex DefaultChineseEpisodeNameRegex = new Regex(@"第\s*\d+\s*集", RegexOptions.Compiled);
+        private static readonly Regex DefaultJapaneseEpisodeNameRegex = new Regex(@"第\s*\d+\s*話", RegexOptions.Compiled);
+        private static readonly Regex DefaultChineseCollectionNameRegex = new Regex(@"（系列）$", RegexOptions.Compiled);
 
-        public static bool IsJapanese(string input) =>
-            !string.IsNullOrEmpty(input) && new Regex(@"[\u3040-\u30FF]").IsMatch(input);
+        public static bool IsChinese(string input) => !string.IsNullOrEmpty(input) && ChineseRegex.IsMatch(input);
 
-        public static bool IsKorean(string input) =>
-            !string.IsNullOrEmpty(input) && new Regex(@"[\uAC00-\uD7A3]").IsMatch(input);
+        public static bool IsJapanese(string input) => !string.IsNullOrEmpty(input) && JapaneseRegex.IsMatch(input);
+
+        public static bool IsKorean(string input) => !string.IsNullOrEmpty(input) && KoreanRegex.IsMatch(input);
 
         public static bool IsDefaultChineseEpisodeName(string input) =>
-            !string.IsNullOrEmpty(input) && new Regex(@"第\s*\d+\s*集").IsMatch(input);
+            !string.IsNullOrEmpty(input) && DefaultChineseEpisodeNameRegex.IsMatch(input);
 
         public static bool IsDefaultJapaneseEpisodeName(string input) =>
-            !string.IsNullOrEmpty(input) && new Regex(@"第\s*\d+\s*話").IsMatch(input);
+            !string.IsNullOrEmpty(input) && DefaultJapaneseEpisodeNameRegex.IsMatch(input);
 
         public static string ConvertTraditionalToSimplified(string input)
         {
@@ -33,14 +38,21 @@ namespace StrmAssistant
             return IsChinese(input) ? "zh" : IsJapanese(input) ? "jp" : IsKorean(input) ? "ko" : "en";
         }
 
-        public static string ConvertToPinyinInitials(string input)
+        //https://github.com/hstarorg/TinyPinyin.Net/issues/5
+        //can't use this library directly because it doesn't provide netstandard2.0 dll
+        public static string ConvertToPinyinInitials(string input, string separator = "")
         {
-            return PinyinHelper.GetPinyinInitials(input);
+            var result = PinyinHelper.GetPinyin(input, "|");
+
+            return string.Join(separator,
+                result.Split('|')
+                    .Select(x => !string.IsNullOrWhiteSpace(x) && x.Length > 0 ? x.Substring(0, 1) : x)
+                    .ToArray());
         }
 
         public static string RemoveDefaultCollectionName(string input)
         {
-            return Regex.Replace(input, "（系列）$", "").Trim();
+            return string.IsNullOrEmpty(input) ? input : DefaultChineseCollectionNameRegex.Replace(input, "").Trim();
         }
     }
 }

@@ -23,8 +23,10 @@ namespace StrmAssistant
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILocalizationManager _localizationManager;
 
+        private static readonly Regex CleanPersonNameRegex = new Regex(@"\s+", RegexOptions.Compiled);
+        
         public static MetadataRefreshOptions PersonRefreshOptions;
-
+        
         public MetadataApi(ILibraryManager libraryManager, IFileSystem fileSystem,
             IServerConfigurationManager configurationManager, ILocalizationManager localizationManager)
         {
@@ -145,7 +147,7 @@ namespace StrmAssistant
 
         public string CleanPersonName(string input)
         {
-            return Regex.Replace(input, @"\s+", "");
+            return string.IsNullOrEmpty(input) ? input : CleanPersonNameRegex.Replace(input, "");
         }
 
         public string GetCollectionOriginalLanguage(BoxSet collection)

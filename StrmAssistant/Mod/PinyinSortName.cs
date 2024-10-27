@@ -90,8 +90,8 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool AfterMetadataRefreshPrefix(BaseItem __instance)
         {
-            if (!__instance.IsFieldLocked(MetadataFields.SortName) &&
-                IsChinese(__instance.Name) && !(IsJapanese(__instance.Name) || IsKorean(__instance.Name)))
+            if (!__instance.IsFieldLocked(MetadataFields.SortName) && IsChinese(__instance.Name) &&
+                !IsJapanese(__instance.Name))
             {
                 if (__instance is Movie || __instance is Series)
                 {
