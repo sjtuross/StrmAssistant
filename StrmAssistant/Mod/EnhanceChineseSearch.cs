@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using static StrmAssistant.Mod.PatchManager;
 using static StrmAssistant.ModOptions;
 
@@ -27,6 +28,12 @@ namespace StrmAssistant.Mod
         private static string _tokenizerPath;
         private static bool _patchPhase2Initialized;
         private static string[] _includeItemTypes = Array.Empty<string>();
+        private static readonly Dictionary<string, Regex> patterns = new Dictionary<string, Regex>
+        {
+            { "imdb", new Regex(@"^tt\d{7,8}$", RegexOptions.IgnoreCase | RegexOptions.Compiled) },
+            { "tmdb", new Regex(@"^tmdb(id)?=(\d+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled) },
+            { "tvdb", new Regex(@"^tvdb(id)?=(\d+)$", RegexOptions.IgnoreCase | RegexOptions.Compiled) }
+        };
 
         public static void Initialize()
         {
@@ -558,6 +565,25 @@ namespace StrmAssistant.Mod
                 if (query.IncludeItemTypes.Length == 0 && !string.IsNullOrEmpty(searchTerm))
                 {
                     query.IncludeItemTypes = _includeItemTypes;
+                }
+
+                if (!string.IsNullOrEmpty(searchTerm))
+                {
+                    foreach (var provider in patterns)
+                    {
+                        var match = provider.Value.Match(searchTerm.Trim());
+                        if (match.Success)
+                        {
+                            var idValue = provider.Key == "imdb" ? match.Value : match.Groups[2].Value;
+
+                            query.AnyProviderIdEquals = new List<KeyValuePair<string, string>>
+                            {
+                                new KeyValuePair<string, string>(provider.Key, idValue)
+                            };
+                            query.SearchTerm = null;
+                            break;
+                        }
+                    }
                 }
             }
 
