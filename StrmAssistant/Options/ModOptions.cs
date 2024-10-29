@@ -22,39 +22,6 @@ namespace StrmAssistant
         [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool MergeMultiVersion { get; set; } = false;
 
-        [DisplayNameL("ModOptions_ChineseMovieDb_Chinese_MovieDb", typeof(Resources))]
-        [DescriptionL("ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_", typeof(Resources))]
-        [EnabledCondition(nameof(IsMovieDbPluginLoaded), SimpleCondition.IsTrue)]
-        [Required]
-        public bool ChineseMovieDb { get; set; } = false;
-
-        [Browsable(false)]
-        public IEnumerable<EditorSelectOption> LanguageList { get; set; }
-
-        [DisplayNameL("ModOptions_FallbackLanguages_Fallback_Languages", typeof(Resources))]
-        [DescriptionL("ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_", typeof(Resources))]
-        [EditMultilSelect]
-        [SelectItemsSource(nameof(LanguageList))]
-        [VisibleCondition(nameof(ChineseMovieDb), SimpleCondition.IsTrue)]
-        public string FallbackLanguages { get; set; }
-
-        [DisplayNameL("ModOptions_OriginalPoster_Original_Poster", typeof(Resources))]
-        [DescriptionL("ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_", typeof(Resources))]
-        [Required]
-        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
-        public bool PreferOriginalPoster { get; set; } = false;
-
-        [DisplayNameL("ModOptions_ExclusiveExtract_Exclusive_Extract", typeof(Resources))]
-        [DescriptionL("ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_", typeof(Resources))]
-        [Required]
-        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
-        public bool ExclusiveExtract { get; set; } = false;
-        
-        [DisplayNameL("ModOptions_PinyinSortName_Pinyin_Sort_Title", typeof(Resources))]
-        [DescriptionL("ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title", typeof(Resources))]
-        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
-        public bool PinyinSortName { get; set; } = false;
-
         [DisplayNameL("ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search", typeof(Resources))]
         [DescriptionL("ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_", typeof(Resources))]
         [Required]
@@ -95,11 +62,6 @@ namespace StrmAssistant
         [VisibleCondition(nameof(EnhanceChineseSearch), SimpleCondition.IsTrue)]
         public string SearchScope { get; set; } =
             string.Join(",", new[] { SearchItemType.Movie, SearchItemType.Collection, SearchItemType.Series });
-
-        [Browsable(false)]
-        public bool IsMovieDbPluginLoaded { get; } =
-            AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "MovieDb") &&
-            RuntimeInformation.ProcessArchitecture == Architecture.X64;
 
         [Browsable(false)]
         public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;

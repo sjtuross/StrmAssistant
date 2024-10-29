@@ -427,7 +427,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Auto generate pinyin initials as sort title.
+        ///   Looks up a localized string similar to Auto generate pinyin initials as sort title when metadata update. Default is OFF..
         /// </summary>
         public static string ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title {
             get {
@@ -671,6 +671,15 @@ namespace StrmAssistant.Properties {
             get {
                 return ResourceManager.GetString("PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__De" +
                         "fault_is_1_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Metadata Enhance.
+        /// </summary>
+        public static string PluginOptions_MetadataEnhanceOptions_Metadata_Enhance {
+            get {
+                return ResourceManager.GetString("PluginOptions_MetadataEnhanceOptions_Metadata_Enhance", resourceCulture);
             }
         }
         

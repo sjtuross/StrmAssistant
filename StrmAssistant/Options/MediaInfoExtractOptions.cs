@@ -29,6 +29,12 @@ namespace StrmAssistant
         [Required]
         [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool EnableImageCapture { get; set; } = false;
+        
+        [DisplayNameL("ModOptions_ExclusiveExtract_Exclusive_Extract", typeof(Resources))]
+        [DescriptionL("ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_", typeof(Resources))]
+        [Required]
+        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
+        public bool ExclusiveExtract { get; set; } = false;
 
         [Browsable(false)]
         public IEnumerable<EditorSelectOption> LibraryList { get; set; }

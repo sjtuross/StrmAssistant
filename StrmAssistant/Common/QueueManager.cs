@@ -80,7 +80,7 @@ namespace StrmAssistant
                 {
                     var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
                     _logger.Info("Image Capture Enabled: " + enableImageCapture);
-                    var exclusiveExtract = Plugin.Instance.GetPluginOptions().ModOptions.ExclusiveExtract;
+                    var exclusiveExtract = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.ExclusiveExtract;
                     var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
                     _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
 

@@ -96,12 +96,12 @@ namespace StrmAssistant
             _currentEnableIntroSkip = GetOptions().IntroSkipOptions.EnableIntroSkip;
             _currentUnlockIntroSkip = GetOptions().IntroSkipOptions.UnlockIntroSkip;
             _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
-            _currentChineseMovieDb = GetOptions().ModOptions.ChineseMovieDb;
-            _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
-            _currentPreferOriginalPoster = GetOptions().ModOptions.PreferOriginalPoster;
+            _currentChineseMovieDb = GetOptions().MetadataEnhanceOptions.ChineseMovieDb;
+            _currentExclusiveExtract = GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
+            _currentPreferOriginalPoster = GetOptions().MetadataEnhanceOptions.PreferOriginalPoster;
             _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
             _currentSearchScope = GetOptions().ModOptions.SearchScope;
-            _currentPinyinSortName = GetOptions().ModOptions.PinyinSortName;
+            _currentPinyinSortName = GetOptions().MetadataEnhanceOptions.PinyinSortName;
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
@@ -260,10 +260,10 @@ namespace StrmAssistant
             }
 
             if (!_currentSuppressOnOptionsSaved)
-                logger.Info("ExclusiveExtract is set to {0}", options.ModOptions.ExclusiveExtract);
-            if (_currentExclusiveExtract != GetOptions().ModOptions.ExclusiveExtract)
+                logger.Info("ExclusiveExtract is set to {0}", options.MediaInfoExtractOptions.ExclusiveExtract);
+            if (_currentExclusiveExtract != GetOptions().MediaInfoExtractOptions.ExclusiveExtract)
             {
-                _currentExclusiveExtract = GetOptions().ModOptions.ExclusiveExtract;
+                _currentExclusiveExtract = GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
 
                 if (_currentExclusiveExtract)
                 {
@@ -276,10 +276,10 @@ namespace StrmAssistant
             }
 
             if (!_currentSuppressOnOptionsSaved)
-                logger.Info("ChineseMovieDb is set to {0}", options.ModOptions.ChineseMovieDb);
-            if (_currentChineseMovieDb != GetOptions().ModOptions.ChineseMovieDb)
+                logger.Info("ChineseMovieDb is set to {0}", options.MetadataEnhanceOptions.ChineseMovieDb);
+            if (_currentChineseMovieDb != GetOptions().MetadataEnhanceOptions.ChineseMovieDb)
             {
-                _currentChineseMovieDb = GetOptions().ModOptions.ChineseMovieDb;
+                _currentChineseMovieDb = GetOptions().MetadataEnhanceOptions.ChineseMovieDb;
 
                 if (_currentChineseMovieDb)
                 {
@@ -292,10 +292,10 @@ namespace StrmAssistant
             }
 
             if (!_currentSuppressOnOptionsSaved)
-                logger.Info("PreferOriginalPoster is set to {0}", options.ModOptions.PreferOriginalPoster);
-            if (_currentPreferOriginalPoster != GetOptions().ModOptions.PreferOriginalPoster)
+                logger.Info("PreferOriginalPoster is set to {0}", options.MetadataEnhanceOptions.PreferOriginalPoster);
+            if (_currentPreferOriginalPoster != GetOptions().MetadataEnhanceOptions.PreferOriginalPoster)
             {
-                _currentPreferOriginalPoster = GetOptions().ModOptions.PreferOriginalPoster;
+                _currentPreferOriginalPoster = GetOptions().MetadataEnhanceOptions.PreferOriginalPoster;
 
                 if (_currentPreferOriginalPoster)
                 {
@@ -323,10 +323,10 @@ namespace StrmAssistant
             }
 
             if (!_currentSuppressOnOptionsSaved)
-                logger.Info("PinyinSortName is set to {0}", options.ModOptions.PinyinSortName);
-            if (_currentPinyinSortName != GetOptions().ModOptions.PinyinSortName)
+                logger.Info("PinyinSortName is set to {0}", options.MetadataEnhanceOptions.PinyinSortName);
+            if (_currentPinyinSortName != GetOptions().MetadataEnhanceOptions.PinyinSortName)
             {
-                _currentPinyinSortName = GetOptions().ModOptions.PinyinSortName;
+                _currentPinyinSortName = GetOptions().MetadataEnhanceOptions.PinyinSortName;
 
                 if (_currentPinyinSortName)
                 {
@@ -501,7 +501,7 @@ namespace StrmAssistant
                     IsEnabled = true
                 }
             };
-            options.ModOptions.LanguageList = languageList;
+            options.MetadataEnhanceOptions.LanguageList = languageList;
 
             options.AboutOptions.VersionInfoList.Clear();
             options.AboutOptions.VersionInfoList.Add(

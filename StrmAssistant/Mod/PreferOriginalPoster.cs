@@ -146,7 +146,7 @@ namespace StrmAssistant.Mod
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().ModOptions.PreferOriginalPoster)
+                Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.PreferOriginalPoster)
             {
                 Patch();
             }

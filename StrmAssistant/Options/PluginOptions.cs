@@ -26,6 +26,11 @@ namespace StrmAssistant
         [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         public MediaInfoExtractOptions MediaInfoExtractOptions { get; set; } = new MediaInfoExtractOptions();
+        
+        [DisplayNameL("PluginOptions_MetadataEnhanceOptions_Metadata_Enhance", typeof(Resources))]
+        [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
+        [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
+        public MetadataEnhanceOptions MetadataEnhanceOptions { get; set; } = new MetadataEnhanceOptions();
 
         [DisplayNameL("PluginOptions_IntroSkipOptions_Intro_Credits_Detection", typeof(Resources))]
         [VisibleCondition(nameof(IsConflictPluginLoaded),SimpleCondition.IsFalse)]

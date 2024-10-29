@@ -28,7 +28,7 @@ namespace StrmAssistant
             _logger.Info("Enable Image Capture: " + enableImageCapture);
             var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
             _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
-            var exclusiveExtract = Plugin.Instance.GetPluginOptions().ModOptions.ExclusiveExtract;
+            var exclusiveExtract = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.ExclusiveExtract;
 
             var items = Plugin.LibraryApi.FetchExtractTaskItems();
 

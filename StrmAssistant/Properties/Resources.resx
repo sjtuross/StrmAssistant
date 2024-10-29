@@ -314,4 +314,7 @@
   <data name="ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title" xml:space="preserve">
     <value>Auto generate pinyin initials as sort title when metadata update. Default is OFF.</value>
   </data>
+  <data name="PluginOptions_MetadataEnhanceOptions_Metadata_Enhance" xml:space="preserve">
+    <value>Metadata Enhance</value>
+  </data>
 </root>

@@ -227,4 +227,7 @@
   <data name="ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title" xml:space="preserve">
     <value>刷新元資料時自動把標題中的中文轉換為拼音首字母作為排序標題，預設為關閉。</value>
   </data>
+  <data name="PluginOptions_MetadataEnhanceOptions_Metadata_Enhance" xml:space="preserve">
+    <value>元資料增強</value>
+  </data>
 </root>

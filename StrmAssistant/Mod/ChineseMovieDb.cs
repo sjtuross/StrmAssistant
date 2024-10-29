@@ -165,7 +165,7 @@ namespace StrmAssistant.Mod
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().ModOptions.ChineseMovieDb)
+                Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.ChineseMovieDb)
             {
                 Patch();
             }
@@ -447,7 +447,7 @@ namespace StrmAssistant.Mod
 
         public static List<string> GetFallbackLanguages()
         {
-            var currentFallbackLanguages = Plugin.Instance.GetPluginOptions().ModOptions.FallbackLanguages
+            var currentFallbackLanguages = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.FallbackLanguages
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
 
             return currentFallbackLanguages;

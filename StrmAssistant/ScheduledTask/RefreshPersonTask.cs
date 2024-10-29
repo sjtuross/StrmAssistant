@@ -87,7 +87,7 @@ namespace StrmAssistant
             const int batchSize = 100;
             var tasks = new List<Task>();
 
-            var chineseMovieDb = Plugin.Instance.GetPluginOptions().ModOptions.ChineseMovieDb;
+            var chineseMovieDb = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.ChineseMovieDb;
             if (chineseMovieDb) ChineseMovieDb.PatchCacheTime();
 
             for (var startIndex = 0; startIndex < remainingCount; startIndex += batchSize)

@@ -88,7 +88,7 @@ namespace StrmAssistant.Mod
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().ModOptions.ExclusiveExtract)
+                Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.ExclusiveExtract)
             {
                 Patch();
             }
