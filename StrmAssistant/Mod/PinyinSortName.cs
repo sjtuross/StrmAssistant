@@ -96,14 +96,14 @@ namespace StrmAssistant.Mod
                 if (__instance is Movie || __instance is Series)
                 {
                     __instance.SetSortNameDirect(ConvertToPinyinInitials(__instance.Name));
+                    __instance.UpdateToRepository(ItemUpdateType.MetadataEdit);
                 }
 
                 if (__instance is BoxSet)
                 {
                     __instance.SetSortNameDirect(ConvertToPinyinInitials(RemoveDefaultCollectionName(__instance.Name)));
+                    __instance.UpdateToRepository(ItemUpdateType.MetadataEdit);
                 }
-
-                __instance.UpdateToRepository(ItemUpdateType.MetadataEdit);
 
                 return false;
             }

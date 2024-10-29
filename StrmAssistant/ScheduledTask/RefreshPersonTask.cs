@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Mod;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -86,6 +87,9 @@ namespace StrmAssistant
             const int batchSize = 100;
             var tasks = new List<Task>();
 
+            var chineseMovieDb = Plugin.Instance.GetPluginOptions().ModOptions.ChineseMovieDb;
+            if (chineseMovieDb) ChineseMovieDb.PatchCacheTime();
+
             for (var startIndex = 0; startIndex < remainingCount; startIndex += batchSize)
             {
                 personQuery.Limit = batchSize;
@@ -118,19 +122,13 @@ namespace StrmAssistant
                                 var newName = result.Item.Name;
                                 if (!string.IsNullOrEmpty(newName))
                                 {
-                                    var updateResult = Plugin.MetadataApi.UpdateAsExpected(taskItem, newName);
-                                    if (updateResult.Item2)
-                                    {
-                                        taskItem.Name = taskItem.SortName =
-                                            Plugin.MetadataApi.CleanPersonName(updateResult.Item1);
-                                    }
+                                    taskItem.Name = Plugin.MetadataApi.ProcessPersonInfo(newName, true);
                                 }
 
                                 var newOverview = result.Item.Overview;
                                 if (!string.IsNullOrEmpty(newOverview))
                                 {
-                                    var updateResult = Plugin.MetadataApi.UpdateAsExpected(taskItem, newOverview);
-                                    if (updateResult.Item2) taskItem.Overview = updateResult.Item1;
+                                    taskItem.Overview = Plugin.MetadataApi.ProcessPersonInfo(newOverview, false);
                                 }
 
                                 _libraryManager.UpdateItem(taskItem, null, ItemUpdateType.MetadataEdit);
@@ -168,6 +166,8 @@ namespace StrmAssistant
                 tasks.Clear();
                 personItems.Clear();
             }
+
+            if (chineseMovieDb) ChineseMovieDb.UnpatchCacheTime();
 
             progress.Report(100.0);
             _logger.Info("RefreshPerson - Task Complete");

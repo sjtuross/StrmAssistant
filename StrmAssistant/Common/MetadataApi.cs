@@ -6,10 +6,8 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
-using StrmAssistant.Mod;
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using static StrmAssistant.LanguageUtility;
@@ -23,8 +21,6 @@ namespace StrmAssistant
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILocalizationManager _localizationManager;
 
-        private static readonly Regex CleanPersonNameRegex = new Regex(@"\s+", RegexOptions.Compiled);
-        
         public static MetadataRefreshOptions PersonRefreshOptions;
         
         public MetadataApi(ILibraryManager libraryManager, IFileSystem fileSystem,
@@ -114,40 +110,13 @@ namespace StrmAssistant
             return providerWithOptions.GetMetadata(options, cancellationToken);
         }
 
-        public Tuple<string, bool> UpdateAsExpected(Person item, string input)
+        public string ProcessPersonInfo(string input, bool clean)
         {
-            var isJapaneseFallback = Plugin.Instance.GetPluginOptions().ModOptions.ChineseMovieDb && ChineseMovieDb
-                .GetFallbackLanguages()
-                .Contains("ja-jp", StringComparer.OrdinalIgnoreCase);
+            if (IsChinese(input)) input = ConvertTraditionalToSimplified(input);
 
-            if (item is null || string.Equals(Plugin.MetadataApi.GetPreferredMetadataLanguage(item), "zh-cn",
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                var convertedInput = input;
-                if (IsChinese(input))
-                {
-                    convertedInput = ConvertTraditionalToSimplified(input);
-                }
+            if (clean) input = CleanPersonName(input);
 
-                if (IsChinese(input) || (isJapaneseFallback && IsJapanese(input)))
-                {
-                    return new Tuple<string, bool>(convertedInput, true);
-                }
-
-                return new Tuple<string, bool>(input, false);
-            }
-
-            return new Tuple<string, bool>(input, true);
-        }
-
-        public Tuple<string, bool> UpdateAsExpected(string input)
-        {
-            return UpdateAsExpected(null, input);
-        }
-
-        public string CleanPersonName(string input)
-        {
-            return string.IsNullOrEmpty(input) ? input : CleanPersonNameRegex.Replace(input, "");
+            return input;
         }
 
         public string GetCollectionOriginalLanguage(BoxSet collection)

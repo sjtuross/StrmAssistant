@@ -30,6 +30,7 @@ namespace StrmAssistant.Mod
         private static MethodInfo _getMovieDbMetadataLanguages;
         private static MethodInfo _mapLanguageToProviderLanguage;
         private static MethodInfo _getImageLanguagesParam;
+        private static FieldInfo _cacheTime;
 
         private static MethodInfo _movieDbSeriesProviderIsComplete;
         private static MethodInfo _movieDbSeriesProviderImportData;
@@ -57,11 +58,14 @@ namespace StrmAssistant.Mod
         private static PropertyInfo _nameProperty;
         private static PropertyInfo _alsoKnownAsProperty;
         private static PropertyInfo _biographyProperty;
+        private static PropertyInfo _placeOfBirthProperty;
 
         private static PropertyInfo _seriesInfoTaskResultProperty;
 
         private static readonly AsyncLocal<bool> WasCalledByFetchImages = new AsyncLocal<bool>();
         private static readonly AsyncLocal<string> CurrentLookupCountryCode = new AsyncLocal<string>();
+        private static readonly TimeSpan OriginalCacheTime = TimeSpan.FromHours(6);
+        private static readonly TimeSpan NewCacheTime = TimeSpan.FromHours(48);
 
         public static void Initialize()
         {
@@ -97,6 +101,7 @@ namespace StrmAssistant.Mod
                         BindingFlags.NonPublic | BindingFlags.Instance);
                     _getImageLanguagesParam = _movieDbProviderBase.GetMethod("GetImageLanguagesParam",
                         BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(string[]) }, null);
+                    _cacheTime = _movieDbProviderBase.GetField("CacheTime", BindingFlags.Public | BindingFlags.Static);
 
                     var movieDbSeriesProvider = _movieDbAssembly.GetType("MovieDb.MovieDbSeriesProvider");
                     _movieDbSeriesProviderIsComplete =
@@ -142,6 +147,7 @@ namespace StrmAssistant.Mod
                     _nameProperty = personResult.GetProperty("name");
                     _alsoKnownAsProperty = personResult.GetProperty("also_known_as");
                     _biographyProperty = personResult.GetProperty("biography");
+                    _placeOfBirthProperty = personResult.GetProperty("place_of_birth");
                 }
                 else
                 {
@@ -418,6 +424,18 @@ namespace StrmAssistant.Mod
             }
         }
 
+        public static void PatchCacheTime()
+        {
+            _cacheTime?.SetValue(null, NewCacheTime);
+            Plugin.Instance.logger.Debug("Patch CacheTime Success by Reflection");
+        }
+
+        public static void UnpatchCacheTime()
+        {
+            _cacheTime?.SetValue(null, OriginalCacheTime);
+            Plugin.Instance.logger.Debug("Unpatch CacheTime Success by Reflection");
+        }
+
         private static bool IsUpdateNeeded(string name, bool isEpisode)
         {
             var isJapaneseFallback = GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase);
@@ -680,16 +698,38 @@ namespace StrmAssistant.Mod
             __result = string.Join(",", list.ToArray());
         }
 
+        private static Tuple<string, bool> ProcessPersonInfoAsExpected(string input, string placeOfBirth)
+        {
+            var isJapaneseFallback = GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase);
+
+            var considerJapanese = isJapaneseFallback && placeOfBirth != null &&
+                                   placeOfBirth.IndexOf("Japan", StringComparison.Ordinal) >= 0;
+
+            if (IsChinese(input))
+            {
+                input = ConvertTraditionalToSimplified(input);
+            }
+
+            if (IsChinese(input) || (considerJapanese && IsJapanese(input)))
+            {
+                return new Tuple<string, bool>(input, true);
+            }
+
+            return new Tuple<string, bool>(input, false);
+        }
+
         [HarmonyPrefix]
         private static bool PersonImportDataPrefix(Person item, object info, bool isFirstLanguage)
         {
+            var placeOfBirth = _placeOfBirthProperty?.GetValue(info) as string;
+
             if (_nameProperty?.GetValue(info) is string infoPersonName)
             {
-                var updateNameResult = Plugin.MetadataApi.UpdateAsExpected(infoPersonName);
+                var updateNameResult = ProcessPersonInfoAsExpected(infoPersonName, placeOfBirth);
 
                 if (updateNameResult.Item2)
                 {
-                    if (!string.Equals(infoPersonName, Plugin.MetadataApi.CleanPersonName(updateNameResult.Item1),
+                    if (!string.Equals(infoPersonName, CleanPersonName(updateNameResult.Item1),
                             StringComparison.Ordinal))
                         _nameProperty.SetValue(info, updateNameResult.Item1);
                 }
@@ -701,7 +741,7 @@ namespace StrmAssistant.Mod
                         {
                             if (alias is string aliasString && !string.IsNullOrEmpty(aliasString))
                             {
-                                var updateAliasResult = Plugin.MetadataApi.UpdateAsExpected(aliasString);
+                                var updateAliasResult = ProcessPersonInfoAsExpected(aliasString, placeOfBirth);
                                 if (updateAliasResult.Item2)
                                 {
                                     _nameProperty.SetValue(info, updateAliasResult.Item1);
@@ -715,7 +755,7 @@ namespace StrmAssistant.Mod
 
             if (_biographyProperty?.GetValue(info) is string infoBiography)
             {
-                var updateBiographyResult = Plugin.MetadataApi.UpdateAsExpected(infoBiography);
+                var updateBiographyResult = ProcessPersonInfoAsExpected(infoBiography, placeOfBirth);
 
                 if (updateBiographyResult.Item2)
                 {

@@ -13,6 +13,7 @@ namespace StrmAssistant
         private static readonly Regex DefaultChineseEpisodeNameRegex = new Regex(@"第\s*\d+\s*集", RegexOptions.Compiled);
         private static readonly Regex DefaultJapaneseEpisodeNameRegex = new Regex(@"第\s*\d+\s*話", RegexOptions.Compiled);
         private static readonly Regex DefaultChineseCollectionNameRegex = new Regex(@"（系列）$", RegexOptions.Compiled);
+        private static readonly Regex CleanPersonNameRegex = new Regex(@"\s+", RegexOptions.Compiled);
 
         public static bool IsChinese(string input) => !string.IsNullOrEmpty(input) && ChineseRegex.IsMatch(input);
 
@@ -53,6 +54,18 @@ namespace StrmAssistant
         public static string RemoveDefaultCollectionName(string input)
         {
             return string.IsNullOrEmpty(input) ? input : DefaultChineseCollectionNameRegex.Replace(input, "").Trim();
+        }
+
+        public static string CleanPersonName(string input)
+        {
+            if (string.IsNullOrEmpty(input)) return input;
+
+            if (IsChinese(input) || IsJapanese(input) || IsKorean(input))
+            {
+                return CleanPersonNameRegex.Replace(input, "");
+            }
+
+            return input.Trim();
         }
     }
 }
