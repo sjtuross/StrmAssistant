@@ -31,6 +31,7 @@ namespace StrmAssistant.Mod
             PreferOriginalPoster.Initialize();
             UnlockIntroSkip.Initialize();
             PinyinSortName.Initialize();
+            EnhanceNfoMetadata.Initialize();
         }
 
         public static bool IsPatched(MethodBase methodInfo, Type type)

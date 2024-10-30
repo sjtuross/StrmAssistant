@@ -230,4 +230,10 @@
   <data name="PluginOptions_MetadataEnhanceOptions_Metadata_Enhance" xml:space="preserve">
     <value>元資料增強</value>
   </data>
+  <data name="MetadataEnhanceOptions_EnhanceNfoMetadata_Nfo_Metadata_Import_Enhanced" xml:space="preserve">
+    <value>NFO 元資料導入增強</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnhanceNfoMetadata_Add_support_to_import_actor_image_url__Default_is_OFF_" xml:space="preserve">
+    <value>新增支援從 NFO 導入演員頭像鏈接，預設為關閉。</value>
+  </data>
 </root>

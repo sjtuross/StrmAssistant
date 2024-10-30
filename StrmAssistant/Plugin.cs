@@ -64,6 +64,7 @@ namespace StrmAssistant
         private bool _currentEnhanceChineseSearch;
         private string _currentSearchScope;
         private bool _currentPinyinSortName;
+        private bool _currentEnhanceNfoMetadata;
 
         public Plugin(IApplicationHost applicationHost,
             IApplicationPaths applicationPaths,
@@ -102,6 +103,7 @@ namespace StrmAssistant
             _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
             _currentSearchScope = GetOptions().ModOptions.SearchScope;
             _currentPinyinSortName = GetOptions().MetadataEnhanceOptions.PinyinSortName;
+            _currentEnhanceNfoMetadata = GetOptions().MetadataEnhanceOptions.EnhanceNfoMetadata;
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
@@ -335,6 +337,22 @@ namespace StrmAssistant
                 else
                 {
                     PinyinSortName.Unpatch();
+                }
+            }
+
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("EnhanceNfoMetadata is set to {0}", options.MetadataEnhanceOptions.EnhanceNfoMetadata);
+            if (_currentEnhanceNfoMetadata != GetOptions().MetadataEnhanceOptions.EnhanceNfoMetadata)
+            {
+                _currentEnhanceNfoMetadata = GetOptions().MetadataEnhanceOptions.EnhanceNfoMetadata;
+
+                if (_currentEnhanceNfoMetadata)
+                {
+                    EnhanceNfoMetadata.Patch();
+                }
+                else
+                {
+                    EnhanceNfoMetadata.Unpatch();
                 }
             }
 

@@ -334,6 +334,25 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add support to import actor image url. Default is OFF..
+        /// </summary>
+        public static string MetadataEnhanceOptions_EnhanceNfoMetadata_Add_support_to_import_actor_image_url__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_EnhanceNfoMetadata_Add_support_to_import_actor_image_url__" +
+                        "Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nfo Metadata Import Enhanced.
+        /// </summary>
+        public static string MetadataEnhanceOptions_EnhanceNfoMetadata_Nfo_Metadata_Import_Enhanced {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_EnhanceNfoMetadata_Nfo_Metadata_Import_Enhanced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Customize MovieDb Fallback Language.
         /// </summary>
         public static string ModOptions_ChineseMovieDb_Chinese_MovieDb {
