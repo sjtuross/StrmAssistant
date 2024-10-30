@@ -201,7 +201,7 @@
     <value>Customize MovieDb Fallback Language</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
-    <value>Try to get Chinese or Japanese metadata from MovieDb, including actors. Default is OFF.</value>
+    <value>Try to get Chinese or Japanese metadata from MovieDb. Default is OFF.</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
     <value>Fallback Languages</value>

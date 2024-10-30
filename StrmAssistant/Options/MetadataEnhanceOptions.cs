@@ -11,6 +11,12 @@ using System.Runtime.InteropServices;
 
 namespace StrmAssistant
 {
+    public enum RefreshPersonMode
+    {
+        Default,
+        FullRefresh
+    }
+
     public class MetadataEnhanceOptions: EditableOptionsBase
     {
         [DisplayNameL("PluginOptions_MetadataEnhanceOptions_Metadata_Enhance", typeof(Resources))]
@@ -48,6 +54,10 @@ namespace StrmAssistant
         [EnabledCondition(nameof(IsNfoMetadataPluginLoaded), SimpleCondition.IsTrue)]
         [Required]
         public bool EnhanceNfoMetadata { get; set; } = false;
+        
+        [Browsable(false)]
+        [Required]
+        public RefreshPersonMode RefreshPersonMode { get; set; } = RefreshPersonMode.Default;
 
         [Browsable(false)]
         public bool IsMovieDbPluginLoaded { get; } =

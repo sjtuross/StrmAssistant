@@ -67,19 +67,24 @@ namespace StrmAssistant
             return language;
         }
 
+        public string GetServerPreferredMetadataLanguage()
+        {
+            return _configurationManager.Configuration.PreferredMetadataLanguage;
+        }
+
         public async Task<MetadataResult<Person>> GetPersonMetadataFromMovieDb(Person item,
-            CancellationToken cancellationToken)
+            string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
-            
+
             IHasLookupInfo<PersonLookupInfo> lookupItem = item;
             var lookupInfo = lookupItem.GetLookupInfo(libraryOptions);
-            lookupInfo.MetadataLanguage = GetPreferredMetadataLanguage(item);
+            lookupInfo.MetadataLanguage = preferredMetadataLanguage;
 
             if (GetMovieDbPersonProvider() is IRemoteMetadataProvider<Person, PersonLookupInfo> provider)
             {
-                return await GetMetadataFromProvider<Person, PersonLookupInfo>(provider, lookupInfo,
-                    cancellationToken).ConfigureAwait(false);
+                return await GetMetadataFromProvider<Person, PersonLookupInfo>(provider, lookupInfo, cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             return await Task.FromResult(new MetadataResult<Person>()).ConfigureAwait(false);

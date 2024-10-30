@@ -114,7 +114,7 @@
     <value>自定义 TMDB 备选语言</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
-    <value>尽可能从 TMDB 获取中文或日文元数据，包括演员，默认关闭。</value>
+    <value>尽可能从 TMDB 获取中文或日文元数据，默认关闭。</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
     <value>备选语言</value>
