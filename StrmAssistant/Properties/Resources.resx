@@ -132,7 +132,7 @@
     <value>Library scope to extract. Blank includes all.</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Enable_Image_Capture" xml:space="preserve">
-    <value>Image Capture Enhanced</value>
+    <value>Image Capture and Thumbnail Preview Enhanced</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
     <value>Support image capture for Strm. Skip embedded image. Default is OFF.</value>
@@ -322,5 +322,11 @@
   </data>
   <data name="MetadataEnhanceOptions_EnhanceNfoMetadata_Add_support_to_import_actor_image_url__Default_is_OFF_" xml:space="preserve">
     <value>Add support to import actor image URL from Nfo. Default is OFF.</value>
+  </data>
+  <data name="ModOptions_HidePersonNoImage_Hide_Person_without_Image" xml:space="preserve">
+    <value>Hide Person without Image</value>
+  </data>
+  <data name="ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_" xml:space="preserve">
+    <value>Hide person without image. Default is OFF.</value>
   </data>
 </root>

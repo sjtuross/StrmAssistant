@@ -65,6 +65,7 @@ namespace StrmAssistant
         private string _currentSearchScope;
         private bool _currentPinyinSortName;
         private bool _currentEnhanceNfoMetadata;
+        private bool _currentHidePersonNoImage;
 
         public Plugin(IApplicationHost applicationHost,
             IApplicationPaths applicationPaths,
@@ -104,6 +105,7 @@ namespace StrmAssistant
             _currentSearchScope = GetOptions().ModOptions.SearchScope;
             _currentPinyinSortName = GetOptions().MetadataEnhanceOptions.PinyinSortName;
             _currentEnhanceNfoMetadata = GetOptions().MetadataEnhanceOptions.EnhanceNfoMetadata;
+            _currentHidePersonNoImage = GetOptions().ModOptions.HidePersonNoImage;
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
@@ -353,6 +355,22 @@ namespace StrmAssistant
                 else
                 {
                     EnhanceNfoMetadata.Unpatch();
+                }
+            }
+
+            if (!_currentHidePersonNoImage)
+                logger.Info("HidePersonNoImage is set to {0}", options.ModOptions.HidePersonNoImage);
+            if (_currentHidePersonNoImage != GetOptions().ModOptions.HidePersonNoImage)
+            {
+                _currentHidePersonNoImage = GetOptions().ModOptions.HidePersonNoImage;
+
+                if (_currentHidePersonNoImage)
+                {
+                    HidePersonNoImage.Patch();
+                }
+                else
+                {
+                    HidePersonNoImage.Unpatch();
                 }
             }
 

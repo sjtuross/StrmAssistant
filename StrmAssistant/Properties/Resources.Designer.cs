@@ -334,7 +334,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add support to import actor image url. Default is OFF..
+        ///   Looks up a localized string similar to Add support to import actor image URL from Nfo. Default is OFF..
         /// </summary>
         public static string MetadataEnhanceOptions_EnhanceNfoMetadata_Add_support_to_import_actor_image_url__Default_is_OFF_ {
             get {
@@ -362,7 +362,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Try to get Chinese or Japanese metadata from MovieDb, including actors. Default is OFF..
+        ///   Looks up a localized string similar to Try to get Chinese or Japanese metadata from MovieDb. Default is OFF..
         /// </summary>
         public static string ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_ {
             get {
@@ -423,6 +423,24 @@ namespace StrmAssistant.Properties {
         public static string ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_ {
             get {
                 return ResourceManager.GetString("ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide Person without Image.
+        /// </summary>
+        public static string ModOptions_HidePersonNoImage_Hide_Person_without_Image {
+            get {
+                return ResourceManager.GetString("ModOptions_HidePersonNoImage_Hide_Person_without_Image", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide person without image. Default is OFF..
+        /// </summary>
+        public static string ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_", resourceCulture);
             }
         }
         
@@ -582,7 +600,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Image Capture Enhanced.
+        ///   Looks up a localized string similar to Image Capture and Thumbnail Preview Enhanced.
         /// </summary>
         public static string PluginOptions_EnableImageCapture_Enable_Image_Capture {
             get {
@@ -591,7 +609,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Support image capture for Strm. Skip embedded image. Default is OFF..
+        ///   Looks up a localized string similar to Support image capture, thumbnail preview BIF load for Strm. Skip embedded image. Default is OFF..
         /// </summary>
         public static string PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_ {
             get {

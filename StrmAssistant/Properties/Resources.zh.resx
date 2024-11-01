@@ -45,7 +45,7 @@
     <value>媒体库范围，留空包含所有。</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Enable_Image_Capture" xml:space="preserve">
-    <value>视频截图增强</value>
+    <value>视频截图预览增强</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
     <value>魔改支持Strm视频截图，跳过内嵌封面，默认关闭。</value>
@@ -235,5 +235,11 @@
   </data>
   <data name="MetadataEnhanceOptions_EnhanceNfoMetadata_Add_support_to_import_actor_image_url__Default_is_OFF_" xml:space="preserve">
     <value>添加支持从 NFO 导入演员头像链接，默认关闭。</value>
+  </data>
+  <data name="ModOptions_HidePersonNoImage_Hide_Person_without_Image" xml:space="preserve">
+    <value>隐藏无头像人员</value>
+  </data>
+  <data name="ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_" xml:space="preserve">
+    <value>电影剧集页面隐藏无头像人员，非删除，仍可搜索，默认关闭。</value>
   </data>
 </root>

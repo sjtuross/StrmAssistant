@@ -45,7 +45,7 @@
     <value>僅處理Strm</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Enable_Image_Capture" xml:space="preserve">
-    <value>影片截圖增強</value>
+    <value>影片截圖預覽增強</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
     <value>魔改支援Strm影片截圖，跳過內嵌封面，預設關閉。</value>
@@ -235,5 +235,11 @@
   </data>
   <data name="MetadataEnhanceOptions_EnhanceNfoMetadata_Add_support_to_import_actor_image_url__Default_is_OFF_" xml:space="preserve">
     <value>新增支援從 NFO 導入演員頭像鏈接，預設為關閉。</value>
+  </data>
+  <data name="ModOptions_HidePersonNoImage_Hide_Person_without_Image" xml:space="preserve">
+    <value>隱藏無頭像人員</value>
+  </data>
+  <data name="ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_" xml:space="preserve">
+    <value>電影劇集頁面隱藏無頭像人員，非刪除，仍可搜索，預設為關閉。</value>
   </data>
 </root>

@@ -32,6 +32,7 @@ namespace StrmAssistant.Mod
             UnlockIntroSkip.Initialize();
             PinyinSortName.Initialize();
             EnhanceNfoMetadata.Initialize();
+            HidePersonNoImage.Initialize();
         }
 
         public static bool IsPatched(MethodBase methodInfo, Type type)
