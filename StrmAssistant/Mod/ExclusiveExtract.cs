@@ -282,7 +282,8 @@ namespace StrmAssistant.Mod
         private static bool CanRefreshMetadataPrefix(IMetadataProvider provider, BaseItem item, LibraryOptions libraryOptions,
             bool includeDisabled, bool forceEnableInternetMetadata, bool ignoreMetadataLock, ref bool __result)
         {
-            if (item.Parent is null || !(provider is IPreRefreshProvider) || !(provider is ICustomMetadataProvider<Video>)) return true;
+            if ((item.Parent is null && item.ExtraType == null) || !(provider is IPreRefreshProvider) ||
+                !(provider is ICustomMetadataProvider<Video>)) return true;
 
             if (CurrentItem.Value != null && CurrentItem.Value.InternalId == item.InternalId) return true;
 
@@ -297,6 +298,8 @@ namespace StrmAssistant.Mod
                 CurrentRefreshContext.Value.MetadataRefreshOptions.MetadataRefreshMode <= MetadataRefreshMode.Default &&
                 CurrentRefreshContext.Value.MetadataRefreshOptions.ImageRefreshMode <= MetadataRefreshMode.Default)
             {
+                if (item.IsShortcut && Plugin.LibraryApi.HasFileChanged(item)) return true;
+                
                 if (Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
                     QueueManager.ExternalSubtitleItemQueue.Enqueue(item);
 
