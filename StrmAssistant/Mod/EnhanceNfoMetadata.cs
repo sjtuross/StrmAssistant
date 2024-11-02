@@ -116,26 +116,35 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool GetPersonFromXmlNodePrefix(ref XmlReader reader)
         {
-            var sb = new StringBuilder();
-    
-            using (var writer = new StringWriter(sb))
+            try
             {
-                using (var xmlWriter = XmlWriter.Create(writer))
+                var sb = new StringBuilder();
+    
+                using (var writer = new StringWriter(sb))
                 {
-                    while (reader.Read())
+                    using (var xmlWriter = XmlWriter.Create(writer))
                     {
-                        xmlWriter.WriteNode(reader, true);
+                        while (reader.Read())
+                        {
+                            xmlWriter.WriteNode(reader, true);
 
-                        if (reader.NodeType == XmlNodeType.EndElement)
-                            break;
+                            if (reader.NodeType == XmlNodeType.EndElement)
+                                break;
+                        }
                     }
                 }
+
+                PersonContent.Value = sb.ToString();
+
+                reader = XmlReader.Create(new StringReader(sb.ToString()), ReaderSettings);
+
             }
-
-            PersonContent.Value = sb.ToString();
-
-            reader = XmlReader.Create(new StringReader(sb.ToString()), ReaderSettings);
-
+            catch (Exception e)
+            {
+                Plugin.Instance.logger.Debug(e.Message);
+                Plugin.Instance.logger.Debug(e.StackTrace);
+            }
+            
             return true;
         }
 
@@ -147,30 +156,40 @@ namespace StrmAssistant.Mod
 
         private static async Task SetImageUrlAsync(Task<PersonInfo> personInfoTask)
         {
-            var personInfo = await personInfoTask;
-
-            var personContent = PersonContent.Value;
-            PersonContent.Value = null;
-
-            if (personContent != null)
+            try
             {
-                using (var reader = XmlReader.Create(new StringReader(personContent), ReaderSettings))
+                var personInfo = await personInfoTask;
+
+                var personContent = PersonContent.Value;
+                PersonContent.Value = null;
+
+                if (personContent != null)
                 {
-                    while (await reader.ReadAsync().ConfigureAwait(false))
+                    using (var reader = XmlReader.Create(new StringReader(personContent), ReaderSettings))
                     {
-                        if (reader.IsStartElement("thumb"))
+                        while (await reader.ReadAsync().ConfigureAwait(false))
                         {
-                            var thumb = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
-
-                            if (IsValidHttpUrl(thumb))
+                            if (reader.IsStartElement("thumb"))
                             {
-                                personInfo.ImageUrl = thumb;
-                            }
+                                var thumb = await reader.ReadElementContentAsStringAsync().ConfigureAwait(false);
 
-                            break;
+                                if (IsValidHttpUrl(thumb))
+                                {
+                                    personInfo.ImageUrl = thumb;
+                                    Plugin.Instance.logger.Debug("EnhanceNfoMetadata - Imported " + personInfo.Name +
+                                                                 " " + personInfo.ImageUrl);
+                                }
+
+                                break;
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception e)
+            {
+                Plugin.Instance.logger.Debug(e.Message);
+                Plugin.Instance.logger.Debug(e.StackTrace);
             }
         }
 
