@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <AssemblyVersion>1.0.0.34</AssemblyVersion>
-    <FileVersion>1.0.0.34</FileVersion>
+    <AssemblyVersion>1.0.0.35</AssemblyVersion>
+    <FileVersion>1.0.0.35</FileVersion>
     <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
     <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>

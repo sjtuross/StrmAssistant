@@ -8,7 +8,7 @@
 
 1. 提高首次播放的起播速度
 2. 解决可能的无进度条问题
-3. 视频截图增强
+3. 视频截图预览缩略图增强
 4. 片头片尾探测
 5. 自动合并同目录视频为多版本
 6. 独占模式提取媒体信息
@@ -26,7 +26,7 @@
 3. 包含附加内容处理
 4. 按电影或剧集的发行日期倒序处理
 5. 添加插件配置界面，可多选媒体库
-6. 视频截图增强, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/视频截图增强-(Image-Capture-Enhanced))
+6. 视频截图预览缩略图增强, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/视频截图预览增强)
 7. 追更模式, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/追更模式-(Catch‐up-Mode))
 8. 基于播放行为的剧集片头片尾探测, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/片头探测-(Intro-Detection))
 9. 为原生跳片头探测解锁`Strm`支持
@@ -39,6 +39,7 @@
 16. `TMDB`备选语言元数据以及中文演员繁转简
 17. 支持中文模糊搜索和拼音搜索，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文搜索增强)
 18. 刷新元数据时自动生成拼音首字母为排序标题，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/拼音首字母排序)
+19. 添加支持从`NFO`导入演员头像链接
 
 ## 安装
 
