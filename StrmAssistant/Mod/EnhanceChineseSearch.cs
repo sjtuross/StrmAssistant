@@ -279,13 +279,13 @@ namespace StrmAssistant.Mod
                 {
                     var existingSha1 = ComputeSha1(_tokenizerPath);
                     Plugin.Instance.logger.Debug(existingSha1 == expectedSha1
-                        ? "Tokenizer exists with matching SHA-1."
-                        : "Tokenizer exists but SHA-1 does not match.");
+                        ? "EnhanceChineseSearch - Tokenizer exists with matching SHA-1."
+                        : "EnhanceChineseSearch - Tokenizer exists but SHA-1 does not match.");
 
                     return true;
                 }
 
-                Plugin.Instance.logger.Debug("Tokenizer does not exist. Exporting...");
+                Plugin.Instance.logger.Debug("EnhanceChineseSearch - Tokenizer does not exist. Exporting...");
                 using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
                 {
                     using (var fileStream = new FileStream(_tokenizerPath, FileMode.Create, FileAccess.Write))
@@ -294,7 +294,7 @@ namespace StrmAssistant.Mod
                     }
                 }
 
-                Plugin.Instance.logger.Info($"Exported {resourceName} to {_tokenizerPath}");
+                Plugin.Instance.logger.Info($"EnhanceChineseSearch - Exported {resourceName} to {_tokenizerPath}");
                 return true;
             }
             catch (Exception e)
@@ -475,7 +475,10 @@ namespace StrmAssistant.Mod
                             includeItemTypes.AddRange(new[] { "MusicAlbum" });
                             break;
                         case SearchItemType.Person:
-                            includeItemTypes.AddRange(new[] { "MusicArtist", "Person" });
+                            includeItemTypes.AddRange(new[] { "Person" });
+                            break;
+                        case SearchItemType.MusicArtist:
+                            includeItemTypes.AddRange(new[] { "MusicArtist" });
                             break;
                         case SearchItemType.Photo:
                             includeItemTypes.AddRange(new[] { "Photo" });

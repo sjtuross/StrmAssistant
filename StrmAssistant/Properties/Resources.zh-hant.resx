@@ -242,4 +242,7 @@
   <data name="ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_" xml:space="preserve">
     <value>電影劇集頁面隱藏無頭像人員，非刪除，仍可搜索，預設為關閉。</value>
   </data>
+  <data name="ItemType_MusicArtist_MusicArtist" xml:space="preserve">
+    <value>藝術家</value>
+  </data>
 </root>

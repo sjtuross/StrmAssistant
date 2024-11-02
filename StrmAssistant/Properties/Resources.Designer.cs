@@ -262,6 +262,15 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to MusicArtist.
+        /// </summary>
+        public static string ItemType_MusicArtist_MusicArtist {
+            get {
+                return ResourceManager.GetString("ItemType_MusicArtist_MusicArtist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Person.
         /// </summary>
         public static string ItemType_Person_Person {
@@ -609,7 +618,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Support image capture, thumbnail preview BIF load for Strm. Skip embedded image. Default is OFF..
+        ///   Looks up a localized string similar to Support image capture, thumbnail preview BIF for Strm. Skip embedded image. Default is OFF..
         /// </summary>
         public static string PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_ {
             get {

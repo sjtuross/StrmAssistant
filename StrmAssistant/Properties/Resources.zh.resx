@@ -242,4 +242,7 @@
   <data name="ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_" xml:space="preserve">
     <value>电影剧集页面隐藏无头像人员，非删除，仍可搜索，默认关闭。</value>
   </data>
+  <data name="ItemType_MusicArtist_MusicArtist" xml:space="preserve">
+    <value>艺术家</value>
+  </data>
 </root>

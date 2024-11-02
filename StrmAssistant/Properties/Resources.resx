@@ -276,7 +276,7 @@
     <value>Music</value>
   </data>
   <data name="ItemType_MusicAlbum_MusicAlbum" xml:space="preserve">
-    <value>MusicAlbum</value>
+    <value>Music Album</value>
   </data>
   <data name="ItemType_Person_Person" xml:space="preserve">
     <value>Person</value>
@@ -285,7 +285,7 @@
     <value>Photo</value>
   </data>
   <data name="ItemType_PhotoAlbum_PhotoAlbum" xml:space="preserve">
-    <value>PhotoAlbum</value>
+    <value>Photo Album</value>
   </data>
   <data name="ItemType_Playlist_Playlist" xml:space="preserve">
     <value>Playlist</value>
@@ -328,5 +328,8 @@
   </data>
   <data name="ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_" xml:space="preserve">
     <value>Hide person without image. Default is OFF.</value>
+  </data>
+  <data name="ItemType_MusicArtist_MusicArtist" xml:space="preserve">
+    <value>Music Artist</value>
   </data>
 </root>

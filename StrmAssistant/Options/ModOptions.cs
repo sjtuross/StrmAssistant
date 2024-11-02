@@ -6,7 +6,6 @@ using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace StrmAssistant
@@ -47,6 +46,7 @@ namespace StrmAssistant
             [DescriptionL("ItemType_LiveTv_LiveTv", typeof(Resources))] LiveTv,
             [DescriptionL("ItemType_Music_Music", typeof(Resources))] Music,
             [DescriptionL("ItemType_MusicAlbum_MusicAlbum", typeof(Resources))] MusicAlbum,
+            [DescriptionL("ItemType_MusicArtist_MusicArtist", typeof(Resources))] MusicArtist,
             [DescriptionL("ItemType_Playlist_Playlist", typeof(Resources))] Playlist,
             [DescriptionL("ItemType_Photo_Photo", typeof(Resources))] Photo,
             [DescriptionL("ItemType_PhotoAlbum_PhotoAlbum", typeof(Resources))] PhotoAlbum,
