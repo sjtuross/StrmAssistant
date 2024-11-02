@@ -76,6 +76,7 @@ namespace StrmAssistant
             IItemRepository itemRepository,
             INotificationManager notificationManager,
             IMediaSourceManager mediaSourceManager,
+            IMediaMountManager mediaMountManager,
             IMediaProbeManager mediaProbeManager,
             ILocalizationManager localizationManager,
             IUserManager userManager,
@@ -107,7 +108,7 @@ namespace StrmAssistant
             _currentEnhanceNfoMetadata = GetOptions().MetadataEnhanceOptions.EnhanceNfoMetadata;
             _currentHidePersonNoImage = GetOptions().ModOptions.HidePersonNoImage;
 
-            LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, userManager);
+            LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, mediaMountManager, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
             PlaySessionMonitor = new PlaySessionMonitor(libraryManager, userManager, sessionManager);
             NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);

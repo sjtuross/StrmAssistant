@@ -24,10 +24,10 @@
     <value>提取电影或剧集附加内容的媒体信息，默认关闭。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Strm_Only" xml:space="preserve">
-    <value>仅支持Strm</value>
+    <value>仅支持 STRM</value>
   </data>
   <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
-    <value>仅支持Strm，关闭后也支持非Strm，默认开启。</value>
+    <value>仅支持 STRM，关闭后也支持非 STRM，默认开启。</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count" xml:space="preserve">
     <value>最大线程数</value>
@@ -45,10 +45,10 @@
     <value>媒体库范围，留空包含所有。</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Enable_Image_Capture" xml:space="preserve">
-    <value>视频截图预览增强</value>
+    <value>视频截图预览缩略图增强</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
-    <value>魔改支持Strm视频截图，跳过内嵌封面，默认关闭。</value>
+    <value>支持 STRM 视频截图，预览缩略图 BIF，跳过内嵌封面，默认关闭。</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
     <value>播放行为片头探测</value>
@@ -156,7 +156,7 @@
     <value>原生片头探测解锁</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
-    <value>魔改原生跳片头探测，解锁Strm支持，默认关闭。</value>
+    <value>魔改原生跳片头探测，解锁 STRM 支持，默认关闭。</value>
   </data>
   <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
     <value>中文搜索增强</value>

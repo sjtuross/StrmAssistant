@@ -721,6 +721,8 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool PersonImportDataPrefix(Person item, object info, bool isFirstLanguage)
         {
+            if (!RefreshPersonTask.IsRunning) return true;
+
             var placeOfBirth = _placeOfBirthProperty?.GetValue(info) as string;
 
             if (_nameProperty?.GetValue(info) is string infoPersonName)

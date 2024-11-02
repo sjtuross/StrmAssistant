@@ -113,7 +113,7 @@ namespace StrmAssistant.Mod
             }
         }
         
-        [HarmonyPostfix]
+        [HarmonyPrefix]
         private static bool GetPersonFromXmlNodePrefix(ref XmlReader reader)
         {
             var sb = new StringBuilder();

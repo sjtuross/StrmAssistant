@@ -35,7 +35,7 @@ namespace StrmAssistant
             if (items.Count > 0)
             {
                 ExclusiveExtract.PatchFFProbeTimeout();
-                if (enableImageCapture) EnableImageCapture.PatchFFmpegTimeout();
+                IsRunning = true;
             }
 
             double total = items.Count;
@@ -72,7 +72,7 @@ namespace StrmAssistant
                         {
                             if (taskItem.IsShortcut)
                             {
-                                EnableImageCapture.PatchInstanceIsShortcut(taskItem);
+                                EnableImageCapture.PatchIsShortcutInstance(taskItem);
                                 isShortcutPatched = true;
                             }
                             var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
@@ -97,8 +97,8 @@ namespace StrmAssistant
                     }
                     catch (Exception e)
                     {
-                        _logger.Info("MediaInfoExtract - Item failed: " + taskItem.Name + " - " + taskItem.Path);
-                        _logger.Debug(e.Message);
+                        _logger.Error("MediaInfoExtract - Item failed: " + taskItem.Name + " - " + taskItem.Path);
+                        _logger.Error(e.Message);
                         _logger.Debug(e.StackTrace);
                     }
                     finally
@@ -109,7 +109,7 @@ namespace StrmAssistant
                                      "Task " + taskIndex + ": " +
                                      taskItem.Path);
 
-                        if (isShortcutPatched) EnableImageCapture.UnpatchInstanceIsShortcut(taskItem);
+                        if (isShortcutPatched) EnableImageCapture.UnpatchIsShortcutInstance(taskItem);
                         if (isExtractAllowed) ExclusiveExtract.DisallowExtractInstance(taskItem);
 
                         QueueManager.SemaphoreMaster.Release();
@@ -122,7 +122,7 @@ namespace StrmAssistant
             if (items.Count > 0)
             {
                 ExclusiveExtract.UnpatchFFProbeTimeout();
-                if (enableImageCapture) EnableImageCapture.UnpatchFFmpegTimeout();
+                IsRunning = false;
             }
 
             progress.Report(100.0);
@@ -141,5 +141,7 @@ namespace StrmAssistant
         {
             return Array.Empty<TaskTriggerInfo>();
         }
+
+        public static bool IsRunning { get; private set; }
     }
 }

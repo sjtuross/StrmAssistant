@@ -27,6 +27,7 @@ namespace StrmAssistant
         private readonly IFileSystem _fileSystem;
         private readonly IUserManager _userManager;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IMediaMountManager _mediaMountManager;
         private readonly ILogger _logger;
 
         public static MetadataRefreshOptions MediaInfoRefreshOptions;
@@ -53,6 +54,7 @@ namespace StrmAssistant
         public LibraryApi(ILibraryManager libraryManager,
             IFileSystem fileSystem,
             IMediaSourceManager mediaSourceManager,
+            IMediaMountManager mediaMountManager,
             IUserManager userManager)
         {
             _libraryManager = libraryManager;
@@ -60,6 +62,7 @@ namespace StrmAssistant
             _fileSystem = fileSystem;
             _userManager = userManager;
             _mediaSourceManager = mediaSourceManager;
+            _mediaMountManager = mediaMountManager;
 
             FetchUsers();
 
@@ -333,7 +336,7 @@ namespace StrmAssistant
                 }
                 else
                 {
-                    _logger.Debug("MediaInfoExtract - Item dropped: " + item.Name + " - " + item.Path);
+                    _logger.Debug("MediaInfoExtract - Item dropped: " + item.Name + " - " + item.Path); // video without audio
                 }
             }
 
@@ -466,6 +469,21 @@ namespace StrmAssistant
                     }
                 }));
             }
+        }
+
+        public async Task<string> GetStrmMountPath(string strmPath)
+        {
+            var path = SystemMemory::System.MemoryExtensions.AsMemory(strmPath);
+
+            using (IMediaMount mediaMount = await _mediaMountManager.Mount(path, null, CancellationToken.None))
+            {
+                if (mediaMount != null)
+                {
+                    return mediaMount.MountedPath;
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -2,12 +2,15 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.MediaInfo;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
+using System.Threading.Tasks;
 using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
@@ -24,8 +27,12 @@ namespace StrmAssistant.Mod
         private static MethodInfo _runExtraction;
         private static Type _quickSingleImageExtractor;
         private static PropertyInfo _totalTimeoutMs;
+        private static MethodInfo _supportsThumbnailsGetter;
+        private static Type _quickImageSeriesExtractor;
+        private static MethodInfo _logThumbnailImageExtractionFailure;
 
-        private static AsyncLocal<BaseItem> CurrentItem { get; } = new AsyncLocal<BaseItem>();
+        private static readonly AsyncLocal<BaseItem> CurrentItem = new AsyncLocal<BaseItem>();
+        private static readonly AsyncLocal<bool> SupportsThumbnailsInstancePatched = new AsyncLocal<bool>();
         private static int _currentMaxConcurrentCount;
         private static int _isShortcutPatchUsageCount;
 
@@ -50,16 +57,28 @@ namespace StrmAssistant.Mod
                     ?.GetGetMethod();
                 _isShortcutProperty =
                     typeof(BaseItem).GetProperty("IsShortcut", BindingFlags.Instance | BindingFlags.Public);
+                var supportsThumbnailsProperty=
+                    typeof(Video).GetProperty("SupportsThumbnails", BindingFlags.Public | BindingFlags.Instance);
+                _supportsThumbnailsGetter = supportsThumbnailsProperty?.GetGetMethod();
                 _runExtraction =
                     imageExtractorBaseType.GetMethod("RunExtraction", BindingFlags.Instance | BindingFlags.Public);
                 _quickSingleImageExtractor =
                     mediaEncodingAssembly.GetType(
                         "Emby.Server.MediaEncoding.ImageExtraction.QuickSingleImageExtractor");
                 _totalTimeoutMs = _quickSingleImageExtractor.GetProperty("TotalTimeoutMs");
+                _quickImageSeriesExtractor =
+                    mediaEncodingAssembly.GetType(
+                        "Emby.Server.MediaEncoding.ImageExtraction.QuickImageSeriesExtractor");
 
                 var embyProvidersAssembly = Assembly.Load("Emby.Providers");
                 var videoImageProvider = embyProvidersAssembly.GetType("Emby.Providers.MediaInfo.VideoImageProvider");
                 _getImage = videoImageProvider.GetMethod("GetImage", BindingFlags.Public | BindingFlags.Instance);
+
+                var embyServerImplementationsAssembly = Assembly.Load("Emby.Server.Implementations");
+                var sqliteItemRepository =
+                    embyServerImplementationsAssembly.GetType("Emby.Server.Implementations.Data.SqliteItemRepository");
+                _logThumbnailImageExtractionFailure = sqliteItemRepository.GetMethod("LogThumbnailImageExtractionFailure",
+                    BindingFlags.Public | BindingFlags.Instance);
             }
             catch (Exception e)
             {
@@ -87,13 +106,100 @@ namespace StrmAssistant.Mod
         public static void Patch()
         {
             PatchIsShortcut();
-            PatchGetImage();
+
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
+            {
+                try
+                {
+                    if (!IsPatched(_getImage, typeof(EnableImageCapture)))
+                    {
+                        HarmonyMod.Patch(_getImage,
+                            prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("GetImagePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug("Patch VideoImageProvider.GetImage Success by Harmony");
+                    }
+
+                    if (!IsPatched(_supportsThumbnailsGetter, typeof(EnableImageCapture)))
+                    {
+                        HarmonyMod.Patch(_supportsThumbnailsGetter,
+                            prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod(
+                                "SupportsThumbnailsGetterPrefix", BindingFlags.Static | BindingFlags.NonPublic)),
+                            postfix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod(
+                                "SupportsThumbnailsGetterPostfix", BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug("Patch SupportsThumbnailsGetter Success by Harmony");
+                    }
+
+                    if (!IsPatched(_runExtraction, typeof(EnableImageCapture)))
+                    {
+                        HarmonyMod.Patch(_runExtraction,
+                            prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("RunExtractionPrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug("Patch RunExtraction Success by Harmony");
+                    }
+
+                    //if (!IsPatched(_logThumbnailImageExtractionFailure, typeof(EnableImageCapture)))
+                    //{
+                    //    HarmonyMod.Patch(_logThumbnailImageExtractionFailure,
+                    //        prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod(
+                    //            "LogThumbnailImageExtractionFailurePrefix",
+                    //            BindingFlags.Static | BindingFlags.NonPublic)));
+                    //    Plugin.Instance.logger.Debug("Patch LogThumbnailImageExtractionFailure Success by Harmony");
+                    //}
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Patch EnableImageCapture Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
+                }
+            }
         }
 
         public static void Unpatch()
         {
             UnpatchIsShortcut();
-            UnpatchGetImage();
+
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
+            {
+                try
+                {
+                    if (IsPatched(_getImage, typeof(EnableImageCapture)))
+                    {
+                        HarmonyMod.Unpatch(_getImage, AccessTools.Method(typeof(EnableImageCapture), "GetImagePrefix"));
+                        Plugin.Instance.logger.Debug("Unpatch VideoImageProvider.GetImage Success by Harmony");
+                    }
+
+                    if (IsPatched(_supportsThumbnailsGetter, typeof(EnableImageCapture)))
+                    {
+                        HarmonyMod.Unpatch(_supportsThumbnailsGetter,
+                            AccessTools.Method(typeof(EnableImageCapture), "SupportsThumbnailsGetterPrefix"));
+                        HarmonyMod.Unpatch(_supportsThumbnailsGetter,
+                            AccessTools.Method(typeof(EnableImageCapture), "SupportsThumbnailsGetterPostfix"));
+                        Plugin.Instance.logger.Debug("Unpatch SupportsThumbnailsGetter Success by Harmony");
+                    }
+
+                    if (IsPatched(_runExtraction, typeof(EnableImageCapture)))
+                    {
+                        HarmonyMod.Unpatch(_runExtraction,
+                            AccessTools.Method(typeof(EnableImageCapture), "RunExtractionPrefix"));
+                        Plugin.Instance.logger.Debug("Unpatch RunExtraction Success by Harmony");
+                    }
+
+                    //if (IsPatched(_logThumbnailImageExtractionFailure, typeof(EnableImageCapture)))
+                    //{
+                    //    HarmonyMod.Unpatch(_logThumbnailImageExtractionFailure,
+                    //        AccessTools.Method(typeof(EnableImageCapture), "LogThumbnailImageExtractionFailurePrefix"));
+                    //    Plugin.Instance.logger.Debug("Unpatch LogThumbnailImageExtractionFailure Success by Harmony");
+                    //}
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Unpatch EnableImageCapture Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
+                }
+            }
         }
 
         private static void PatchResourcePool()
@@ -152,43 +258,19 @@ namespace StrmAssistant.Mod
                     break;
             }
         }
-
-        private static void PatchGetImage()
+        
+        public static void PatchIsShortcut()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
-                    if (!IsPatched(_getImage, typeof(EnableImageCapture)))
-                    {
-                        HarmonyMod.Patch(_getImage,
-                            prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("GetImagePrefix",
-                                BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
-                            "Patch VideoImageProvider.GetImage Success by Harmony");
-                    }
-                }
-                catch (Exception he)
-                {
-                    Plugin.Instance.logger.Debug("Patch VideoImageProvider.GetImage Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
-                    PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
-                }
-            }
-        }
-
-        public static void PatchIsShortcut()
-        {
-            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony && _isShortcutPatchUsageCount == 0)
-            {
-                try
-                {
-                    if (!IsPatched(_isShortcutGetter, typeof(EnableImageCapture)))
+                    if (_isShortcutPatchUsageCount == 0 && !IsPatched(_isShortcutGetter, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Patch(_isShortcutGetter,
                             prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("IsShortcutPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
+                        _isShortcutPatchUsageCount++;
                         Plugin.Instance.logger.Debug(
                             "Patch IsShortcut Success by Harmony");
                     }
@@ -201,10 +283,8 @@ namespace StrmAssistant.Mod
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
-
-            _isShortcutPatchUsageCount++;
         }
-
+        
         public static void UpdateResourcePool(int maxConcurrentCount)
         {
             if (_currentMaxConcurrentCount != maxConcurrentCount)
@@ -256,7 +336,7 @@ namespace StrmAssistant.Mod
             Plugin.Instance.logger.Info("Current FFmpeg ResourcePool: " + resourcePool?.CurrentCount ?? String.Empty);
         }
 
-        public static void PatchInstanceIsShortcut(BaseItem item)
+        public static void PatchIsShortcutInstance(BaseItem item)
         {
             switch (PatchApproachTracker.FallbackPatchApproach)
             {
@@ -281,7 +361,7 @@ namespace StrmAssistant.Mod
             }
         }
 
-        public static void UnpatchInstanceIsShortcut(BaseItem item)
+        public static void UnpatchIsShortcutInstance(BaseItem item)
         {
             switch (PatchApproachTracker.FallbackPatchApproach)
             {
@@ -337,13 +417,11 @@ namespace StrmAssistant.Mod
 
         public static void UnpatchIsShortcut()
         {
-            _isShortcutPatchUsageCount--;
-
-            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony && _isShortcutPatchUsageCount == 0)
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
-                    if (IsPatched(_isShortcutGetter, typeof(EnableImageCapture)))
+                    if (--_isShortcutPatchUsageCount == 0 && IsPatched(_isShortcutGetter, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Unpatch(_isShortcutGetter,
                             AccessTools.Method(typeof(EnableImageCapture), "IsShortcutPrefix"));
@@ -358,74 +436,7 @@ namespace StrmAssistant.Mod
                 }
             }
         }
-
-        public static void UnpatchGetImage()
-        {
-            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
-            {
-                try
-                {
-                    if (IsPatched(_getImage, typeof(EnableImageCapture)))
-                    {
-                        HarmonyMod.Unpatch(_getImage, AccessTools.Method(typeof(EnableImageCapture), "GetImagePrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch VideoImageProvider.GetImage Success by Harmony");
-                    }
-                }
-                catch (Exception he)
-                {
-                    Plugin.Instance.logger.Debug("Unpatch VideoImageProvider.GetImage Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
-                }
-            }
-        }
-
-        public static void PatchFFmpegTimeout()
-        {
-            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
-            {
-                try
-                {
-                    if (!IsPatched(_runExtraction, typeof(EnableImageCapture)))
-                    {
-                        HarmonyMod.Patch(_runExtraction,
-                            prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("RunExtractionPrefix",
-                                BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
-                            "Patch RunExtraction Success by Harmony");
-                    }
-                }
-                catch (Exception he)
-                {
-                    Plugin.Instance.logger.Debug("Patch RunExtraction Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
-                }
-            }
-        }
-
-        public static void UnpatchFFmpegTimeout()
-        {
-            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
-            {
-                try
-                {
-                    if (IsPatched(_runExtraction, typeof(EnableImageCapture)))
-                    {
-                        HarmonyMod.Unpatch(_runExtraction,
-                            AccessTools.Method(typeof(EnableImageCapture), "RunExtractionPrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch RunExtraction Success by Harmony");
-                    }
-                }
-                catch (Exception he)
-                {
-                    Plugin.Instance.logger.Debug("Unpatch RunExtraction Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
-                }
-            }
-        }
-
+        
         [HarmonyPrefix]
         private static bool ResourcePoolPrefix()
         {
@@ -480,10 +491,25 @@ namespace StrmAssistant.Mod
             return true;
         }
 
-        [HarmonyPrefix]
-        private static bool RunExtractionPrefix(object __instance)
+        private static bool IsFileShortcut(string path)
         {
-            if (_totalTimeoutMs != null && __instance.GetType() == _quickSingleImageExtractor)
+            return path != null && string.Equals(Path.GetExtension(path), ".strm", StringComparison.OrdinalIgnoreCase);
+        }
+
+        [HarmonyPrefix]
+        private static bool RunExtractionPrefix(object __instance, ref string inputPath, MediaContainers? container,
+            MediaStream videoStream, MediaProtocol? protocol, int? streamIndex, Video3DFormat? threedFormat,
+            TimeSpan? startOffset, TimeSpan? interval, string targetDirectory, string targetFilename, int? maxWidth,
+            bool enableThumbnailFilter, CancellationToken cancellationToken)
+        {
+            if (__instance.GetType() == _quickImageSeriesExtractor && IsFileShortcut(inputPath))
+            {
+                var strmPath = inputPath;
+                inputPath = Task.Run(async () => await Plugin.LibraryApi.GetStrmMountPath(strmPath)).Result;
+            }
+
+            if (ExtractMediaInfoTask.IsRunning && _totalTimeoutMs != null &&
+                __instance.GetType() == _quickSingleImageExtractor)
             {
                 var newValue =
                     60000 * Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
@@ -491,6 +517,34 @@ namespace StrmAssistant.Mod
             }
 
             return true;
+        }
+
+        [HarmonyPrefix]
+        private static bool LogThumbnailImageExtractionFailurePrefix(long itemId, long dateModifiedUnixTimeSeconds)
+        {
+            return false;
+        }
+        
+        [HarmonyPrefix]
+        private static bool SupportsThumbnailsGetterPrefix(BaseItem __instance, ref bool __result)
+        {
+            if (__instance.IsShortcut)
+            {
+                PatchIsShortcutInstance(__instance);
+                SupportsThumbnailsInstancePatched.Value = true;
+            }
+
+            return true;
+        }
+
+        [HarmonyPostfix]
+        private static void SupportsThumbnailsGetterPostfix(BaseItem __instance, ref bool __result)
+        {
+            if (SupportsThumbnailsInstancePatched.Value)
+            {
+                UnpatchIsShortcutInstance(__instance);
+                SupportsThumbnailsInstancePatched.Value = false;
+            }
         }
     }
 }

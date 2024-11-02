@@ -117,7 +117,7 @@ namespace StrmAssistant
                                     {
                                         if (taskItem.IsShortcut)
                                         {
-                                            EnableImageCapture.PatchInstanceIsShortcut(taskItem);
+                                            EnableImageCapture.PatchIsShortcutInstance(taskItem);
                                             isShortcutPatched = true;
                                         }
                                         var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
@@ -142,13 +142,13 @@ namespace StrmAssistant
                                 }
                                 catch (Exception e)
                                 {
-                                    _logger.Info("MediaInfoExtract - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
-                                    _logger.Debug(e.Message);
+                                    _logger.Error("MediaInfoExtract - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
+                                    _logger.Error(e.Message);
                                     _logger.Debug(e.StackTrace);
                                 }
                                 finally
                                 {
-                                    if (isShortcutPatched) EnableImageCapture.UnpatchInstanceIsShortcut(taskItem);
+                                    if (isShortcutPatched) EnableImageCapture.UnpatchIsShortcutInstance(taskItem);
                                     if (isExtractAllowed) ExclusiveExtract.DisallowExtractInstance(taskItem);
                                 }
                             });
@@ -187,8 +187,8 @@ namespace StrmAssistant
                                 }
                                 catch (Exception e)
                                 {
-                                    _logger.Info("ExternalSubtitle - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
-                                    _logger.Debug(e.Message);
+                                    _logger.Error("ExternalSubtitle - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
+                                    _logger.Error(e.Message);
                                     _logger.Debug(e.StackTrace);
                                 }
                             });

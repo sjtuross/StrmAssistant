@@ -89,7 +89,12 @@ namespace StrmAssistant
             var tasks = new List<Task>();
 
             var chineseMovieDb = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.ChineseMovieDb;
-            if (chineseMovieDb) ChineseMovieDb.PatchCacheTime();
+
+            if (remainingCount > 0)
+            {
+                if (chineseMovieDb) ChineseMovieDb.PatchCacheTime();
+                IsRunning = true;
+            }
 
             var refreshPersonMode = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.RefreshPersonMode;
             _logger.Info("Refresh Person Mode: " + refreshPersonMode);
@@ -176,8 +181,8 @@ namespace StrmAssistant
                         }
                         catch (Exception e)
                         {
-                            _logger.Info("RefreshPerson - Item Failed: " + taskItem.Name);
-                            _logger.Debug(e.Message);
+                            _logger.Error("RefreshPerson - Item Failed: " + taskItem.Name);
+                            _logger.Error(e.Message);
                             _logger.Debug(e.StackTrace);
                         }
                         finally
@@ -197,7 +202,11 @@ namespace StrmAssistant
                 personItems.Clear();
             }
 
-            if (chineseMovieDb) ChineseMovieDb.UnpatchCacheTime();
+            if (remainingCount > 0)
+            {
+                if (chineseMovieDb) ChineseMovieDb.UnpatchCacheTime();
+                IsRunning = false;
+            }
 
             progress.Report(100.0);
             _logger.Info("RefreshPerson - Task Complete");
@@ -215,5 +224,7 @@ namespace StrmAssistant
         {
             return Array.Empty<TaskTriggerInfo>();
         }
+
+        public static bool IsRunning { get; private set; }
     }
 }

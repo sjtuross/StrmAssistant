@@ -13,7 +13,7 @@ namespace StrmAssistant.Mod
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
         private static MethodInfo _isIntroDetectionSupported;
 
-        private static readonly AsyncLocal<bool> IsShortcutPatched = new AsyncLocal<bool>();
+        private static readonly AsyncLocal<bool> IsIntroDetectionSupportedInstancePatched = new AsyncLocal<bool>();
 
         public static void Initialize()
         {
@@ -104,8 +104,8 @@ namespace StrmAssistant.Mod
         {
             if (item.IsShortcut)
             {
-                EnableImageCapture.PatchInstanceIsShortcut(item);
-                IsShortcutPatched.Value = true;
+                EnableImageCapture.PatchIsShortcutInstance(item);
+                IsIntroDetectionSupportedInstancePatched.Value = true;
             }
 
             return true;
@@ -115,9 +115,10 @@ namespace StrmAssistant.Mod
         private static void IsIntroDetectionSupportedPostfix(Episode item, LibraryOptions libraryOptions,
             ref bool __result)
         {
-            if (IsShortcutPatched.Value)
+            if (IsIntroDetectionSupportedInstancePatched.Value)
             {
-                EnableImageCapture.UnpatchInstanceIsShortcut(item);
+                EnableImageCapture.UnpatchIsShortcutInstance(item);
+                IsIntroDetectionSupportedInstancePatched.Value = false;
             }
         }
     }
