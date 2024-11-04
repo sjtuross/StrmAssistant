@@ -48,7 +48,7 @@
     <value>视频截图预览缩略图增强</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
-    <value>支持 STRM 视频截图，预览缩略图 BIF，跳过内嵌封面，默认关闭。</value>
+    <value>解锁 STRM 视频截图，预览缩略图 BIF，跳过内嵌封面，默认关闭。</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
     <value>播放行为片头探测</value>
@@ -156,7 +156,7 @@
     <value>原生片头探测解锁</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
-    <value>魔改原生跳片头探测，解锁 STRM 支持，默认关闭。</value>
+    <value>解锁原生跳片头探测支持 STRM，默认关闭。</value>
   </data>
   <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
     <value>中文搜索增强</value>

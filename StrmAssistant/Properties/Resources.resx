@@ -135,7 +135,7 @@
     <value>Image Capture and Thumbnail Preview Enhanced</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
-    <value>Support image capture, thumbnail preview BIF for Strm. Skip embedded image. Default is OFF.</value>
+    <value>Unlock image capture, thumbnail preview BIF for Strm. Skip embedded image. Default is OFF.</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
     <value>Adaptive Intro Skip</value>

@@ -40,6 +40,7 @@
 17. 支持中文模糊搜索和拼音搜索，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文搜索增强)
 18. 刷新元数据时自动生成拼音首字母为排序标题，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/拼音首字母排序)
 19. 添加支持从`NFO`导入演员头像链接
+20. 电影剧集页面隐藏无头像人员，非删除，仍可搜索
 
 ## 安装
 
