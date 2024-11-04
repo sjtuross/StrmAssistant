@@ -1,5 +1,9 @@
 ﻿using HarmonyLib;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using System;
 using System.IO;
 using System.Linq;
@@ -17,6 +21,7 @@ namespace StrmAssistant.Mod
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
         
         private static Assembly _nfoMetadataAssembly;
+        private static ConstructorInfo _genericBaseNfoParserConstructor;
         private static MethodInfo _getPersonFromXmlNode;
 
         private static readonly AsyncLocal<string> PersonContent = new AsyncLocal<string>();
@@ -30,6 +35,12 @@ namespace StrmAssistant.Mod
             IgnoreComments = true
         };
 
+        private static readonly XmlWriterSettings WriterSettings = new XmlWriterSettings
+        {
+            OmitXmlDeclaration = true,
+            CheckCharacters = false
+        };
+
         public static void Initialize()
         {
             try
@@ -41,8 +52,15 @@ namespace StrmAssistant.Mod
                 if (_nfoMetadataAssembly != null)
                 {
                     var genericBaseNfoParser = _nfoMetadataAssembly.GetType("NfoMetadata.Parsers.BaseNfoParser`1");
-                    var genericBaseNfoParserPerson = genericBaseNfoParser.MakeGenericType(typeof(Person));
-                    _getPersonFromXmlNode = genericBaseNfoParserPerson.GetMethod("GetPersonFromXmlNode",
+                    var genericBaseNfoParserVideo = genericBaseNfoParser.MakeGenericType(typeof(Video));
+                    _genericBaseNfoParserConstructor = genericBaseNfoParserVideo.GetConstructor(BindingFlags.Instance | BindingFlags.Public,
+                        null,
+                        new Type[]
+                        {
+                            typeof(ILogger), typeof(IConfigurationManager), typeof(IProviderManager),
+                            typeof(IFileSystem)
+                        }, null);
+                    _getPersonFromXmlNode = genericBaseNfoParserVideo.GetMethod("GetPersonFromXmlNode",
                         BindingFlags.NonPublic | BindingFlags.Instance);
                 }
             }
@@ -69,6 +87,30 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
+                    if (!IsPatched(_genericBaseNfoParserConstructor, typeof(EnhanceNfoMetadata)))
+                    {
+                        HarmonyMod.Patch(_genericBaseNfoParserConstructor,
+                            prefix: new HarmonyMethod(typeof(EnhanceNfoMetadata).GetMethod("GenericBaseNfoParserConstructorPrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug("Patch GenericBaseNfoParserConstructor Success by Harmony");
+                    }
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Patch GenericBaseNfoParserConstructor Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
+                }
+            }
+        }
+
+        private static void PatchGetPersonFromXmlNode()
+        {
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony && _nfoMetadataAssembly != null)
+            {
+                try
+                {
                     if (!IsPatched(_getPersonFromXmlNode, typeof(EnhanceNfoMetadata)))
                     {
                         HarmonyMod.Patch(_getPersonFromXmlNode,
@@ -81,7 +123,7 @@ namespace StrmAssistant.Mod
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch EnhanceNfoMetadata Failed by Harmony");
+                    Plugin.Instance.logger.Debug("Patch GetPersonFromXmlNode Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
@@ -95,6 +137,12 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
+                    if (IsPatched(_genericBaseNfoParserConstructor, typeof(EnhanceNfoMetadata)))
+                    {
+                        HarmonyMod.Unpatch(_genericBaseNfoParserConstructor,
+                            AccessTools.Method(typeof(EnhanceNfoMetadata), "GenericBaseNfoParserConstructorPrefix"));
+                        Plugin.Instance.logger.Debug("Unpatch GenericBaseNfoParserConstructor Success by Harmony");
+                    }
                     if (IsPatched(_getPersonFromXmlNode, typeof(EnhanceNfoMetadata)))
                     {
                         HarmonyMod.Unpatch(_getPersonFromXmlNode,
@@ -112,6 +160,32 @@ namespace StrmAssistant.Mod
                 }
             }
         }
+
+        [HarmonyPrefix]
+        private static bool GenericBaseNfoParserConstructorPrefix(object __instance)
+        {
+            try
+            {
+                HarmonyMod.Unpatch(_getPersonFromXmlNode,
+                    AccessTools.Method(typeof(EnhanceNfoMetadata), "GetPersonFromXmlNodePrefix"));
+                HarmonyMod.Unpatch(_getPersonFromXmlNode,
+                    AccessTools.Method(typeof(EnhanceNfoMetadata), "GetPersonFromXmlNodePostfix"));
+                HarmonyMod.Patch(_getPersonFromXmlNode,
+                    prefix: new HarmonyMethod(typeof(EnhanceNfoMetadata).GetMethod("GetPersonFromXmlNodePrefix",
+                        BindingFlags.Static | BindingFlags.NonPublic)),
+                    postfix: new HarmonyMethod(typeof(EnhanceNfoMetadata).GetMethod("GetPersonFromXmlNodePostfix",
+                        BindingFlags.Static | BindingFlags.NonPublic)));
+            }
+            catch (Exception he)
+            {
+                Plugin.Instance.logger.Debug("Patch GetPersonFromXmlNode Failed by Harmony");
+                Plugin.Instance.logger.Debug(he.Message);
+                Plugin.Instance.logger.Debug(he.StackTrace);
+                PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
+            }
+
+            return true;
+        }
         
         [HarmonyPrefix]
         private static bool GetPersonFromXmlNodePrefix(ref XmlReader reader)
@@ -122,7 +196,7 @@ namespace StrmAssistant.Mod
     
                 using (var writer = new StringWriter(sb))
                 {
-                    using (var xmlWriter = XmlWriter.Create(writer))
+                    using (var xmlWriter = XmlWriter.Create(writer, WriterSettings))
                     {
                         while (reader.Read())
                         {
@@ -137,7 +211,6 @@ namespace StrmAssistant.Mod
                 PersonContent.Value = sb.ToString();
 
                 reader = XmlReader.Create(new StringReader(sb.ToString()), ReaderSettings);
-
             }
             catch (Exception e)
             {
@@ -151,7 +224,7 @@ namespace StrmAssistant.Mod
         [HarmonyPostfix]
         private static void GetPersonFromXmlNodePostfix(XmlReader reader, Task<PersonInfo> __result)
         {
-            Task.Run(async () => await SetImageUrlAsync(__result));
+            Task.Run(async () => await SetImageUrlAsync(__result)).ConfigureAwait(false);
         }
 
         private static async Task SetImageUrlAsync(Task<PersonInfo> personInfoTask)
@@ -176,8 +249,8 @@ namespace StrmAssistant.Mod
                                 if (IsValidHttpUrl(thumb))
                                 {
                                     personInfo.ImageUrl = thumb;
-                                    Plugin.Instance.logger.Debug("EnhanceNfoMetadata - Imported " + personInfo.Name +
-                                                                 " " + personInfo.ImageUrl);
+                                    //Plugin.Instance.logger.Debug("EnhanceNfoMetadata - Imported " + personInfo.Name +
+                                    //                             " " + personInfo.ImageUrl);
                                 }
 
                                 break;
