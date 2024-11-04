@@ -282,7 +282,7 @@ namespace StrmAssistant.Mod
         private static bool CanRefreshMetadataPrefix(IMetadataProvider provider, BaseItem item, LibraryOptions libraryOptions,
             bool includeDisabled, bool forceEnableInternetMetadata, bool ignoreMetadataLock, ref bool __result)
         {
-            if ((item.Parent is null && item.ExtraType == null) || !(provider is IPreRefreshProvider) ||
+            if ((item.Parent is null && item.ExtraType is null) || !(provider is IPreRefreshProvider) ||
                 !(provider is ICustomMetadataProvider<Video>)) return true;
 
             if (CurrentItem.Value != null && CurrentItem.Value.InternalId == item.InternalId) return true;

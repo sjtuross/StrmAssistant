@@ -134,7 +134,6 @@ namespace StrmAssistant
 
         private void DisposeCatchupMode()
         {
-            _libraryManager.ItemAdded -= OnItemAdded;
             _userDataManager.UserDataSaved -= OnUserDataSaved;
             _userManager.UserCreated -= OnUserCreated;
             _userManager.UserDeleted -= OnUserDeleted;
