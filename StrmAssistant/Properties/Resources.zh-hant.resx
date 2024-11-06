@@ -248,6 +248,12 @@
   <data name="UIFunctionOptions_EditorTitle_UI_Functions" xml:space="preserve">
     <value>UI 功能</value>
   </data>
+  <data name="UIFunctionOptions_BeautifyMissingMetadata_Beautify_Missing_Metadata" xml:space="preserve">
+    <value>劇集集標題自動補全</value>
+  </data>
+  <data name="UIFunctionOptions_BeautifyMissingMetadata_Beautify_missing_metadata_for_episode_display__Default_is_OFF_" xml:space="preserve">
+    <value>對於缺少元資料匹配的劇集集標題自動補全顯示，預設為關閉。</value>
+  </data>
   <data name="UIFunctionOptions_EnforceLibraryOrder_Enforce_Library_Order" xml:space="preserve">
     <value>強制媒體庫排序</value>
   </data>

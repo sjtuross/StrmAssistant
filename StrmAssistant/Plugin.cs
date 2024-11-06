@@ -67,6 +67,7 @@ namespace StrmAssistant
         private bool _currentEnhanceNfoMetadata;
         private bool _currentHidePersonNoImage;
         private bool _currentEnforceLibraryOrder;
+        private bool _currentBeautifyMissingMetadata;
 
         public Plugin(IApplicationHost applicationHost,
             IApplicationPaths applicationPaths,
@@ -109,6 +110,7 @@ namespace StrmAssistant
             _currentEnhanceNfoMetadata = GetOptions().MetadataEnhanceOptions.EnhanceNfoMetadata;
             _currentHidePersonNoImage = GetOptions().UIFunctionOptions.HidePersonNoImage;
             _currentEnforceLibraryOrder = GetOptions().UIFunctionOptions.EnforceLibraryOrder;
+            _currentBeautifyMissingMetadata = GetOptions().UIFunctionOptions.BeautifyMissingMetadata;
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, mediaMountManager, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
@@ -393,6 +395,22 @@ namespace StrmAssistant
                 else
                 {
                     EnforceLibraryOrder.Unpatch();
+                }
+            }
+
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("BeautifyMissingMetadata is set to {0}", options.UIFunctionOptions.BeautifyMissingMetadata);
+            if (_currentBeautifyMissingMetadata != GetOptions().UIFunctionOptions.BeautifyMissingMetadata)
+            {
+                _currentBeautifyMissingMetadata = GetOptions().UIFunctionOptions.BeautifyMissingMetadata;
+
+                if (_currentBeautifyMissingMetadata)
+                {
+                    BeautifyMissingMetadata.Patch();
+                }
+                else
+                {
+                    BeautifyMissingMetadata.Unpatch();
                 }
             }
 

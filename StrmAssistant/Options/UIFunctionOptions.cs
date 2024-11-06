@@ -18,6 +18,12 @@ namespace StrmAssistant
         [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool HidePersonNoImage { get; set; } = false;
 
+        [DisplayNameL("UIFunctionOptions_BeautifyMissingMetadata_Beautify_Missing_Metadata", typeof(Resources))]
+        [DescriptionL("UIFunctionOptions_BeautifyMissingMetadata_Beautify_missing_metadata_for_episode_display__Default_is_OFF_", typeof(Resources))]
+        [Required]
+        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
+        public bool BeautifyMissingMetadata { get; set; } = false;
+
         [DisplayNameL("UIFunctionOptions_EnforceLibraryOrder_Enforce_Library_Order", typeof(Resources))]
         [DescriptionL("UIFunctionOptions_EnforceLibraryOrder_Enforce_library_order_per_the_first_admin__Default_if_OFF_", typeof(Resources))]
         [Required]
