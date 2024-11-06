@@ -47,6 +47,7 @@ namespace StrmAssistant
         };
 
         public static Dictionary<User, bool> AllUsers = new Dictionary<User, bool>();
+        public static string[] AdminOrderedViews = Array.Empty<string>();
 
         private readonly bool _fallbackProbeApproach;
         private readonly MethodInfo GetPlayackMediaSources;
@@ -133,6 +134,15 @@ namespace StrmAssistant
             {
                 AllUsers[user] = _userManager.GetUserById(user.InternalId).Policy.IsAdministrator;
             }
+
+            FetchAdminOrderedViews();
+        }
+
+        public void FetchAdminOrderedViews()
+        {
+            var firstAdmin = AllUsers.Where(kvp => kvp.Value).Select(u => u.Key).OrderBy(u => u.DateCreated)
+                .FirstOrDefault();
+            AdminOrderedViews = firstAdmin?.Configuration.OrderedViews ?? AdminOrderedViews;
         }
 
         public bool HasMediaStream(BaseItem item)

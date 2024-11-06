@@ -1,7 +1,5 @@
 ﻿using HarmonyLib;
-using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Model.Dto;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -9,25 +7,25 @@ using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
 {
-    public static class HidePersonNoImage
+    public static class EnforceLibraryOrder
     {
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
-        
-        private static MethodInfo _attachPeople;
+
+        private static MethodInfo _getUserViews;
 
         public static void Initialize()
         {
             try
             {
                 var embyServerImplementationsAssembly = Assembly.Load("Emby.Server.Implementations");
-                var dtoService =
-                    embyServerImplementationsAssembly.GetType("Emby.Server.Implementations.Dto.DtoService");
-                _attachPeople =
-                    dtoService.GetMethod("AttachPeople", BindingFlags.NonPublic | BindingFlags.Instance);
+                var userViewManager = embyServerImplementationsAssembly.GetType("Emby.Server.Implementations.Library.UserViewManager");
+                _getUserViews = userViewManager.GetMethods(BindingFlags.Instance | BindingFlags.Public)
+                    .FirstOrDefault(m => m.Name == "GetUserViews" &&
+                                         (m.GetParameters().Length == 3 || m.GetParameters().Length == 4));
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("HidePersonNoImage - Patch Init Failed");
+                Plugin.Instance.logger.Warn("EnforceLibraryOrder - Patch Init Failed");
                 Plugin.Instance.logger.Debug(e.Message);
                 Plugin.Instance.logger.Debug(e.StackTrace);
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
@@ -36,7 +34,7 @@ namespace StrmAssistant.Mod
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().UIFunctionOptions.HidePersonNoImage)
+                Plugin.Instance.GetPluginOptions().UIFunctionOptions.EnforceLibraryOrder)
             {
                 Patch();
             }
@@ -48,18 +46,18 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (!IsPatched(_attachPeople, typeof(HidePersonNoImage)))
+                    if (!IsPatched(_getUserViews, typeof(EnforceLibraryOrder)))
                     {
-                        HarmonyMod.Patch(_attachPeople,
-                            postfix: new HarmonyMethod(typeof(HidePersonNoImage).GetMethod("AttachPeoplePostfix",
+                        HarmonyMod.Patch(_getUserViews,
+                            prefix: new HarmonyMethod(typeof(EnforceLibraryOrder).GetMethod("GetUserViewsPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.logger.Debug(
-                            "Patch ToBaseItemPerson Success by Harmony");
+                            "Patch GetUserViews Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch AttachPeople Failed by Harmony");
+                    Plugin.Instance.logger.Debug("Patch OrderedViewsGetter Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
@@ -69,34 +67,32 @@ namespace StrmAssistant.Mod
 
         public static void Unpatch()
         {
-            EnableImageCapture.UnpatchIsShortcut();
-
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
                 try
                 {
-                    if (IsPatched(_attachPeople, typeof(HidePersonNoImage)))
+                    if (IsPatched(_getUserViews, typeof(EnforceLibraryOrder)))
                     {
-                        HarmonyMod.Unpatch(_attachPeople,
-                            AccessTools.Method(typeof(HidePersonNoImage), "AttachPeoplePostfix"));
-                        Plugin.Instance.logger.Debug("Unpatch AttachPeople Success by Harmony");
+                        HarmonyMod.Unpatch(_getUserViews,
+                            AccessTools.Method(typeof(EnforceLibraryOrder), "GetUserViewsPrefix"));
+                        Plugin.Instance.logger.Debug("Unpatch GetUserViews Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch HidePersonNoImage Failed by Harmony");
+                    Plugin.Instance.logger.Debug("Unpatch GetUserViews Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                 }
             }
         }
 
-        [HarmonyPostfix]
-        private static void AttachPeoplePostfix(BaseItemDto dto, BaseItem item, DtoOptions options)
+        [HarmonyPrefix]
+        private static bool GetUserViewsPrefix(User user)
         {
-            if (dto.People == null) return;
+            user.Configuration.OrderedViews = LibraryApi.AdminOrderedViews;
 
-            dto.People = dto.People.Where(p => p.HasPrimaryImage).ToArray();
+            return true;
         }
     }
 }

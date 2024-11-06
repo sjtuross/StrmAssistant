@@ -21,12 +21,6 @@ namespace StrmAssistant
         [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool MergeMultiVersion { get; set; } = false;
 
-        [DisplayNameL("ModOptions_HidePersonNoImage_Hide_Person_without_Image", typeof(Resources))]
-        [DescriptionL("ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_", typeof(Resources))]
-        [Required]
-        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
-        public bool HidePersonNoImage { get; set; } = false;
-
         [DisplayNameL("ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search", typeof(Resources))]
         [DescriptionL("ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_", typeof(Resources))]
         [Required]

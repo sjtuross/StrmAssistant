@@ -66,6 +66,7 @@ namespace StrmAssistant
         private bool _currentPinyinSortName;
         private bool _currentEnhanceNfoMetadata;
         private bool _currentHidePersonNoImage;
+        private bool _currentEnforceLibraryOrder;
 
         public Plugin(IApplicationHost applicationHost,
             IApplicationPaths applicationPaths,
@@ -106,7 +107,8 @@ namespace StrmAssistant
             _currentSearchScope = GetOptions().ModOptions.SearchScope;
             _currentPinyinSortName = GetOptions().MetadataEnhanceOptions.PinyinSortName;
             _currentEnhanceNfoMetadata = GetOptions().MetadataEnhanceOptions.EnhanceNfoMetadata;
-            _currentHidePersonNoImage = GetOptions().ModOptions.HidePersonNoImage;
+            _currentHidePersonNoImage = GetOptions().UIFunctionOptions.HidePersonNoImage;
+            _currentEnforceLibraryOrder = GetOptions().UIFunctionOptions.EnforceLibraryOrder;
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, mediaMountManager, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository);
@@ -120,23 +122,22 @@ namespace StrmAssistant
             if (_currentCatchupMode) InitializeCatchupMode();
             if (_currentEnableIntroSkip) PlaySessionMonitor.Initialize();
             QueueManager.Initialize();
+
             _libraryManager.ItemAdded += OnItemAdded;
+            _userManager.UserCreated += OnUserCreated;
+            _userManager.UserDeleted += OnUserDeleted;
+            _userManager.UserConfigurationUpdated += OnUserConfigurationUpdated;
         }
 
         private void InitializeCatchupMode()
         {
             DisposeCatchupMode();
-
             _userDataManager.UserDataSaved += OnUserDataSaved;
-            _userManager.UserCreated += OnUserCreated;
-            _userManager.UserDeleted += OnUserDeleted;
         }
 
         private void DisposeCatchupMode()
         {
             _userDataManager.UserDataSaved -= OnUserDataSaved;
-            _userManager.UserCreated -= OnUserCreated;
-            _userManager.UserDeleted -= OnUserDeleted;
         }
 
         private void OnUserCreated(object sender, GenericEventArgs<User> e)
@@ -147,6 +148,11 @@ namespace StrmAssistant
         private void OnUserDeleted(object sender, GenericEventArgs<User> e)
         {
             LibraryApi.FetchUsers();
+        }
+        
+        private void OnUserConfigurationUpdated(object sender, GenericEventArgs<User> e)
+        {
+            if (e.Argument.Policy.IsAdministrator) LibraryApi.FetchAdminOrderedViews();
         }
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
@@ -358,11 +364,11 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentHidePersonNoImage)
-                logger.Info("HidePersonNoImage is set to {0}", options.ModOptions.HidePersonNoImage);
-            if (_currentHidePersonNoImage != GetOptions().ModOptions.HidePersonNoImage)
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("HidePersonNoImage is set to {0}", options.UIFunctionOptions.HidePersonNoImage);
+            if (_currentHidePersonNoImage != GetOptions().UIFunctionOptions.HidePersonNoImage)
             {
-                _currentHidePersonNoImage = GetOptions().ModOptions.HidePersonNoImage;
+                _currentHidePersonNoImage = GetOptions().UIFunctionOptions.HidePersonNoImage;
 
                 if (_currentHidePersonNoImage)
                 {
@@ -371,6 +377,22 @@ namespace StrmAssistant
                 else
                 {
                     HidePersonNoImage.Unpatch();
+                }
+            }
+            
+            if (!_currentSuppressOnOptionsSaved)
+                logger.Info("EnforceLibraryOrder is set to {0}", options.UIFunctionOptions.EnforceLibraryOrder);
+            if (_currentEnforceLibraryOrder != GetOptions().UIFunctionOptions.EnforceLibraryOrder)
+            {
+                _currentEnforceLibraryOrder = GetOptions().UIFunctionOptions.EnforceLibraryOrder;
+
+                if (_currentEnforceLibraryOrder)
+                {
+                    EnforceLibraryOrder.Patch();
+                }
+                else
+                {
+                    EnforceLibraryOrder.Unpatch();
                 }
             }
 

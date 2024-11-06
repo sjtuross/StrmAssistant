@@ -33,6 +33,7 @@ namespace StrmAssistant.Mod
             PinyinSortName.Initialize();
             EnhanceNfoMetadata.Initialize();
             HidePersonNoImage.Initialize();
+            EnforceLibraryOrder.Initialize();
         }
 
         public static bool IsPatched(MethodBase methodInfo, Type type)

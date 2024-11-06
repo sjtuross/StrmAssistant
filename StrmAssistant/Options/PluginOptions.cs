@@ -37,6 +37,11 @@ namespace StrmAssistant
         [EnabledCondition(nameof(IsConflictPluginLoaded),SimpleCondition.IsFalse)]
         public IntroSkipOptions IntroSkipOptions { get; set; } = new IntroSkipOptions();
 
+        [DisplayNameL("UIFunctionOptions_EditorTitle_UI_Functions", typeof(Resources))]
+        [VisibleCondition(nameof(IsConflictPluginLoaded),SimpleCondition.IsFalse)]
+        [EnabledCondition(nameof(IsConflictPluginLoaded),SimpleCondition.IsFalse)]
+        public UIFunctionOptions UIFunctionOptions { get; set; } = new UIFunctionOptions();
+
         [DisplayNameL("PluginOptions_ModOptions_Mod_Features", typeof(Resources))]
         [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]

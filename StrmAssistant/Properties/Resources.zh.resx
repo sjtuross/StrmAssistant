@@ -27,7 +27,7 @@
     <value>仅支持 STRM</value>
   </data>
   <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
-    <value>仅支持 STRM，关闭后也支持非 STRM，默认开启。</value>
+    <value>仅支持 STRM，关闭后支持所有，默认开启。</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count" xml:space="preserve">
     <value>最大线程数</value>
@@ -129,7 +129,7 @@
     <value>独占媒体信息提取</value>
   </data>
   <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
-    <value>仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg)，默认关闭。</value>
+    <value>仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg)，全媒体库生效，默认关闭。</value>
   </data>
   <data name="Repo_Link" xml:space="preserve">
     <value>项目链接</value>
@@ -244,5 +244,14 @@
   </data>
   <data name="ItemType_MusicArtist_MusicArtist" xml:space="preserve">
     <value>艺术家</value>
+  </data>
+  <data name="UIFunctionOptions_EditorTitle_UI_Functions" xml:space="preserve">
+    <value>UI 功能</value>
+  </data>
+  <data name="UIFunctionOptions_EnforceLibraryOrder_Enforce_Library_Order" xml:space="preserve">
+    <value>强制媒体库排序</value>
+  </data>
+  <data name="UIFunctionOptions_EnforceLibraryOrder_Enforce_library_order_per_the_first_admin__Default_if_OFF_" xml:space="preserve">
+    <value>首位管理员的自定义媒体库排序作用于所有用户，默认关闭。</value>
   </data>
 </root>
