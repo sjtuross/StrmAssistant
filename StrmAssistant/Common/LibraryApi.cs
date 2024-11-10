@@ -170,7 +170,7 @@ namespace StrmAssistant
             {
                 if (includeFavorites) resultItems = ExpandFavorites(items, true);
 
-                var incomingItems = items.OfType<Movie>().Cast<BaseItem>().Concat(items.OfType<Episode>()).ToList();
+                var incomingItems = items.OfType<Video>().Cast<BaseItem>().ToList();
 
                 var libraryPathsInScope = _libraryManager.GetVirtualFolders()
                     .Where(f => libraryIds == null || !libraryIds.Any() || libraryIds.Contains(f.Id))
@@ -359,7 +359,7 @@ namespace StrmAssistant
         {
             var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
 
-            var movies = items.OfType<Movie>().Cast<BaseItem>().ToList();
+            var videos = items.OfType<Video>().Cast<BaseItem>().ToList();
 
             var seriesIds = items.OfType<Series>().Select(s => s.InternalId)
                 .Union(items.OfType<Episode>().Select(e => e.SeriesId)).ToArray();
@@ -397,23 +397,27 @@ namespace StrmAssistant
                 }
             }
 
-            var combined = movies.Concat(episodes).ToList();
+            var combined = videos.Concat(episodes).GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
+
             return filterNeeded ? FilterByFavorites(combined) : combined;
         }
 
         private List<BaseItem> FilterByFavorites(List<BaseItem> items)
         {
-            var movies = AllUsers.Select(e => e.Key)
-                .SelectMany(u => items.OfType<Movie>()
-                .Where(i => i.IsFavoriteOrLiked(u)));
+            var videos = AllUsers.Select(e => e.Key)
+                .SelectMany(u => items.OfType<Video>().Where(i => i.IsFavoriteOrLiked(u)));
+
             var episodes = AllUsers.Select(e => e.Key)
                 .SelectMany(u => items.OfType<Episode>()
-                .GroupBy(e => e.SeriesId)
-                .Where(g => g.Any(i => i.IsFavoriteOrLiked(u)) || g.First().Series.IsFavoriteOrLiked(u))
-                .SelectMany(g => g)
-                );
-            var results = movies.Cast<BaseItem>().Concat(episodes.Cast<BaseItem>())
-                .GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
+                    .GroupBy(e => e.SeriesId)
+                    .Where(g => g.Any(i => i.IsFavoriteOrLiked(u)) || g.First().Series.IsFavoriteOrLiked(u))
+                    .SelectMany(g => g));
+
+            var results = videos.Cast<BaseItem>()
+                .Concat(episodes)
+                .GroupBy(i => i.InternalId)
+                .Select(g => g.First())
+                .ToList();
 
             return results;
         }
