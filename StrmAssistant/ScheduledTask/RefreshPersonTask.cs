@@ -122,8 +122,8 @@ namespace StrmAssistant
                     var taskItem = item;
 
                     var nameRefreshSkip = refreshPersonMode == RefreshPersonMode.Default && isServerPreferZh &&
-                                          IsChinese(taskItem.Name) && taskItem.DateLastSaved >=
-                                          DateTimeOffset.UtcNow.AddDays(-30);
+                                          IsChinese(taskItem.Name) && IsChinese(taskItem.Overview) &&
+                                          taskItem.DateLastSaved >= DateTimeOffset.UtcNow.AddDays(-30);
                     var imageRefreshSkip = taskItem.HasImage(ImageType.Primary) ||
                                            (refreshPersonMode == RefreshPersonMode.Default &&
                                             taskItem.DateLastRefreshed >=
