@@ -23,6 +23,9 @@ namespace StrmAssistant.Mod
         private static Assembly _nfoMetadataAssembly;
         private static ConstructorInfo _genericBaseNfoParserConstructor;
         private static MethodInfo _getPersonFromXmlNode;
+        
+        private static MethodInfo _getPersonFromXmlNodePrefix;
+        private static MethodInfo _getPersonFromXmlNodePostfix;
 
         private static readonly AsyncLocal<string> PersonContent = new AsyncLocal<string>();
 
@@ -62,6 +65,11 @@ namespace StrmAssistant.Mod
                         }, null);
                     _getPersonFromXmlNode = genericBaseNfoParserVideo.GetMethod("GetPersonFromXmlNode",
                         BindingFlags.NonPublic | BindingFlags.Instance);
+
+                    _getPersonFromXmlNodePrefix = typeof(EnhanceNfoMetadata).GetMethod("GetPersonFromXmlNodePrefix",
+                        BindingFlags.Static | BindingFlags.NonPublic);
+                    _getPersonFromXmlNodePostfix = typeof(EnhanceNfoMetadata).GetMethod("GetPersonFromXmlNodePostfix",
+                        BindingFlags.Static | BindingFlags.NonPublic);
                 }
             }
             catch (Exception e)
@@ -105,32 +113,6 @@ namespace StrmAssistant.Mod
             }
         }
 
-        private static void PatchGetPersonFromXmlNode()
-        {
-            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony && _nfoMetadataAssembly != null)
-            {
-                try
-                {
-                    if (!IsPatched(_getPersonFromXmlNode, typeof(EnhanceNfoMetadata)))
-                    {
-                        HarmonyMod.Patch(_getPersonFromXmlNode,
-                            prefix: new HarmonyMethod(typeof(EnhanceNfoMetadata).GetMethod("GetPersonFromXmlNodePrefix",
-                                BindingFlags.Static | BindingFlags.NonPublic)),
-                            postfix: new HarmonyMethod(typeof(EnhanceNfoMetadata).GetMethod(
-                                "GetPersonFromXmlNodePostfix", BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch GetPersonFromXmlNode Success by Harmony");
-                    }
-                }
-                catch (Exception he)
-                {
-                    Plugin.Instance.logger.Debug("Patch GetPersonFromXmlNode Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
-                    PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
-                }
-            }
-        }
-
         public static void Unpatch()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
@@ -145,10 +127,8 @@ namespace StrmAssistant.Mod
                     }
                     if (IsPatched(_getPersonFromXmlNode, typeof(EnhanceNfoMetadata)))
                     {
-                        HarmonyMod.Unpatch(_getPersonFromXmlNode,
-                            AccessTools.Method(typeof(EnhanceNfoMetadata), "GetPersonFromXmlNodePrefix"));
-                        HarmonyMod.Unpatch(_getPersonFromXmlNode,
-                            AccessTools.Method(typeof(EnhanceNfoMetadata), "GetPersonFromXmlNodePostfix"));
+                        HarmonyMod.Unpatch(_getPersonFromXmlNode, _getPersonFromXmlNodePostfix);
+                        HarmonyMod.Unpatch(_getPersonFromXmlNode, _getPersonFromXmlNodePostfix);
                         Plugin.Instance.logger.Debug("Unpatch GetPersonFromXmlNode Success by Harmony");
                     }
                 }
@@ -166,22 +146,16 @@ namespace StrmAssistant.Mod
         {
             try
             {
-                HarmonyMod.Unpatch(_getPersonFromXmlNode,
-                    AccessTools.Method(typeof(EnhanceNfoMetadata), "GetPersonFromXmlNodePrefix"));
-                HarmonyMod.Unpatch(_getPersonFromXmlNode,
-                    AccessTools.Method(typeof(EnhanceNfoMetadata), "GetPersonFromXmlNodePostfix"));
-                HarmonyMod.Patch(_getPersonFromXmlNode,
-                    prefix: new HarmonyMethod(typeof(EnhanceNfoMetadata).GetMethod("GetPersonFromXmlNodePrefix",
-                        BindingFlags.Static | BindingFlags.NonPublic)),
-                    postfix: new HarmonyMethod(typeof(EnhanceNfoMetadata).GetMethod("GetPersonFromXmlNodePostfix",
-                        BindingFlags.Static | BindingFlags.NonPublic)));
+                HarmonyMod.Unpatch(_getPersonFromXmlNode, _getPersonFromXmlNodePrefix);
+                HarmonyMod.Unpatch(_getPersonFromXmlNode, _getPersonFromXmlNodePostfix);
+                HarmonyMod.Patch(_getPersonFromXmlNode, prefix: new HarmonyMethod(_getPersonFromXmlNodePrefix),
+                    postfix: new HarmonyMethod(_getPersonFromXmlNodePostfix));
             }
             catch (Exception he)
             {
                 Plugin.Instance.logger.Debug("Patch GetPersonFromXmlNode Failed by Harmony");
                 Plugin.Instance.logger.Debug(he.Message);
                 Plugin.Instance.logger.Debug(he.StackTrace);
-                PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
             }
 
             return true;

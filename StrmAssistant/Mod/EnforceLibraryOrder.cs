@@ -57,7 +57,7 @@ namespace StrmAssistant.Mod
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch OrderedViewsGetter Failed by Harmony");
+                    Plugin.Instance.logger.Debug("Patch GetUserViews Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
