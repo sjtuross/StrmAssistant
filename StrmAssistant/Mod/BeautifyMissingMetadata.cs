@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Emby.Naming.Common;
+using HarmonyLib;
 using MediaBrowser.Controller.Dto;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -6,6 +7,7 @@ using MediaBrowser.Model.Dto;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
@@ -16,6 +18,10 @@ namespace StrmAssistant.Mod
         
         private static MethodInfo _getBaseItemDtos;
         private static MethodInfo _getBaseItemDto;
+
+        private static MethodInfo _getMainExpression;
+        private static readonly string SeasonNumberAndEpisodeNumberExpression =
+            "(?<![a-z]|[0-9])(?<seasonnumber>[0-9]+)(?:[ ._x-]*e|x|[ ._-]*ep[._ -]*|[ ._-]*episode[._ -]+)";
 
         public static void Initialize()
         {
@@ -28,6 +34,9 @@ namespace StrmAssistant.Mod
                     null, new[] { typeof(BaseItem[]), typeof(int), typeof(DtoOptions), typeof(User) }, null);
                 _getBaseItemDto = dtoService.GetMethod("GetBaseItemDto", BindingFlags.Public | BindingFlags.Instance,
                     null, new[] { typeof(BaseItem), typeof(DtoOptions), typeof(User) }, null);
+
+                _getMainExpression =
+                    typeof(NamingOptions).GetMethod("GetMainExpression", BindingFlags.NonPublic | BindingFlags.Static);
             }
             catch (Exception e)
             {
@@ -68,6 +77,13 @@ namespace StrmAssistant.Mod
                         Plugin.Instance.logger.Debug(
                             "Patch GetBaseItemDto Success by Harmony");
                     }
+                    if (!IsPatched(_getMainExpression, typeof(BeautifyMissingMetadata)))
+                    {
+                        HarmonyMod.Patch(_getMainExpression,
+                            postfix: new HarmonyMethod(typeof(BeautifyMissingMetadata).GetMethod("GetMainExpressionPostfix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug("Patch GetMainExpression Success by Harmony");
+                    }
                 }
                 catch (Exception he)
                 {
@@ -96,6 +112,12 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Unpatch(_getBaseItemDto,
                             AccessTools.Method(typeof(BeautifyMissingMetadata), "GetBaseItemDtoPostfix"));
                         Plugin.Instance.logger.Debug("Unpatch GetBaseItemDto Success by Harmony");
+                    }
+                    if (IsPatched(_getMainExpression, typeof(BeautifyMissingMetadata)))
+                    {
+                        HarmonyMod.Unpatch(_getMainExpression,
+                            AccessTools.Method(typeof(BeautifyMissingMetadata), "GetMainExpressionPostfix"));
+                        Plugin.Instance.logger.Debug("Unpatch GetMainExpression Success by Harmony");
                     }
                 }
                 catch (Exception he)
@@ -141,6 +163,16 @@ namespace StrmAssistant.Mod
                 string.Equals(item.Name, item.FileNameWithoutExtension, StringComparison.Ordinal))
             {
                 __result.Name = $"第 {item.IndexNumber} 集";
+            }
+        }
+
+        [HarmonyPostfix]
+        private static void GetMainExpressionPostfix(ref string __result, bool allowEpisodeNumberOnly,
+            bool allowMultiEpisodeNumberOnlyExpression, bool allowX)
+        {
+            if (allowEpisodeNumberOnly && !allowMultiEpisodeNumberOnlyExpression && allowX)
+            {
+                __result = Regex.Replace(__result, Regex.Escape(SeasonNumberAndEpisodeNumberExpression) + @"\|?", "");
             }
         }
     }
