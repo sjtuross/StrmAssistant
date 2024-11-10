@@ -113,11 +113,16 @@ namespace StrmAssistant.Mod
         {
             if (itemCount == 0) return;
 
-            var item = items.FirstOrDefault();
+            var checkItem = items.FirstOrDefault();
 
-            if (!(item is Episode episode) || episode.GetPreferredMetadataLanguage() != "zh-CN") return;
+            if (!(checkItem is Episode episode) || !episode.GetPreferredMetadataLanguage()
+                    .Equals("zh-CN", StringComparison.OrdinalIgnoreCase)) return;
 
-            foreach (var (currentItem, index) in items.Select((currentItem, index) => (currentItem, index)))
+            var episodes = !string.IsNullOrEmpty(checkItem.FileNameWithoutExtension)
+                ? items
+                : Plugin.LibraryApi.GetItemsByIds(items.Select(i => i.InternalId).ToArray());
+
+            foreach (var (currentItem, index) in episodes.Select((currentItem, index) => (currentItem, index)))
             {
                 if (string.Equals(currentItem.Name, currentItem.FileNameWithoutExtension, StringComparison.Ordinal))
                 {
@@ -128,9 +133,11 @@ namespace StrmAssistant.Mod
         }
 
         [HarmonyPostfix]
-        private static void GetBaseItemDtoPostfix(BaseItem item, DtoOptions options, User user, ref BaseItemDto __result)
+        private static void GetBaseItemDtoPostfix(BaseItem item, DtoOptions options, User user,
+            ref BaseItemDto __result)
         {
-            if (item is Episode && item.GetPreferredMetadataLanguage() == "zh-CN" &&
+            if (item is Episode &&
+                item.GetPreferredMetadataLanguage().Equals("zh-CN", StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(item.Name, item.FileNameWithoutExtension, StringComparison.Ordinal))
             {
                 __result.Name = $"第 {item.IndexNumber} 集";

@@ -495,5 +495,14 @@ namespace StrmAssistant
 
             return null;
         }
+
+        public BaseItem[] GetItemsByIds(long[] itemIds)
+        {
+            var items = _libraryManager.GetItemList(new InternalItemsQuery { ItemIds = itemIds });
+
+            var dict = items.ToDictionary(i => i.InternalId, i => i);
+
+            return itemIds.Select(id => dict[id]).ToArray();
+        }
     }
 }
