@@ -18,10 +18,10 @@
     <value>电影洗版或剧集有更新后实时提取媒体信息以及同步片头片尾标记，默认关闭。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
-    <value>包含附加内容</value>
+    <value>包含分集和附加内容</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_media_extras_to_extract__Default_is_False_" xml:space="preserve">
-    <value>提取电影或剧集附加内容的媒体信息，默认关闭。</value>
+    <value>提取电影或剧集的分集和附加内容的媒体信息，默认关闭。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Strm_Only" xml:space="preserve">
     <value>仅支持 STRM</value>

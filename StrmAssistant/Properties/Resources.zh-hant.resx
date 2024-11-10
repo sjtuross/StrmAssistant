@@ -21,10 +21,10 @@
     <value>電影洗版或劇集有更新後即時提取媒體資訊以及同步片頭片尾標記，預設為關閉。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
-    <value>包含附加內容</value>
+    <value>包含分集和附加內容</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_media_extras_to_extract__Default_is_False_" xml:space="preserve">
-    <value>提取電影或劇集附加內容的媒體訊息，預設為關閉。</value>
+    <value>提取電影或劇集的分集和附加內容的媒體訊息，預設為關閉。</value>
   </data>
   <data name="PluginOptions_LibraryScope_Library_Scope" xml:space="preserve">
     <value>媒體庫範圍</value>

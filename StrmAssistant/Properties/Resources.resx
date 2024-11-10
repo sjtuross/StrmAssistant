@@ -105,10 +105,10 @@
     <value>Extract media info for newly added items and sync intro and credits markers. Default is OFF.</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
-    <value>Include Extra</value>
+    <value>Include Additional Part and Extra</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_media_extras_to_extract__Default_is_False_" xml:space="preserve">
-    <value>Include media extras to extract. Default is OFF.</value>
+    <value>Include additional parts and extras to extract. Default is OFF.</value>
   </data>
   <data name="PluginOptions_StrmOnly_Strm_Only" xml:space="preserve">
     <value>Strm Only</value>
