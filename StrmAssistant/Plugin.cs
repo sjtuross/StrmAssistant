@@ -214,7 +214,9 @@ namespace StrmAssistant
 
         protected override void OnOptionsSaved(PluginOptions options)
         {
-            if (!_currentSuppressOnOptionsSaved)
+            var suppressLogger = _currentSuppressOnOptionsSaved;
+
+            if (!suppressLogger)
             {
                 logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
                 logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
@@ -238,7 +240,7 @@ namespace StrmAssistant
                     EnableImageCapture.UpdateResourcePool(_currentMaxConcurrentCount);
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("EnableImageCapture is set to {0}", options.MediaInfoExtractOptions.EnableImageCapture);
             if (_currentEnableImageCapture != options.MediaInfoExtractOptions.EnableImageCapture)
             {
@@ -255,7 +257,7 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("MergeMultiVersion is set to {0}", options.ModOptions.MergeMultiVersion);
             if (_currentMergeMultiVersion!= GetOptions().ModOptions.MergeMultiVersion)
             {
@@ -271,7 +273,7 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("ExclusiveExtract is set to {0}", options.MediaInfoExtractOptions.ExclusiveExtract);
             if (_currentExclusiveExtract != GetOptions().MediaInfoExtractOptions.ExclusiveExtract)
             {
@@ -287,7 +289,7 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("ChineseMovieDb is set to {0}", options.MetadataEnhanceOptions.ChineseMovieDb);
             if (_currentChineseMovieDb != GetOptions().MetadataEnhanceOptions.ChineseMovieDb)
             {
@@ -303,7 +305,7 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("PreferOriginalPoster is set to {0}", options.MetadataEnhanceOptions.PreferOriginalPoster);
             if (_currentPreferOriginalPoster != GetOptions().MetadataEnhanceOptions.PreferOriginalPoster)
             {
@@ -319,22 +321,27 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("EnhanceChineseSearch is set to {0}", options.ModOptions.EnhanceChineseSearch);
             if (_currentEnhanceChineseSearch != GetOptions().ModOptions.EnhanceChineseSearch)
             {
                 _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
 
-                if (!_currentEnhanceChineseSearch)
-                {
-                    GetOptions().ModOptions.EnhanceChineseSearchRestore = true;
-                    SavePluginOptionsSuppress();
-                }
+                var isSimpleTokenizer = string.Equals(EnhanceChineseSearch.CurrentTokenizerName, "simple",
+                    StringComparison.Ordinal);
 
-                ApplicationHost.NotifyPendingRestart();
+                GetOptions().ModOptions.EnhanceChineseSearchRestore =
+                    !_currentEnhanceChineseSearch && isSimpleTokenizer;
+                SavePluginOptionsSuppress();
+
+                if ((!_currentEnhanceChineseSearch && isSimpleTokenizer) ||
+                    (_currentEnhanceChineseSearch && !isSimpleTokenizer))
+                {
+                    ApplicationHost.NotifyPendingRestart();
+                }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("PinyinSortName is set to {0}", options.MetadataEnhanceOptions.PinyinSortName);
             if (_currentPinyinSortName != GetOptions().MetadataEnhanceOptions.PinyinSortName)
             {
@@ -350,7 +357,7 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("EnhanceNfoMetadata is set to {0}", options.MetadataEnhanceOptions.EnhanceNfoMetadata);
             if (_currentEnhanceNfoMetadata != GetOptions().MetadataEnhanceOptions.EnhanceNfoMetadata)
             {
@@ -366,7 +373,7 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("HidePersonNoImage is set to {0}", options.UIFunctionOptions.HidePersonNoImage);
             if (_currentHidePersonNoImage != GetOptions().UIFunctionOptions.HidePersonNoImage)
             {
@@ -382,7 +389,7 @@ namespace StrmAssistant
                 }
             }
             
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("EnforceLibraryOrder is set to {0}", options.UIFunctionOptions.EnforceLibraryOrder);
             if (_currentEnforceLibraryOrder != GetOptions().UIFunctionOptions.EnforceLibraryOrder)
             {
@@ -398,7 +405,7 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("BeautifyMissingMetadata is set to {0}", options.UIFunctionOptions.BeautifyMissingMetadata);
             if (_currentBeautifyMissingMetadata != GetOptions().UIFunctionOptions.BeautifyMissingMetadata)
             {
@@ -414,7 +421,7 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
             if (_currentCatchupMode != options.GeneralOptions.CatchupMode)
             {
@@ -430,7 +437,7 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
             {
                 logger.Info("EnableIntroSkip is set to {0}", options.IntroSkipOptions.EnableIntroSkip);
                 logger.Info("MaxIntroDurationSeconds is set to {0}", options.IntroSkipOptions.MaxIntroDurationSeconds);
@@ -449,7 +456,7 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
                 logger.Info("UnlockIntroSkip is set to {0}", options.IntroSkipOptions.UnlockIntroSkip);
             if (_currentUnlockIntroSkip != options.IntroSkipOptions.UnlockIntroSkip)
             {
@@ -464,7 +471,7 @@ namespace StrmAssistant
                 }
             }
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
             {
                 var intoSkipLibraryScope = string.Join(", ",
                     options.IntroSkipOptions.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
@@ -485,7 +492,7 @@ namespace StrmAssistant
             PlaySessionMonitor.UpdateLibraryPathsInScope();
             PlaySessionMonitor.UpdateUsersInScope();
 
-            if (!_currentSuppressOnOptionsSaved)
+            if (!suppressLogger)
             {
                 var searchScope = string.Join(", ",
                     options.ModOptions.SearchScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
@@ -505,7 +512,7 @@ namespace StrmAssistant
                     EnhanceChineseSearch.UpdateSearchScope();
             }
 
-            if (_currentSuppressOnOptionsSaved) _currentSuppressOnOptionsSaved = false;
+            if (suppressLogger) _currentSuppressOnOptionsSaved = false;
 
             base.OnOptionsSaved(options);
         }

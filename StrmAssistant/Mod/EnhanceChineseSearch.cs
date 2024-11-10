@@ -25,6 +25,8 @@ namespace StrmAssistant.Mod
         private static MethodInfo _createSearchTerm;
         private static MethodInfo _cacheIdsFromTextParams;
 
+        public static string CurrentTokenizerName { get; private set; } = "unknown";
+
         private static string _tokenizerPath;
         private static bool _patchPhase2Initialized;
         private static string[] _includeItemTypes = Array.Empty<string>();
@@ -142,7 +144,6 @@ namespace StrmAssistant.Mod
                     type = 'table' AND 
                     name = '{ftsTableName}';";
 
-            var tokenizerName = "unknown";
             var rebuildFtsResult = true;
             var patchSearchFunctionsResult = false;
 
@@ -152,17 +153,17 @@ namespace StrmAssistant.Mod
                 {
                     if (statement.MoveNext())
                     {
-                        tokenizerName = statement.Current?.GetString(0) ?? "unknown";
+                        CurrentTokenizerName = statement.Current?.GetString(0) ?? "unknown";
                     }
                 }
 
-                Plugin.Instance.logger.Info("EnhanceChineseSearch - Current tokenizer is " + tokenizerName);
+                Plugin.Instance.logger.Info("EnhanceChineseSearch - Current tokenizer is " + CurrentTokenizerName);
 
-                if (!string.Equals(tokenizerName, "unknown", StringComparison.Ordinal))
+                if (!string.Equals(CurrentTokenizerName, "unknown", StringComparison.Ordinal))
                 {
                     if (Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearchRestore)
                     {
-                        if (string.Equals(tokenizerName, "simple", StringComparison.Ordinal))
+                        if (string.Equals(CurrentTokenizerName, "simple", StringComparison.Ordinal))
                         {
                             rebuildFtsResult = RebuildFts(connection, ftsTableName, "unicode61 remove_diacritics 2");
                         }
@@ -178,7 +179,7 @@ namespace StrmAssistant.Mod
 
                         if (patchSearchFunctionsResult)
                         {
-                            if (string.Equals(tokenizerName, "unicode61 remove_diacritics 2", StringComparison.Ordinal))
+                            if (string.Equals(CurrentTokenizerName, "unicode61 remove_diacritics 2", StringComparison.Ordinal))
                             {
                                 rebuildFtsResult = RebuildFts(connection, ftsTableName, "simple");
                             }
@@ -199,7 +200,7 @@ namespace StrmAssistant.Mod
             }
 
             if (!patchSearchFunctionsResult || !rebuildFtsResult ||
-                string.Equals(tokenizerName, "unknown", StringComparison.Ordinal))
+                string.Equals(CurrentTokenizerName, "unknown", StringComparison.Ordinal))
             {
                 ResetOptions();
             }
