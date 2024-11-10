@@ -52,7 +52,14 @@ namespace StrmAssistant
                     break;
                 }
 
-                await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                try
+                {
+                    await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                }
+                catch
+                {
+                    break;
+                }
                 
                 var taskIndex = ++index;
                 var taskItem = item;
@@ -62,6 +69,12 @@ namespace StrmAssistant
                     var isExtractAllowed = false;
                     try
                     {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            _logger.Info("MediaInfoExtract - Scheduled Task Cancelled");
+                            return;
+                        }
+
                         if (exclusiveExtract)
                         {
                             ExclusiveExtract.AllowExtractInstance(taskItem);
@@ -103,16 +116,16 @@ namespace StrmAssistant
                     }
                     finally
                     {
+                        QueueManager.SemaphoreMaster.Release();
+
                         var currentCount = Interlocked.Increment(ref current);
                         progress.Report(currentCount / total * 100);
-                        _logger.Info("MediaInfoExtract - Scheduled Task " + currentCount + "/" + total + " - " +
+                        _logger.Info("MediaInfoExtract - Progress " + currentCount + "/" + total + " - " +
                                      "Task " + taskIndex + ": " +
                                      taskItem.Path);
 
                         if (isShortcutPatched) EnableImageCapture.UnpatchIsShortcutInstance(taskItem);
                         if (isExtractAllowed) ExclusiveExtract.DisallowExtractInstance(taskItem);
-
-                        QueueManager.SemaphoreMaster.Release();
                     }
                 }, cancellationToken);
                 tasks.Add(task);

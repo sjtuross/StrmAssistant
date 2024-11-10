@@ -107,6 +107,12 @@ namespace StrmAssistant
 
                                 try
                                 {
+                                    if (cancellationToken.IsCancellationRequested)
+                                    {
+                                        _logger.Info("MediaInfoExtract - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
+                                        return;
+                                    }
+
                                     if (exclusiveExtract)
                                     {
                                         ExclusiveExtract.AllowExtractInstance(taskItem);
@@ -176,6 +182,12 @@ namespace StrmAssistant
                             {
                                 try
                                 {
+                                    if (cancellationToken.IsCancellationRequested)
+                                    {
+                                        _logger.Info("ExternalSubtitle - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
+                                        return;
+                                    }
+
                                     await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
                                         .ConfigureAwait(false);
 

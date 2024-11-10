@@ -105,6 +105,12 @@ namespace StrmAssistant
 
             for (var startIndex = 0; startIndex < remainingCount; startIndex += batchSize)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _logger.Info("RefreshPerson - Task Cancelled");
+                    break;
+                }
+
                 personQuery.Limit = batchSize;
                 personQuery.StartIndex = startIndex;
                 personItems = _libraryManager.GetItemList(personQuery).Cast<Person>().ToList();
@@ -113,12 +119,6 @@ namespace StrmAssistant
 
                 foreach (var item in personItems)
                 {
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        _logger.Info("RefreshPerson - Task Cancelled");
-                        break;
-                    }
-
                     var taskItem = item;
 
                     var nameRefreshSkip = refreshPersonMode == RefreshPersonMode.Default && isServerPreferZh &&
@@ -138,12 +138,31 @@ namespace StrmAssistant
                         continue;
                     }
 
-                    await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        _logger.Info("RefreshPerson - Task Cancelled");
+                        break;
+                    }
+
+                    try
+                    {
+                        await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                    }
+                    catch
+                    {
+                        break;
+                    }
 
                     var task = Task.Run(async () =>
                     {
                         try
                         {
+                            if (cancellationToken.IsCancellationRequested)
+                            {
+                                _logger.Info("RefreshPerson - Task Cancelled");
+                                return;
+                            }
+
                             if (!nameRefreshSkip)
                             {
                                 var result = await Plugin.MetadataApi
@@ -187,10 +206,11 @@ namespace StrmAssistant
                         }
                         finally
                         {
+                            QueueManager.SemaphoreMaster.Release();
+
                             var currentCount = Interlocked.Increment(ref current);
                             progress.Report(currentCount / total * 100);
                             _logger.Info("RefreshPerson - Task " + currentCount + "/" + total + " - " + taskItem.Name);
-                            QueueManager.SemaphoreMaster.Release();
                         }
                     }, cancellationToken);
 

@@ -23,7 +23,7 @@ namespace StrmAssistant
             await Task.Yield();
             progress.Report(0);
 
-            List<BaseItem> items = new List<BaseItem>();
+            var items = new List<BaseItem>();
 
             await Task.Run(() =>
             {
@@ -33,11 +33,11 @@ namespace StrmAssistant
             progress.Report(50.0);
 
             double total = items.Count;
-            int current = 0;
+            var current = 0;
 
             await Task.Run(() =>
             {
-                foreach (BaseItem item in items)
+                foreach (var item in items)
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -45,8 +45,8 @@ namespace StrmAssistant
                         break;
                     }
 
-                    double percentDone = (current / total) * 100;
-                    double adjustedProgress = 50 + (percentDone / 50);
+                    var percentDone = (current / total) * 100;
+                    var adjustedProgress = 50 + (percentDone / 50);
                     progress.Report(adjustedProgress);
 
                     Plugin.ChapterApi.RemoveIntroCreditsMarkers(item);
