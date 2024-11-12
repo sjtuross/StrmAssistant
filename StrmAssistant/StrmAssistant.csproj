@@ -9,11 +9,13 @@
   <ItemGroup>
     <None Remove="Tokenizer\linux\libsimple.so" />
     <None Remove="Tokenizer\win\libsimple.so" />
+    <None Remove="Web\Resources\strmassistant.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\thumb.png" />
     <EmbeddedResource Include="Tokenizer\linux\libsimple.so" />
     <EmbeddedResource Include="Tokenizer\win\libsimple.so" />
+    <EmbeddedResource Include="Web\Resources\strmassistant.js" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CHTCHSConv" Version="1.0.0">

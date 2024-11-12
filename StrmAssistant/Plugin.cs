@@ -22,6 +22,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
 using StrmAssistant.Mod;
 using StrmAssistant.Properties;
+using StrmAssistant.Web;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -119,6 +120,7 @@ namespace StrmAssistant
             SubtitleApi = new SubtitleApi(libraryManager, fileSystem, mediaProbeManager, localizationManager,
                 itemRepository);
             MetadataApi = new MetadataApi(libraryManager, fileSystem, configurationManager, localizationManager);
+            ShortcutMenuHelper.Initialize(configurationManager);
 
             PatchManager.Initialize();
             if (_currentCatchupMode) InitializeCatchupMode();
