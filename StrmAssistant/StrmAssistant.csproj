@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <AssemblyVersion>1.0.0.39</AssemblyVersion>
-    <FileVersion>1.0.0.39</FileVersion>
+    <AssemblyVersion>1.0.0.40</AssemblyVersion>
+    <FileVersion>1.0.0.40</FileVersion>
     <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
     <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
@@ -34,7 +34,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Resource.Embedder" Version="2.2.0" />
-    <PackageReference Include="System.Memory" Version="4.5.5">
+    <PackageReference Include="System.Memory" Version="4.6.0">
       <Aliases>SystemMemory</Aliases>
     </PackageReference>
     <PackageReference Include="System.Text.Json" Version="4.7.2" />

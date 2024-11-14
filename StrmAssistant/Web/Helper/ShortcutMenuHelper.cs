@@ -59,19 +59,22 @@ setTimeout(() => {
     ";
             var dataExplorer2Assembly = AppDomain.CurrentDomain.GetAssemblies()
                 .FirstOrDefault(a => a.GetName().Name == "Emby.DataExplorer2");
+
+            ModifiedShortcutsString = File.ReadAllText(Path.Combine(dashboardSourcePath, "modules", "shortcuts.js")) +
+                                      injectShortcutCommand;
+
             if (dataExplorer2Assembly != null)
             {
                 var contextMenuHelperType = dataExplorer2Assembly.GetType("Emby.DataExplorer2.Api.ContextMenuHelper");
-                var modifiedShortcutsProperty = contextMenuHelperType.GetProperty("ModifiedShortcutsString",
+                var modifiedShortcutsProperty = contextMenuHelperType?.GetProperty("ModifiedShortcutsString",
                     BindingFlags.Static | BindingFlags.Public);
-                var originalValue = modifiedShortcutsProperty?.GetValue(null) as string;
-                var appendedValue = (originalValue ?? string.Empty) + injectShortcutCommand;
                 var setMethod = modifiedShortcutsProperty?.GetSetMethod(true);
-                setMethod?.Invoke(null, new object[] { appendedValue });
-            }
-            else
-            {
-                ModifiedShortcutsString = File.ReadAllText(Path.Combine(dashboardSourcePath, "modules", "shortcuts.js")) + injectShortcutCommand;
+
+                if (modifiedShortcutsProperty?.GetValue(null) is string originalValue && setMethod != null)
+                {
+                    ModifiedShortcutsString = originalValue + injectShortcutCommand;
+                    setMethod.Invoke(null, new object[] { ModifiedShortcutsString });
+                }
             }
         }
     }

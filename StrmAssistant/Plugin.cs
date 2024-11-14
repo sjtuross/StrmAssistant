@@ -653,6 +653,7 @@ namespace StrmAssistant
         {
             pageInfo.Name = Resources.PluginOptions_EditorTitle_Strm_Assistant;
             pageInfo.EnableInMainMenu = true;
+            pageInfo.MenuIcon = "video_settings";
 
             base.OnCreatePageInfo(pageInfo);
         }
