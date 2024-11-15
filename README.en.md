@@ -19,7 +19,7 @@
 5. Add plugin config page with libraries selection
 6. Image capture enhanced (default is False), check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/视频截图预览增强) for details.
 7. Introduce catch-up mode (default is False), check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/追更模式-(Catch‐up-Mode)) for details.
-8. Playback behavior-based intro and credits detection for episodes (default is False), check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/片头探测-(Intro-Detection)) for details.
+8. Playback behavior-based intro and credits detection for episodes (default is False), check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/片头探测-‐-播放行为) for details.
 9. Independent external subtitle scan, check [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/独立的外挂字幕扫描-(External-Subtitle-Scan)) for details.
 
 ## Install

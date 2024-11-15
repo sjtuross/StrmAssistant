@@ -9,15 +9,16 @@
 1. 提高首次播放的起播速度
 2. 解决可能的无进度条问题
 3. 视频截图预览缩略图增强
-4. 片头片尾探测
+4. 片头片尾探测增强
 5. 自动合并同目录视频为多版本
 6. 独占模式提取媒体信息
 7. 独立的外挂字幕扫描
 8. 自定义`TMDB`备选语言
-9. 刷新`TMDB`中文演员
-10. 获取原语言海报
-11. 中文搜索增强
-12. 拼音首字母排序
+9. 使用替代`TMDB`API地址
+10. 刷新`TMDB`中文演员
+11. 获取原语言海报
+12. 中文搜索增强
+13. 拼音首字母排序
 
 ## 更新
 
@@ -28,21 +29,22 @@
 5. 添加插件配置界面，可多选媒体库
 6. 视频截图预览缩略图增强, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/视频截图预览增强)
 7. 追更模式, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/追更模式-(Catch‐up-Mode))
-8. 基于播放行为的剧集片头片尾探测, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/片头探测-(Intro-Detection))
-9. 为原生跳片头探测解锁`Strm`支持
+8. 基于播放行为的片头片尾探测, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/片头探测-‐-播放行为)
+9. 原生片头探测增强，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/片头探测-‐-原生增强)
 10. 自动合并同目录视频为多版本, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/自动合并同目录多版本)
 11. 仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg), 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/变相多线程入库)
 12. 独立于扫库的外挂字幕扫描并更新，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/外挂字幕扫描-(External-Subtitle-Scan))
 13. 尽可能从`TMDB`获取中文或日文元数据, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/自定义-TMDB-备选语言)
-14. 刷新`TMDB`中文演员并修复相关问题，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文演员-(Chinese-Actor))
-15. 优先使用原语言海报，支持`TMDB`, `TVDB`, `Fanart`，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/原语言海报--(Original-Poster))
-16. `TMDB`备选语言元数据以及中文演员繁转简
-17. 支持中文模糊搜索和拼音搜索，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文搜索增强)
-18. 刷新元数据时自动生成拼音首字母为排序标题，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/拼音首字母排序)
-19. 添加支持从`NFO`导入演员头像链接
-20. 电影剧集页面隐藏无头像人员，非删除，仍可搜索
-21. 首位管理员的自定义媒体库排序作用于所有用户
-22. 剧集集标题自动补全
+14. 使用替代`TMDB`API地址
+15. 刷新`TMDB`中文演员并修复相关问题，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文演员-(Chinese-Actor))
+16. 优先使用原语言海报，支持`TMDB`, `TVDB`, `Fanart`，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/原语言海报--(Original-Poster))
+17. `TMDB`备选语言元数据以及中文演员繁转简
+18. 支持中文模糊搜索和拼音搜索，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文搜索增强)
+19. 刷新元数据时自动生成拼音首字母为排序标题，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/拼音首字母排序)
+20. 添加支持从`NFO`导入演员头像链接
+21. 电影剧集页面隐藏无头像人员，非删除，仍可搜索
+22. 首位管理员的自定义媒体库排序作用于所有用户
+23. 剧集集标题自动补全
 
 ## 安装
 
