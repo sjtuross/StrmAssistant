@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -30,6 +31,7 @@ namespace StrmAssistant.Mod
         private static MethodInfo _getMovieDbMetadataLanguages;
         private static MethodInfo _mapLanguageToProviderLanguage;
         private static MethodInfo _getImageLanguagesParam;
+        private static MethodInfo _getMovieDbResponse;
         private static FieldInfo _cacheTime;
 
         private static MethodInfo _movieDbSeriesProviderIsComplete;
@@ -101,6 +103,8 @@ namespace StrmAssistant.Mod
                         BindingFlags.NonPublic | BindingFlags.Instance);
                     _getImageLanguagesParam = _movieDbProviderBase.GetMethod("GetImageLanguagesParam",
                         BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(string[]) }, null);
+                    _getMovieDbResponse = _movieDbProviderBase.GetMethod("GetMovieDbResponse",
+                        BindingFlags.NonPublic | BindingFlags.Instance);
                     _cacheTime = _movieDbProviderBase.GetField("CacheTime", BindingFlags.Public | BindingFlags.Static);
 
                     var movieDbSeriesProvider = _movieDbAssembly.GetType("MovieDb.MovieDbSeriesProvider");
@@ -167,7 +171,15 @@ namespace StrmAssistant.Mod
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
                 Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.ChineseMovieDb)
             {
-                Patch();
+                if (Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.ChineseMovieDb)
+                {
+                    Patch();
+                }
+
+                if (Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.AlternativeMovieDbApiUrl)
+                {
+                    PatchMovieDbApiUrl();
+                }
             }
         }
 
@@ -418,6 +430,54 @@ namespace StrmAssistant.Mod
                 catch (Exception he)
                 {
                     Plugin.Instance.logger.Debug("Unpatch ChineseMovieDb Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
+                }
+            }
+        }
+
+        public static void PatchMovieDbApiUrl()
+        {
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony && _movieDbAssembly != null)
+            {
+                try
+                {
+                    if (!IsPatched(_getMovieDbResponse, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Patch(_getMovieDbResponse,
+                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod(
+                                "GetMovieDbResponsePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch GetMovieDbResponse for Movie Success by Harmony");
+                    }
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Patch GetMovieDbResponse Failed by Harmony");
+                    Plugin.Instance.logger.Debug(he.Message);
+                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
+                }
+            }
+        }
+
+        public static void UnpatchMovieDbApiUrl()
+        {
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
+            {
+                try
+                {
+                    if (IsPatched(_getMovieDbResponse, typeof(ChineseMovieDb)))
+                    {
+                        HarmonyMod.Unpatch(_getMovieDbResponse,
+                            AccessTools.Method(typeof(ChineseMovieDb), "GetMovieDbResponsePrefix"));
+                        Plugin.Instance.logger.Debug("Unpatch GetMovieDbResponse for Movie Success by Harmony");
+                    }
+                }
+                catch (Exception he)
+                {
+                    Plugin.Instance.logger.Debug("Unpatch GetMovieDbResponse Failed by Harmony");
                     Plugin.Instance.logger.Debug(he.Message);
                     Plugin.Instance.logger.Debug(he.StackTrace);
                 }
@@ -765,6 +825,14 @@ namespace StrmAssistant.Mod
                         _biographyProperty.SetValue(info, updateBiographyResult.Item1);
                 }
             }
+
+            return true;
+        }
+
+        [HarmonyPrefix]
+        private static bool GetMovieDbResponsePrefix(HttpRequestOptions options)
+        {
+            options.Url = options.Url?.Replace("api.themoviedb.org", "api.tmdb.org");
 
             return true;
         }

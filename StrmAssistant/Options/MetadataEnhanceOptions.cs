@@ -38,6 +38,12 @@ namespace StrmAssistant
         [VisibleCondition(nameof(ChineseMovieDb), SimpleCondition.IsTrue)]
         public string FallbackLanguages { get; set; }
 
+        [DisplayNameL("MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url", typeof(Resources))]
+        [DescriptionL("MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_url__Default_is_OFF_", typeof(Resources))]
+        [EnabledCondition(nameof(IsMovieDbPluginLoaded), SimpleCondition.IsTrue)]
+        [Required]
+        public bool AlternativeMovieDbApiUrl { get; set; } = false;
+
         [DisplayNameL("ModOptions_OriginalPoster_Original_Poster", typeof(Resources))]
         [DescriptionL("ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_", typeof(Resources))]
         [Required]

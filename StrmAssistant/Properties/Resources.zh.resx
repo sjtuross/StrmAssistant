@@ -269,4 +269,10 @@
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
     <value>提取声纹的媒体库范围，留空包含所有启用原生片头探测的媒体库。</value>
   </data>
+  <data name="MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url" xml:space="preserve">
+    <value>使用替代 TMDB API 地址</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_url__Default_is_OFF_" xml:space="preserve">
+    <value>使用 api.tmdb.org 替代地址，默认关闭。</value>
+  </data>
 </root>

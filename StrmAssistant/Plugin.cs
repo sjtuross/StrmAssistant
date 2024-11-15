@@ -62,6 +62,7 @@ namespace StrmAssistant
         private bool _currentUnlockIntroSkip;
         private bool _currentMergeMultiVersion;
         private bool _currentChineseMovieDb;
+        private bool _currentAlternativeMovieDbApiUrl;
         private bool _currentExclusiveExtract;
         private bool _currentPreferOriginalPoster;
         private bool _currentEnhanceChineseSearch;
@@ -109,6 +110,7 @@ namespace StrmAssistant
             _currentUnlockIntroSkip = GetOptions().IntroSkipOptions.UnlockIntroSkip;
             _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
             _currentChineseMovieDb = GetOptions().MetadataEnhanceOptions.ChineseMovieDb;
+            _currentAlternativeMovieDbApiUrl = GetOptions().MetadataEnhanceOptions.AlternativeMovieDbApiUrl;
             _currentExclusiveExtract = GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
             _currentPreferOriginalPoster = GetOptions().MetadataEnhanceOptions.PreferOriginalPoster;
             _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
@@ -311,6 +313,22 @@ namespace StrmAssistant
                 else
                 {
                     ChineseMovieDb.Unpatch();
+                }
+            }
+
+            if (!suppressLogger)
+                logger.Info("AlternativeMovieDbApiUrl is set to {0}", options.MetadataEnhanceOptions.AlternativeMovieDbApiUrl);
+            if (_currentAlternativeMovieDbApiUrl != GetOptions().MetadataEnhanceOptions.AlternativeMovieDbApiUrl)
+            {
+                _currentAlternativeMovieDbApiUrl = GetOptions().MetadataEnhanceOptions.AlternativeMovieDbApiUrl;
+
+                if (_currentAlternativeMovieDbApiUrl)
+                {
+                    ChineseMovieDb.PatchMovieDbApiUrl();
+                }
+                else
+                {
+                    ChineseMovieDb.UnpatchMovieDbApiUrl();
                 }
             }
 

@@ -356,4 +356,10 @@
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
     <value>Library scope to extract fingerprint. Blank includes all libraries with intro detection enabled.</value>
   </data>
+  <data name="MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url" xml:space="preserve">
+    <value>Use Alternative MovieDb Api Url</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_url__Default_is_OFF_" xml:space="preserve">
+    <value>Use api.tmdb.org as alternative url. Default is OFF.</value>
+  </data>
 </root>

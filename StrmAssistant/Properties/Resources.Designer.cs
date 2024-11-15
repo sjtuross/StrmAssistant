@@ -136,7 +136,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Intro detection enabled library scope. Blank includes all..
+        ///   Looks up a localized string similar to Library scope to extract fingerprint. Blank includes all libraries with intro detection enabled..
         /// </summary>
         public static string IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_ {
             get {
@@ -173,7 +173,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Built-in Intro Detection Unlock.
+        ///   Looks up a localized string similar to Built-in Intro Detection Enhanced.
         /// </summary>
         public static string IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced {
             get {
@@ -182,7 +182,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unlock Strm support for built-in intro skip detection.
+        ///   Looks up a localized string similar to Customize intro detection fingerprint length, unlock Strm support. Default is OFF..
         /// </summary>
         public static string IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection {
             get {
@@ -368,6 +368,25 @@ namespace StrmAssistant.Properties {
         public static string ItemType_Trailer_Trailer {
             get {
                 return ResourceManager.GetString("ItemType_Trailer_Trailer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alternative MovieDb Api.
+        /// </summary>
+        public static string MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use api.tmdb.org as alternative url. Default is OFF..
+        /// </summary>
+        public static string MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_url__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_u" +
+                        "rl__Default_is_OFF_", resourceCulture);
             }
         }
         
