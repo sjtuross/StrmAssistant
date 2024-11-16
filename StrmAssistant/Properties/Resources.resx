@@ -144,10 +144,10 @@
     <value>Playback behavior-based intro and credits detection for episodes. Default is OFF.</value>
   </data>
   <data name="IntroSkipOptions_MaxIntroDurationSeconds" xml:space="preserve">
-    <value>Max Intro Duration (Seconds)</value>
+    <value>Max Intro Duration (Seconds), Default is 150</value>
   </data>
   <data name="IntroSkipOptions_MaxCreditsDurationSeconds" xml:space="preserve">
-    <value>Max Credits Duration (Seconds)</value>
+    <value>Max Credits Duration (Seconds), Default is 360</value>
   </data>
   <data name="PluginOptions_IntroSkipOptions_Intro_Credits_Detection" xml:space="preserve">
     <value>Intro and Credits Detection</value>
@@ -240,10 +240,10 @@
     <value>Prefer original poster based on the original language. Support TMDB, TVDB and FANART. Default is OFF.</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced" xml:space="preserve">
-    <value>Built-in Intro Detection Unlock</value>
+    <value>Built-in Intro Detection Enhanced</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
-    <value>Unlock Strm support for built-in intro skip detection</value>
+    <value>Customize intro detection fingerprint length, unlock Strm support. Default is OFF.</value>
   </data>
   <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
     <value>Enhance Chinese Search</value>
@@ -346,5 +346,14 @@
   </data>
   <data name="UIFunctionOptions_EnforceLibraryOrder_Enforce_library_order_per_the_first_admin__Default_if_OFF_" xml:space="preserve">
     <value>Enforce customized library order per the first admin. Default if OFF.</value>
+  </data>
+  <data name="IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes" xml:space="preserve">
+    <value>Intro Detection Fingerprint Length (Minute), Default is 10</value>
+  </data>
+  <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope" xml:space="preserve">
+    <value>Library Scope</value>
+  </data>
+  <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
+    <value>Library scope to extract fingerprint. Blank includes all libraries with intro detection enabled.</value>
   </data>
 </root>

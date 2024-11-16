@@ -23,7 +23,7 @@ namespace StrmAssistant
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             _logger.Info("MediaInfoExtract - Scheduled Task Execute");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount);
+            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
             var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
             _logger.Info("Enable Image Capture: " + enableImageCapture);
             var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;

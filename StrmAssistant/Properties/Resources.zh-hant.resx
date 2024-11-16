@@ -57,10 +57,10 @@
     <value>基於播放行為的劇集片頭片尾探測，預設為關閉。</value>
   </data>
   <data name="IntroSkipOptions_MaxCreditsDurationSeconds" xml:space="preserve">
-    <value>最大片尾長度 (秒)</value>
+    <value>最大片尾長度 (秒)，預設為 360</value>
   </data>
   <data name="IntroSkipOptions_MaxIntroDurationSeconds" xml:space="preserve">
-    <value>最大片頭長度 (秒)</value>
+    <value>最大片頭長度 (秒)，預設為 150</value>
   </data>
   <data name="PluginOptions_IntroSkipOptions_Intro_Credits_Detection" xml:space="preserve">
     <value>片頭片尾探測</value>
@@ -153,10 +153,10 @@
     <value>優先使用原語言海報，支援 TMDB, TVDB, Fanart，預設為關閉。</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced" xml:space="preserve">
-    <value>原生片頭探測解鎖</value>
+    <value>原生片頭探測增強</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
-    <value>解鎖原生跳片頭探測支援 STRM，預設為關閉。</value>
+    <value>自訂片頭聲紋探測時長，解鎖支援 STRM，預設為關閉。</value>
   </data>
   <data name="ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_" xml:space="preserve">
     <value>支援中文模糊搜尋和拼音搜索，預設為關閉。</value>
@@ -259,5 +259,14 @@
   </data>
   <data name="UIFunctionOptions_EnforceLibraryOrder_Enforce_library_order_per_the_first_admin__Default_if_OFF_" xml:space="preserve">
     <value>首位管理員的自訂媒體庫排序作用於所有用戶，預設為關閉。</value>
+  </data>
+  <data name="IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes" xml:space="preserve">
+    <value>片頭聲紋探測時長 (分鐘)，預設為 10</value>
+  </data>
+  <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope" xml:space="preserve">
+    <value>媒體庫範圍</value>
+  </data>
+  <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
+    <value>擷取聲紋的媒體庫範圍，留空包含所有啟用原生片頭探測的媒體庫。</value>
   </data>
 </root>

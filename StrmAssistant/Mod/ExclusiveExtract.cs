@@ -275,7 +275,7 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static void RunFfProcessPrefix(ref int timeoutMs)
         {
-            timeoutMs = 60000 * Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
+            timeoutMs = 60000 * Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
         }
 
         [HarmonyPrefix]

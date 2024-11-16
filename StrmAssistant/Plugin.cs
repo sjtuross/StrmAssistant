@@ -5,6 +5,7 @@ using Emby.Web.GenericEdit.Elements.List;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
+using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -20,6 +21,7 @@ using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
+using MediaBrowser.Model.Serialization;
 using StrmAssistant.Mod;
 using StrmAssistant.Properties;
 using StrmAssistant.Web;
@@ -84,6 +86,10 @@ namespace StrmAssistant
             ILocalizationManager localizationManager,
             IUserManager userManager,
             IUserDataManager userDataManager,
+            IFfmpegManager ffmpegManager,
+            IMediaEncoder mediaEncoder,
+            IJsonSerializer jsonSerializer,
+            IServerApplicationHost serverApplicationHost,
             IServerConfigurationManager configurationManager) : base(applicationHost)
         {
             Instance = this;
@@ -96,7 +102,7 @@ namespace StrmAssistant
             _userManager = userManager;
             _userDataManager = userDataManager;
 
-            _currentMaxConcurrentCount = GetOptions().MediaInfoExtractOptions.MaxConcurrentCount;
+            _currentMaxConcurrentCount = GetOptions().GeneralOptions.MaxConcurrentCount;
             _currentEnableImageCapture = GetOptions().MediaInfoExtractOptions.EnableImageCapture;
             _currentCatchupMode = GetOptions().GeneralOptions.CatchupMode;
             _currentEnableIntroSkip = GetOptions().IntroSkipOptions.EnableIntroSkip;
@@ -114,7 +120,8 @@ namespace StrmAssistant
             _currentBeautifyMissingMetadata = GetOptions().UIFunctionOptions.BeautifyMissingMetadata;
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, mediaMountManager, userManager);
-            ChapterApi = new ChapterApi(libraryManager, itemRepository);
+            ChapterApi = new ChapterApi(libraryManager, itemRepository, fileSystem, applicationPaths, ffmpegManager,
+                mediaEncoder, mediaMountManager, jsonSerializer, serverApplicationHost);
             PlaySessionMonitor = new PlaySessionMonitor(libraryManager, userManager, sessionManager);
             NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
             SubtitleApi = new SubtitleApi(libraryManager, fileSystem, mediaProbeManager, localizationManager,
@@ -222,7 +229,7 @@ namespace StrmAssistant
             {
                 logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
                 logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
-                logger.Info("MaxConcurrentCount is set to {0}", options.MediaInfoExtractOptions.MaxConcurrentCount);
+                logger.Info("MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
                 var libraryScope = string.Join(", ",
                     options.MediaInfoExtractOptions.LibraryScope
                         ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
@@ -232,9 +239,9 @@ namespace StrmAssistant
                 logger.Info("MediaInfoExtract - LibraryScope is set to {0}",
                     string.IsNullOrEmpty(libraryScope) ? "ALL" : libraryScope);
             }
-            if (_currentMaxConcurrentCount != options.MediaInfoExtractOptions.MaxConcurrentCount)
+            if (_currentMaxConcurrentCount != options.GeneralOptions.MaxConcurrentCount)
             {
-                _currentMaxConcurrentCount = options.MediaInfoExtractOptions.MaxConcurrentCount;
+                _currentMaxConcurrentCount = options.GeneralOptions.MaxConcurrentCount;
 
                 QueueManager.UpdateSemaphore(_currentMaxConcurrentCount);
 
@@ -459,21 +466,6 @@ namespace StrmAssistant
             }
 
             if (!suppressLogger)
-                logger.Info("UnlockIntroSkip is set to {0}", options.IntroSkipOptions.UnlockIntroSkip);
-            if (_currentUnlockIntroSkip != options.IntroSkipOptions.UnlockIntroSkip)
-            {
-                _currentUnlockIntroSkip = options.IntroSkipOptions.UnlockIntroSkip;
-                if (options.IntroSkipOptions.UnlockIntroSkip)
-                {
-                    UnlockIntroSkip.Patch();
-                }
-                else
-                {
-                    UnlockIntroSkip.Unpatch();
-                }
-            }
-
-            if (!suppressLogger)
             {
                 var intoSkipLibraryScope = string.Join(", ",
                     options.IntroSkipOptions.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
@@ -493,6 +485,38 @@ namespace StrmAssistant
             }
             PlaySessionMonitor.UpdateLibraryPathsInScope();
             PlaySessionMonitor.UpdateUsersInScope();
+            
+            if (!suppressLogger)
+                logger.Info("UnlockIntroSkip is set to {0}", options.IntroSkipOptions.UnlockIntroSkip);
+            if (_currentUnlockIntroSkip != options.IntroSkipOptions.UnlockIntroSkip)
+            {
+                _currentUnlockIntroSkip = options.IntroSkipOptions.UnlockIntroSkip;
+                if (options.IntroSkipOptions.IsModSupported)
+                {
+                    if (_currentUnlockIntroSkip)
+                    {
+                        UnlockIntroSkip.Patch();
+                    }
+                    else
+                    {
+                        UnlockIntroSkip.Unpatch();
+                    }
+                }
+            }
+
+            if (!suppressLogger)
+            {
+                var markerEnabledLibraryScope = string.Join(", ",
+                    options.IntroSkipOptions.MarkerEnabledLibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(v => options.IntroSkipOptions.MarkerEnabledLibraryList
+                            .FirstOrDefault(option => option.Value == v)
+                            ?.Name) ?? Enumerable.Empty<string>());
+                logger.Info("Fingerprint - MarkerEnabledLibraryScope is set to {0}",
+                    string.IsNullOrEmpty(markerEnabledLibraryScope) ? "ALL" : markerEnabledLibraryScope);
+                logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
+                    options.IntroSkipOptions.IntroDetectionFingerprintMinutes);
+            }
+            ChapterApi.UpdateLibraryIntroDetectionFingerprintLength();
 
             if (!suppressLogger)
             {
@@ -524,7 +548,8 @@ namespace StrmAssistant
             var libraries = _libraryManager.GetVirtualFolders();
 
             var list = new List<EditorSelectOption>();
-            var listShows = new List<EditorSelectOption>();
+            var listShow = new List<EditorSelectOption>();
+            var listMarkerEnabled = new List<EditorSelectOption>();
 
             list.Add(new EditorSelectOption
             {
@@ -546,12 +571,19 @@ namespace StrmAssistant
 
                 if (item.CollectionType == "tvshows" || item.CollectionType is null) // null means mixed content library
                 {
-                    listShows.Add(selectOption);
+                    listShow.Add(selectOption);
+
+                    if (item.LibraryOptions.EnableMarkerDetection)
+                    {
+                        listMarkerEnabled.Add(selectOption);
+                    }
+                    
                 }
             }
 
             options.MediaInfoExtractOptions.LibraryList = list;
-            options.IntroSkipOptions.LibraryList = listShows;
+            options.IntroSkipOptions.LibraryList = listShow;
+            options.IntroSkipOptions.MarkerEnabledLibraryList = listMarkerEnabled;
 
             var languageList = new List<EditorSelectOption>
             {

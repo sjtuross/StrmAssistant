@@ -34,7 +34,7 @@ namespace StrmAssistant
         public static void Initialize()
         {
             _logger = Plugin.Instance.logger;
-            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
+            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
             SemaphoreMaster = new SemaphoreSlim(_currentMaxConcurrentCount);
 
             if (MasterProcessTask == null || MasterProcessTask.IsCompleted)
@@ -233,7 +233,7 @@ namespace StrmAssistant
         private static async Task Master_ProcessTaskQueueAsync(CancellationToken cancellationToken)
         {
             _logger.Info("Master - ProcessTaskQueueAsync Started");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount);
+            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
 
             while (!cancellationToken.IsCancellationRequested)
             {

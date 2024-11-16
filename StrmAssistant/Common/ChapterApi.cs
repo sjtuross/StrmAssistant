@@ -1,14 +1,24 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Common.Configuration;
+using MediaBrowser.Controller;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
+using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
@@ -18,11 +28,48 @@ namespace StrmAssistant
         private readonly IItemRepository _itemRepository;
         private readonly ILogger _logger;
 
-        public ChapterApi(ILibraryManager libraryManager, IItemRepository itemRepository)
+        private readonly object AudioFingerprintManager;
+        private readonly MethodInfo CreateTitleFingerprint;
+
+        public ChapterApi(ILibraryManager libraryManager, IItemRepository itemRepository,IFileSystem fileSystem,
+            IApplicationPaths applicationPaths,IFfmpegManager ffmpegManager,IMediaEncoder mediaEncoder,
+            IMediaMountManager mediaMountManager,IJsonSerializer jsonSerializer,IServerApplicationHost serverApplicationHost)
         {
             _logger = Plugin.Instance.logger;
             _libraryManager = libraryManager;
             _itemRepository = itemRepository;
+
+            try
+            {
+                var embyProviders = Assembly.Load("Emby.Providers");
+                var audioFingerprintManager = embyProviders.GetType("Emby.Providers.Markers.AudioFingerprintManager");
+                var audioFingerprintManagerConstructor = audioFingerprintManager.GetConstructor(
+                    BindingFlags.Public | BindingFlags.Instance, null,
+                    new[]
+                    {
+                        typeof(IFileSystem), typeof(ILogger), typeof(IApplicationPaths), typeof(IFfmpegManager),
+                        typeof(IMediaEncoder), typeof(IMediaMountManager), typeof(IJsonSerializer),
+                        typeof(IServerApplicationHost)
+                    }, null);
+                AudioFingerprintManager = audioFingerprintManagerConstructor?.Invoke(new object[]
+                {
+                    fileSystem, _logger, applicationPaths, ffmpegManager, mediaEncoder, mediaMountManager,
+                    jsonSerializer, serverApplicationHost
+                });
+                CreateTitleFingerprint = audioFingerprintManager.GetMethod("CreateTitleFingerprint",
+                    BindingFlags.Public | BindingFlags.Instance, null,
+                    new[]
+                    {
+                        typeof(Episode), typeof(LibraryOptions), typeof(IDirectoryService),
+                        typeof(CancellationToken)
+                    }, null);
+            }
+            catch (Exception e)
+            {
+                _logger.Debug("AudioFingerprintManager - Init Failed");
+                _logger.Debug(e.Message);
+                _logger.Debug(e.StackTrace);
+            }
         }
 
         public bool HasIntro(BaseItem item)
@@ -440,6 +487,79 @@ namespace StrmAssistant
                     }
                 }
             }
+        }
+
+        public List<VirtualFolderInfo> GetMarkerEnabledLibraries(bool suppressLogging)
+        {
+            var libraryIds = Plugin.Instance.GetPluginOptions()
+                .IntroSkipOptions.MarkerEnabledLibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .ToArray();
+
+            var libraries = _libraryManager.GetVirtualFolders()
+                .Where(f => libraryIds != null && libraryIds.Any()
+                    ? libraryIds.Contains(f.Id)
+                    : f.LibraryOptions.EnableMarkerDetection &&
+                      (f.CollectionType == "tvshows" || f.CollectionType is null))
+                .ToList();
+
+            if (!suppressLogging)
+            {
+                _logger.Info("MarkerEnabledLibraryScope: " + (libraryIds != null && libraryIds.Any()
+                    ? string.Join(", ", libraries.Select(l => l.Name))
+                    : "ALL"));
+            }
+
+            return libraries;
+        }
+
+        public List<Episode> FetchIntroFingerprintTaskItems()
+        {
+            var libraries = UpdateLibraryIntroDetectionFingerprintLength();
+
+            var introDetectionFingerprintMinutes = Plugin.Instance.GetPluginOptions().IntroSkipOptions.IntroDetectionFingerprintMinutes;
+            
+            var itemsFingerprintQuery = new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { nameof(Episode) },
+                Recursive = true,
+                GroupByPresentationUniqueKey = false,
+                WithoutChapterMarkers = new[] { MarkerType.IntroStart },
+                MinRunTimeTicks = TimeSpan.FromMinutes(introDetectionFingerprintMinutes).Ticks,
+                IsInSeasonWithMultipleEpisodes = true,
+                HasIntroDetectionFailure = false,
+                HasAudioStream = true,
+                PathStartsWithAny = libraries.SelectMany(l => l.Locations)
+                    .Select(ls =>
+                        ls.EndsWith(Path.DirectorySeparatorChar.ToString()) ? ls : ls + Path.DirectorySeparatorChar)
+                    .ToArray()
+            };
+
+            var items = _libraryManager.GetItemList(itemsFingerprintQuery).OfType<Episode>().ToList();
+            
+            return items;
+        }
+
+        public List<VirtualFolderInfo> UpdateLibraryIntroDetectionFingerprintLength()
+        {
+            var libraries = GetMarkerEnabledLibraries(false);
+
+            var introDetectionFingerprintMinutes = Plugin.Instance.GetPluginOptions().IntroSkipOptions.IntroDetectionFingerprintMinutes;
+
+            foreach (var library in libraries)
+            {
+                library.LibraryOptions.IntroDetectionFingerprintLength = introDetectionFingerprintMinutes;
+            }
+
+            return libraries;
+        }
+
+        public async Task ExtractIntroFingerprint(Episode item, IDirectoryService directoryService,
+            CancellationToken cancellationToken)
+        {
+            var libraryOptions = _libraryManager.GetLibraryOptions(item);
+
+            await ((Task<Tuple<string, bool>>)CreateTitleFingerprint.Invoke(AudioFingerprintManager,
+                new object[] { item, libraryOptions, directoryService, cancellationToken })).ConfigureAwait(false);
         }
     }
 }

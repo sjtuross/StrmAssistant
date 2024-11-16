@@ -107,6 +107,16 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Intro Detection Fingerprint Length (Minute).
+        /// </summary>
+        public static string IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Min" +
+                        "utes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Library Scope.
         /// </summary>
         public static string IntroSkipOptions_LibraryScope_Library_Scope {
@@ -122,6 +132,25 @@ namespace StrmAssistant.Properties {
             get {
                 return ResourceManager.GetString("IntroSkipOptions_LibraryScope_TV_shows_library_scope_to_detect__Blank_includes_al" +
                         "l_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Intro detection enabled library scope. Blank includes all..
+        /// </summary>
+        public static string IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_ {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope_" +
+                        "_Blank_includes_all_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Library Scope.
+        /// </summary>
+        public static string IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope", resourceCulture);
             }
         }
         
@@ -473,7 +502,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Auto generate pinyin initials as sort title when metadata update. Default is OFF..
+        ///   Looks up a localized string similar to Auto generate pinyin initials as sort title when library scan. Default is OFF..
         /// </summary>
         public static string ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title {
             get {
@@ -647,7 +676,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include Extra.
+        ///   Looks up a localized string similar to Include Additional Part and Extra.
         /// </summary>
         public static string PluginOptions_IncludeExtra_Include_Extra {
             get {
@@ -656,7 +685,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include media extras to extract. Default is OFF..
+        ///   Looks up a localized string similar to Include additional parts and extras to extract. Default is OFF..
         /// </summary>
         public static string PluginOptions_IncludeExtra_Include_media_extras_to_extract__Default_is_False_ {
             get {
@@ -766,7 +795,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Beautify Missing Metadata.
+        ///   Looks up a localized string similar to Beautify Episode Title.
         /// </summary>
         public static string UIFunctionOptions_BeautifyMissingMetadata_Beautify_Missing_Metadata {
             get {
@@ -775,7 +804,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Beautify missing metadata for episode display. Default is OFF..
+        ///   Looks up a localized string similar to Beautify episode title display with no metadata. Default is OFF..
         /// </summary>
         public static string UIFunctionOptions_BeautifyMissingMetadata_Beautify_missing_metadata_for_episode_display__Default_is_OFF_ {
             get {
@@ -803,7 +832,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enforce library order per the first admin. Default if OFF..
+        ///   Looks up a localized string similar to Enforce customized library order per the first admin. Default if OFF..
         /// </summary>
         public static string UIFunctionOptions_EnforceLibraryOrder_Enforce_library_order_per_the_first_admin__Default_if_OFF_ {
             get {

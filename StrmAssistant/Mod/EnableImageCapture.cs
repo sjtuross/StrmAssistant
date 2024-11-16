@@ -40,7 +40,7 @@ namespace StrmAssistant.Mod
 
         public static void Initialize()
         {
-            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
+            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
 
             try
             {
@@ -454,11 +454,11 @@ namespace StrmAssistant.Mod
                 if (codes[i].opcode == OpCodes.Ldc_I4_1)
                 {
                     codes[i] = new CodeInstruction(OpCodes.Ldc_I4_S,
-                        (sbyte)Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount);
+                        (sbyte)Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
                     if (i + 1 < codes.Count && codes[i + 1].opcode == OpCodes.Ldc_I4_1)
                     {
                         codes[i + 1] = new CodeInstruction(OpCodes.Ldc_I4_S,
-                            (sbyte)Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount);
+                            (sbyte)Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
                     }
                     break;
                 }
@@ -512,7 +512,7 @@ namespace StrmAssistant.Mod
                 __instance.GetType() == _quickSingleImageExtractor)
             {
                 var newValue =
-                    60000 * Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
+                    60000 * Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
                 _totalTimeoutMs.SetValue(__instance, newValue);
             }
 
