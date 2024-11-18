@@ -66,7 +66,7 @@ namespace StrmAssistant
 
         public string Key => "IntroSkipClearTask";
 
-        public string Description => "Clears intro and credits markers of episodes";
+        public string Description => "Clears behavior-based intro and credits markers";
 
         public string Name => "Clear Episode Intros";
 

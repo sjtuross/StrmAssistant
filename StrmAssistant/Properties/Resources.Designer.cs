@@ -173,6 +173,15 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Min Opening Plot Duration (Seconds), Default is 60.
+        /// </summary>
+        public static string IntroSkipOptions_MinOpeningPlotDurationSeconds {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_MinOpeningPlotDurationSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Built-in Intro Detection Enhanced.
         /// </summary>
         public static string IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced {
@@ -400,7 +409,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Import season cast and update series people. Default is OFF..
+        ///   Looks up a localized string similar to Extract also_known_as when refresh person, import season cast, update series cast. Default is OFF..
         /// </summary>
         public static string MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_ {
             get {

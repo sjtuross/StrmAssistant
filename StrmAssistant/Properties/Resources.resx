@@ -368,4 +368,7 @@
   <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_" xml:space="preserve">
     <value>Extract also_known_as when refresh person, import season cast, update series cast. Default is OFF.</value>
   </data>
+  <data name="IntroSkipOptions_MinOpeningPlotDurationSeconds" xml:space="preserve">
+    <value>Min Opening Plot Duration (Seconds), Default is 60</value>
+  </data>
 </root>

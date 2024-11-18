@@ -184,9 +184,9 @@ namespace StrmAssistant
                 {
                     QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
                 }
-                else
+                else if (e.Item is Episode episode && ChapterApi.SeasonHasIntroCredits(episode))
                 {
-                    QueueManager.IntroSkipItemQueue.Enqueue(e.Item as Episode);
+                    QueueManager.IntroSkipItemQueue.Enqueue(episode);
                 }
             }
 
@@ -504,6 +504,7 @@ namespace StrmAssistant
                 logger.Info("EnableIntroSkip is set to {0}", options.IntroSkipOptions.EnableIntroSkip);
                 logger.Info("MaxIntroDurationSeconds is set to {0}", options.IntroSkipOptions.MaxIntroDurationSeconds);
                 logger.Info("MaxCreditsDurationSeconds is set to {0}", options.IntroSkipOptions.MaxCreditsDurationSeconds);
+                logger.Info("MinOpeningPlotDurationSeconds is set to {0}", options.IntroSkipOptions.MinOpeningPlotDurationSeconds);
             }
             if (_currentEnableIntroSkip != options.IntroSkipOptions.EnableIntroSkip)
             {

@@ -30,6 +30,12 @@ namespace StrmAssistant
         [VisibleCondition(nameof(EnableIntroSkip), SimpleCondition.IsTrue)]
         public int MaxCreditsDurationSeconds { get; set; } = 360;
 
+        [DisplayNameL("IntroSkipOptions_MinOpeningPlotDurationSeconds", typeof(Resources))]
+        [MinValue(30), MaxValue(120)]
+        [Required]
+        [VisibleCondition(nameof(EnableIntroSkip), SimpleCondition.IsTrue)]
+        public int MinOpeningPlotDurationSeconds { get; set; } = 60;
+
         [Browsable(false)]
         public IEnumerable<EditorSelectOption> LibraryList { get; set; }
 
