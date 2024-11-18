@@ -15,7 +15,7 @@
 7. 独立的外挂字幕扫描
 8. 自定义`TMDB`备选语言
 9. 使用替代`TMDB`API地址
-10. 刷新`TMDB`中文演员
+10. 演职人员增强`TMDB`
 11. 获取原语言海报
 12. 中文搜索增强
 13. 拼音首字母排序
@@ -37,14 +37,15 @@
 13. 尽可能从`TMDB`获取中文或日文元数据, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/自定义-TMDB-备选语言)
 14. 使用替代`TMDB`API地址
 15. 刷新`TMDB`中文演员并修复相关问题，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文演员-(Chinese-Actor))
-16. 优先使用原语言海报，支持`TMDB`, `TVDB`, `Fanart`，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/原语言海报--(Original-Poster))
-17. `TMDB`备选语言元数据以及中文演员繁转简
-18. 支持中文模糊搜索和拼音搜索，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文搜索增强)
-19. 刷新元数据时自动生成拼音首字母为排序标题，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/拼音首字母排序)
-20. 添加支持从`NFO`导入演员头像链接
-21. 电影剧集页面隐藏无头像人员，非删除，仍可搜索
-22. 首位管理员的自定义媒体库排序作用于所有用户
-23. 剧集集标题自动补全
+16. 导入季的演职人员，更新节目系列的演职人员为各季合并
+17. 优先使用原语言海报，支持`TMDB`, `TVDB`, `Fanart`，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/原语言海报--(Original-Poster))
+18. `TMDB`备选语言元数据以及中文演员繁转简
+19. 支持中文模糊搜索和拼音搜索，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文搜索增强)
+20. 刷新元数据时自动生成拼音首字母为排序标题，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/拼音首字母排序)
+21. 添加支持从`NFO`导入演员头像链接
+22. 电影剧集页面隐藏无头像人员，非删除，仍可搜索
+23. 首位管理员的自定义媒体库排序作用于所有用户
+24. 剧集集标题自动补全
 
 ## 安装
 
