@@ -137,14 +137,14 @@ namespace StrmAssistant.Mod
                         Plugin.Instance.logger.Debug("Patch RunExtraction Success by Harmony");
                     }
 
-                    //if (!IsPatched(_logThumbnailImageExtractionFailure, typeof(EnableImageCapture)))
-                    //{
-                    //    HarmonyMod.Patch(_logThumbnailImageExtractionFailure,
-                    //        prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod(
-                    //            "LogThumbnailImageExtractionFailurePrefix",
-                    //            BindingFlags.Static | BindingFlags.NonPublic)));
-                    //    Plugin.Instance.logger.Debug("Patch LogThumbnailImageExtractionFailure Success by Harmony");
-                    //}
+                    if (!IsPatched(_logThumbnailImageExtractionFailure, typeof(EnableImageCapture)))
+                    {
+                        HarmonyMod.Patch(_logThumbnailImageExtractionFailure,
+                            prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod(
+                                "LogThumbnailImageExtractionFailurePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug("Patch LogThumbnailImageExtractionFailure Success by Harmony");
+                    }
                 }
                 catch (Exception he)
                 {
@@ -186,12 +186,12 @@ namespace StrmAssistant.Mod
                         Plugin.Instance.logger.Debug("Unpatch RunExtraction Success by Harmony");
                     }
 
-                    //if (IsPatched(_logThumbnailImageExtractionFailure, typeof(EnableImageCapture)))
-                    //{
-                    //    HarmonyMod.Unpatch(_logThumbnailImageExtractionFailure,
-                    //        AccessTools.Method(typeof(EnableImageCapture), "LogThumbnailImageExtractionFailurePrefix"));
-                    //    Plugin.Instance.logger.Debug("Unpatch LogThumbnailImageExtractionFailure Success by Harmony");
-                    //}
+                    if (IsPatched(_logThumbnailImageExtractionFailure, typeof(EnableImageCapture)))
+                    {
+                        HarmonyMod.Unpatch(_logThumbnailImageExtractionFailure,
+                            AccessTools.Method(typeof(EnableImageCapture), "LogThumbnailImageExtractionFailurePrefix"));
+                        Plugin.Instance.logger.Debug("Unpatch LogThumbnailImageExtractionFailure Success by Harmony");
+                    }
                 }
                 catch (Exception he)
                 {
