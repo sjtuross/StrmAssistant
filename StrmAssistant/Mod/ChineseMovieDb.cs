@@ -27,7 +27,6 @@ namespace StrmAssistant.Mod
         private static MethodInfo _genericMovieDbInfoProcessMainInfoSeries;
         private static MethodInfo _getTitleMovieData;
 
-        private static Type _movieDbProviderBase;
         private static MethodInfo _getMovieDbMetadataLanguages;
         private static MethodInfo _mapLanguageToProviderLanguage;
         private static MethodInfo _getImageLanguagesParam;
@@ -55,12 +54,6 @@ namespace StrmAssistant.Mod
         private static MethodInfo _movieDbEpisodeProviderImportData;
         private static PropertyInfo _nameEpisodeInfoProperty;
         private static PropertyInfo _overviewEpisodeInfoProperty;
-
-        private static MethodInfo _movieDbPersonProviderImportData;
-        private static PropertyInfo _nameProperty;
-        private static PropertyInfo _alsoKnownAsProperty;
-        private static PropertyInfo _biographyProperty;
-        private static PropertyInfo _placeOfBirthProperty;
 
         private static PropertyInfo _seriesInfoTaskResultProperty;
 
@@ -96,16 +89,16 @@ namespace StrmAssistant.Mod
                     _genericMovieDbInfoProcessMainInfoSeries = genericMovieDbInfoSeries.GetMethod("ProcessMainInfo",
                         BindingFlags.NonPublic | BindingFlags.Instance);
 
-                    _movieDbProviderBase = _movieDbAssembly.GetType("MovieDb.MovieDbProviderBase");
-                    _getMovieDbMetadataLanguages = _movieDbProviderBase.GetMethod("GetMovieDbMetadataLanguages",
+                    var movieDbProviderBase = _movieDbAssembly.GetType("MovieDb.MovieDbProviderBase");
+                    _getMovieDbMetadataLanguages = movieDbProviderBase.GetMethod("GetMovieDbMetadataLanguages",
                         BindingFlags.Public | BindingFlags.Instance);
-                    _mapLanguageToProviderLanguage = _movieDbProviderBase.GetMethod("MapLanguageToProviderLanguage",
+                    _mapLanguageToProviderLanguage = movieDbProviderBase.GetMethod("MapLanguageToProviderLanguage",
                         BindingFlags.NonPublic | BindingFlags.Instance);
-                    _getImageLanguagesParam = _movieDbProviderBase.GetMethod("GetImageLanguagesParam",
+                    _getImageLanguagesParam = movieDbProviderBase.GetMethod("GetImageLanguagesParam",
                         BindingFlags.NonPublic | BindingFlags.Instance, null, new[] { typeof(string[]) }, null);
-                    _getMovieDbResponse = _movieDbProviderBase.GetMethod("GetMovieDbResponse",
+                    _getMovieDbResponse = movieDbProviderBase.GetMethod("GetMovieDbResponse",
                         BindingFlags.NonPublic | BindingFlags.Instance);
-                    _cacheTime = _movieDbProviderBase.GetField("CacheTime", BindingFlags.Public | BindingFlags.Static);
+                    _cacheTime = movieDbProviderBase.GetField("CacheTime", BindingFlags.Public | BindingFlags.Static);
 
                     var movieDbSeriesProvider = _movieDbAssembly.GetType("MovieDb.MovieDbSeriesProvider");
                     _movieDbSeriesProviderIsComplete =
@@ -134,24 +127,15 @@ namespace StrmAssistant.Mod
                     var seasonRootObject = movieDbSeasonProvider.GetNestedType("SeasonRootObject", BindingFlags.Public);
                     _nameSeasonInfoProperty=seasonRootObject.GetProperty("name");
                     _overviewSeasonInfoProperty = seasonRootObject.GetProperty("overview");
-
+                    
                     var movieDbEpisodeProvider = _movieDbAssembly.GetType("MovieDb.MovieDbEpisodeProvider");
                     _movieDbEpisodeProviderIsComplete =
                         movieDbEpisodeProvider.GetMethod("IsComplete", BindingFlags.NonPublic | BindingFlags.Instance);
                     _movieDbEpisodeProviderImportData =
                         movieDbEpisodeProvider.GetMethod("ImportData", BindingFlags.NonPublic | BindingFlags.Instance);
-                    var episodeRootObject = _movieDbProviderBase.GetNestedType("RootObject", BindingFlags.Public);
-                    _nameEpisodeInfoProperty=episodeRootObject.GetProperty("name");
+                    var episodeRootObject = movieDbProviderBase.GetNestedType("RootObject", BindingFlags.Public);
+                    _nameEpisodeInfoProperty = episodeRootObject.GetProperty("name");
                     _overviewEpisodeInfoProperty = episodeRootObject.GetProperty("overview");
-
-                    var movieDbPersonProvider = _movieDbAssembly.GetType("MovieDb.MovieDbPersonProvider");
-                    _movieDbPersonProviderImportData = movieDbPersonProvider.GetMethod("ImportData",
-                        BindingFlags.NonPublic | BindingFlags.Instance);
-                    var personResult = movieDbPersonProvider.GetNestedType("PersonResult", BindingFlags.Public);
-                    _nameProperty = personResult.GetProperty("name");
-                    _alsoKnownAsProperty = personResult.GetProperty("also_known_as");
-                    _biographyProperty = personResult.GetProperty("biography");
-                    _placeOfBirthProperty = personResult.GetProperty("place_of_birth");
                 }
                 else
                 {
@@ -315,15 +299,6 @@ namespace StrmAssistant.Mod
                         Plugin.Instance.logger.Debug(
                             "Patch MovieDbEpisodeProvider.ImportData Success by Harmony");
                     }
-
-                    if (!IsPatched(_movieDbPersonProviderImportData, typeof(ChineseMovieDb)))
-                    {
-                        HarmonyMod.Patch(_movieDbPersonProviderImportData,
-                            prefix: new HarmonyMethod(typeof(ChineseMovieDb).GetMethod("PersonImportDataPrefix",
-                                BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
-                            "Patch MovieDbPersonProvider.ImportData Success by Harmony");
-                    }
                 }
                 catch (Exception he)
                 {
@@ -420,12 +395,6 @@ namespace StrmAssistant.Mod
                             AccessTools.Method(typeof(ChineseMovieDb), "EpisodeImportDataPrefix"));
                         Plugin.Instance.logger.Debug("Unpatch MovieDbEpisodeProvider.ImportData Success by Harmony");
                     }
-                    if (IsPatched(_movieDbPersonProviderImportData, typeof(ChineseMovieDb)))
-                    {
-                        HarmonyMod.Unpatch(_movieDbPersonProviderImportData,
-                            AccessTools.Method(typeof(ChineseMovieDb), "PersonImportDataPrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch MovieDbPersonProvider.ImportData Success by Harmony");
-                    }
                 }
                 catch (Exception he)
                 {
@@ -435,7 +404,7 @@ namespace StrmAssistant.Mod
                 }
             }
         }
-
+        
         public static void PatchMovieDbApiUrl()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony && _movieDbAssembly != null)
@@ -503,14 +472,6 @@ namespace StrmAssistant.Mod
             return string.IsNullOrEmpty(name) || !isJapaneseFallback && !IsChinese(name) ||
                    isJapaneseFallback && !(IsChinese(name) && (!isEpisode || !IsDefaultChineseEpisodeName(name)) ||
                                            IsJapanese(name));
-        }
-
-        public static List<string> GetFallbackLanguages()
-        {
-            var currentFallbackLanguages = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.FallbackLanguages
-                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-
-            return currentFallbackLanguages;
         }
 
         [HarmonyPrefix]
@@ -756,77 +717,6 @@ namespace StrmAssistant.Mod
             }
 
             __result = string.Join(",", list.ToArray());
-        }
-
-        private static Tuple<string, bool> ProcessPersonInfoAsExpected(string input, string placeOfBirth)
-        {
-            var isJapaneseFallback = GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase);
-
-            var considerJapanese = isJapaneseFallback && placeOfBirth != null &&
-                                   placeOfBirth.IndexOf("Japan", StringComparison.Ordinal) >= 0;
-
-            if (IsChinese(input))
-            {
-                input = ConvertTraditionalToSimplified(input);
-            }
-
-            if (IsChinese(input) || (considerJapanese && IsJapanese(input)))
-            {
-                return new Tuple<string, bool>(input, true);
-            }
-
-            return new Tuple<string, bool>(input, false);
-        }
-
-        [HarmonyPrefix]
-        private static bool PersonImportDataPrefix(Person item, object info, bool isFirstLanguage)
-        {
-            if (!RefreshPersonTask.IsRunning) return true;
-
-            var placeOfBirth = _placeOfBirthProperty?.GetValue(info) as string;
-
-            if (_nameProperty?.GetValue(info) is string infoPersonName)
-            {
-                var updateNameResult = ProcessPersonInfoAsExpected(infoPersonName, placeOfBirth);
-
-                if (updateNameResult.Item2)
-                {
-                    if (!string.Equals(infoPersonName, CleanPersonName(updateNameResult.Item1),
-                            StringComparison.Ordinal))
-                        _nameProperty.SetValue(info, updateNameResult.Item1);
-                }
-                else
-                {
-                    if (_alsoKnownAsProperty?.GetValue(info) is List<object> alsoKnownAsList)
-                    {
-                        foreach (var alias in alsoKnownAsList)
-                        {
-                            if (alias is string aliasString && !string.IsNullOrEmpty(aliasString))
-                            {
-                                var updateAliasResult = ProcessPersonInfoAsExpected(aliasString, placeOfBirth);
-                                if (updateAliasResult.Item2)
-                                {
-                                    _nameProperty.SetValue(info, updateAliasResult.Item1);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (_biographyProperty?.GetValue(info) is string infoBiography)
-            {
-                var updateBiographyResult = ProcessPersonInfoAsExpected(infoBiography, placeOfBirth);
-
-                if (updateBiographyResult.Item2)
-                {
-                    if (!string.Equals(infoBiography, updateBiographyResult.Item1, StringComparison.Ordinal))
-                        _biographyProperty.SetValue(info, updateBiographyResult.Item1);
-                }
-            }
-
-            return true;
         }
 
         [HarmonyPrefix]

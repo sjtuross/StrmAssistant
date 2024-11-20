@@ -1,4 +1,6 @@
 ﻿using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using TinyPinyin;
@@ -66,6 +68,14 @@ namespace StrmAssistant
             }
 
             return input.Trim();
+        }
+
+        public static List<string> GetFallbackLanguages()
+        {
+            var currentFallbackLanguages = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.FallbackLanguages
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+
+            return currentFallbackLanguages;
         }
     }
 }

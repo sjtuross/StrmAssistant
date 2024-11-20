@@ -275,4 +275,10 @@
   <data name="MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_url__Default_is_OFF_" xml:space="preserve">
     <value>使用 api.tmdb.org 替代地址，默认关闭。</value>
   </data>
+  <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person" xml:space="preserve">
+    <value>演职人员增强 TMDB</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_" xml:space="preserve">
+    <value>刷新演员提取别名，导入季的演职人员，更新节目系列的演职人员为各季合并，默认关闭。</value>
+  </data>
 </root>

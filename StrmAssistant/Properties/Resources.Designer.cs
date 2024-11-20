@@ -107,7 +107,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Intro Detection Fingerprint Length (Minute).
+        ///   Looks up a localized string similar to Intro Detection Fingerprint Length (Minute), Default is 10.
         /// </summary>
         public static string IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes {
             get {
@@ -155,7 +155,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Max Credits Duration (Seconds).
+        ///   Looks up a localized string similar to Max Credits Duration (Seconds), Default is 360.
         /// </summary>
         public static string IntroSkipOptions_MaxCreditsDurationSeconds {
             get {
@@ -164,7 +164,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Max Intro Duration (Seconds).
+        ///   Looks up a localized string similar to Max Intro Duration (Seconds), Default is 150.
         /// </summary>
         public static string IntroSkipOptions_MaxIntroDurationSeconds {
             get {
@@ -372,7 +372,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Alternative MovieDb Api.
+        ///   Looks up a localized string similar to Use Alternative MovieDb Api Url.
         /// </summary>
         public static string MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url {
             get {
@@ -387,6 +387,25 @@ namespace StrmAssistant.Properties {
             get {
                 return ResourceManager.GetString("MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_u" +
                         "rl__Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enhance MovieDb Person.
+        /// </summary>
+        public static string MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import season cast and update series people. Default is OFF..
+        /// </summary>
+        public static string MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_" +
+                        "people__Default_is_OFF_", resourceCulture);
             }
         }
         

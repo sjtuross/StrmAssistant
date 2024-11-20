@@ -1,4 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -30,6 +32,18 @@ namespace StrmAssistant
             await Task.Yield();
             progress.Report(0);
 
+            var serverPreferredMetadataLanguage = Plugin.MetadataApi.GetServerPreferredMetadataLanguage();
+            _logger.Info("Server Preferred Metadata Language: " + serverPreferredMetadataLanguage);
+            var isServerPreferZh = string.Equals(serverPreferredMetadataLanguage.Split('-')[0], "zh",
+                StringComparison.OrdinalIgnoreCase);
+            if (!isServerPreferZh)
+            {
+                progress.Report(100.0);
+                _logger.Warn("Server Preferred Metadata Language is not set to Chinese.");
+                _logger.Warn("RefreshPerson - Task Aborted");
+                return;
+            }
+
             var personQuery = new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { "Person" }
@@ -57,7 +71,8 @@ namespace StrmAssistant
                     {
                         PersonIds = new[] { dupItem.InternalId },
                         Recursive = true,
-                        IncludeItemTypes = new[] { "Movie", "Series", "Episode", "Video", "Trailer" }
+                        IncludeItemTypes = new[]
+                            { nameof(Movie), nameof(Series), nameof(Episode), nameof(Video), nameof(Trailer) }
                     });
                     foreach (var relatedItem in relatedItems)
                     {
@@ -88,20 +103,16 @@ namespace StrmAssistant
             const int batchSize = 100;
             var tasks = new List<Task>();
 
-            var chineseMovieDb = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.ChineseMovieDb;
+            var enhanceMovieDbPerson = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.EnhanceMovieDbPerson;
 
             if (remainingCount > 0)
             {
-                if (chineseMovieDb) ChineseMovieDb.PatchCacheTime();
+                if (enhanceMovieDbPerson) ChineseMovieDb.PatchCacheTime();
                 IsRunning = true;
             }
 
             var refreshPersonMode = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.RefreshPersonMode;
             _logger.Info("Refresh Person Mode: " + refreshPersonMode);
-            var serverPreferredMetadataLanguage = Plugin.MetadataApi.GetServerPreferredMetadataLanguage();
-            _logger.Info("Server Preferred Metadata Language: " + serverPreferredMetadataLanguage);
-            var isServerPreferZh = string.Equals(serverPreferredMetadataLanguage.Split('-')[0], "zh",
-                StringComparison.OrdinalIgnoreCase);
 
             for (var startIndex = 0; startIndex < remainingCount; startIndex += batchSize)
             {
@@ -224,7 +235,7 @@ namespace StrmAssistant
 
             if (remainingCount > 0)
             {
-                if (chineseMovieDb) ChineseMovieDb.UnpatchCacheTime();
+                if (enhanceMovieDbPerson) ChineseMovieDb.UnpatchCacheTime();
                 IsRunning = false;
             }
 
@@ -236,9 +247,9 @@ namespace StrmAssistant
 
         public string Key => "RefreshPersonTask";
 
-        public string Description => "Refreshes and repairs persons";
+        public string Description => "Refreshes and repairs Chinese actors";
 
-        public string Name => "Refresh Persons";
+        public string Name => "Refresh Chinese Actor";
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

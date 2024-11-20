@@ -28,6 +28,7 @@ namespace StrmAssistant.Mod
             MergeMultiVersion.Initialize();
             ExclusiveExtract.Initialize();
             ChineseMovieDb.Initialize();
+            EnhanceMovieDbPerson.Initialize();
             PreferOriginalPoster.Initialize();
             UnlockIntroSkip.Initialize();
             PinyinSortName.Initialize();

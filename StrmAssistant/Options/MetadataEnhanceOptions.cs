@@ -38,6 +38,12 @@ namespace StrmAssistant
         [VisibleCondition(nameof(ChineseMovieDb), SimpleCondition.IsTrue)]
         public string FallbackLanguages { get; set; }
 
+        [DisplayNameL("MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person", typeof(Resources))]
+        [DescriptionL("MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_", typeof(Resources))]
+        [EnabledCondition(nameof(IsMovieDbPluginLoaded), SimpleCondition.IsTrue)]
+        [Required]
+        public bool EnhanceMovieDbPerson { get; set; } = false;
+
         [DisplayNameL("MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url", typeof(Resources))]
         [DescriptionL("MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_url__Default_is_OFF_", typeof(Resources))]
         [EnabledCondition(nameof(IsMovieDbPluginLoaded), SimpleCondition.IsTrue)]

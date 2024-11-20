@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using static StrmAssistant.CommonUtility;
 using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
@@ -238,18 +239,6 @@ namespace StrmAssistant.Mod
                 Plugin.Instance.logger.Debug(e.Message);
                 Plugin.Instance.logger.Debug(e.StackTrace);
             }
-        }
-
-        private static bool IsValidHttpUrl(string url)
-        {
-            if (string.IsNullOrEmpty(url)) return false;
-
-            if (Uri.TryCreate(url, UriKind.Absolute, out var uriResult))
-            {
-                return uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps;
-            }
-
-            return false;
         }
     }
 }

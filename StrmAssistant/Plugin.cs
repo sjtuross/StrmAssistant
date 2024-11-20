@@ -62,6 +62,7 @@ namespace StrmAssistant
         private bool _currentUnlockIntroSkip;
         private bool _currentMergeMultiVersion;
         private bool _currentChineseMovieDb;
+        private bool _currentEnhanceMovieDbPerson;
         private bool _currentAlternativeMovieDbApiUrl;
         private bool _currentExclusiveExtract;
         private bool _currentPreferOriginalPoster;
@@ -110,6 +111,7 @@ namespace StrmAssistant
             _currentUnlockIntroSkip = GetOptions().IntroSkipOptions.UnlockIntroSkip;
             _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
             _currentChineseMovieDb = GetOptions().MetadataEnhanceOptions.ChineseMovieDb;
+            _currentEnhanceMovieDbPerson = GetOptions().MetadataEnhanceOptions.EnhanceMovieDbPerson;
             _currentAlternativeMovieDbApiUrl = GetOptions().MetadataEnhanceOptions.AlternativeMovieDbApiUrl;
             _currentExclusiveExtract = GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
             _currentPreferOriginalPoster = GetOptions().MetadataEnhanceOptions.PreferOriginalPoster;
@@ -137,6 +139,7 @@ namespace StrmAssistant
             QueueManager.Initialize();
 
             _libraryManager.ItemAdded += OnItemAdded;
+            _libraryManager.ItemUpdated += OnItemUpdated;
             _userManager.UserCreated += OnUserCreated;
             _userManager.UserDeleted += OnUserDeleted;
             _userManager.UserConfigurationUpdated += OnUserConfigurationUpdated;
@@ -188,6 +191,22 @@ namespace StrmAssistant
             }
 
             NotificationApi.FavoritesUpdateSendNotification(e.Item);
+        }
+
+        private void OnItemUpdated(object sender, ItemChangeEventArgs e)
+        {
+            if (_currentEnhanceMovieDbPerson &&
+                (e.UpdateReason & (ItemUpdateType.MetadataDownload | ItemUpdateType.MetadataImport)) != 0)
+            {
+                if (e.Item is Season season && season.IndexNumber > 0)
+                {
+                    LibraryApi.UpdateSeriesPeople(season.Parent as Series);
+                }
+                else if (e.Item is Series series)
+                {
+                    LibraryApi.UpdateSeriesPeople(series);
+                }
+            }
         }
 
         private void OnUserDataSaved(object sender, UserDataSaveEventArgs e)
@@ -313,6 +332,22 @@ namespace StrmAssistant
                 else
                 {
                     ChineseMovieDb.Unpatch();
+                }
+            }
+
+            if (!suppressLogger)
+                logger.Info("EnhanceMovieDbPerson is set to {0}", options.MetadataEnhanceOptions.EnhanceMovieDbPerson);
+            if (_currentEnhanceMovieDbPerson != GetOptions().MetadataEnhanceOptions.EnhanceMovieDbPerson)
+            {
+                _currentEnhanceMovieDbPerson = GetOptions().MetadataEnhanceOptions.EnhanceMovieDbPerson;
+
+                if (_currentEnhanceMovieDbPerson)
+                {
+                    EnhanceMovieDbPerson.Patch();
+                }
+                else
+                {
+                    EnhanceMovieDbPerson.Unpatch();
                 }
             }
 

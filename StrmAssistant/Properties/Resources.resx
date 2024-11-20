@@ -362,4 +362,10 @@
   <data name="MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_url__Default_is_OFF_" xml:space="preserve">
     <value>Use api.tmdb.org as alternative url. Default is OFF.</value>
   </data>
+  <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person" xml:space="preserve">
+    <value>Enhance MovieDb Person</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_" xml:space="preserve">
+    <value>Extract also_known_as when refresh person, import season cast, update series cast. Default is OFF.</value>
+  </data>
 </root>
