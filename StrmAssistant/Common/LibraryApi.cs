@@ -359,10 +359,17 @@ namespace StrmAssistant
         {
             var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
 
-            var videos = items.OfType<Video>().Cast<BaseItem>().ToList();
+            var itemsMultiVersions = items.SelectMany(v =>
+                    _libraryManager.GetItemList(new InternalItemsQuery
+                        {
+                            PresentationUniqueKey = v.PresentationUniqueKey
+                        }))
+                .ToList();
 
-            var seriesIds = items.OfType<Series>().Select(s => s.InternalId)
-                .Union(items.OfType<Episode>().Select(e => e.SeriesId)).ToArray();
+            var videos = itemsMultiVersions.OfType<Video>().Cast<BaseItem>().ToList();
+
+            var seriesIds = itemsMultiVersions.OfType<Series>().Select(s => s.InternalId)
+                .Union(itemsMultiVersions.OfType<Episode>().Select(e => e.SeriesId)).ToArray();
 
             var episodes = Array.Empty<BaseItem>();
             if (seriesIds.Length > 0)
@@ -424,11 +431,16 @@ namespace StrmAssistant
 
         public List<User> GetUsersByFavorites(BaseItem item)
         {
-            var users = AllUsers.Select(e=>e.Key).Where(u =>
-                (item is Movie || item is Series) && item.IsFavoriteOrLiked(u) ||
-                item is Episode e && (e.IsFavoriteOrLiked(u) ||
-                                            (e.Series != null && e.Series.IsFavoriteOrLiked(u)))
-            ).ToList();
+            var itemsMultiVersion = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                PresentationUniqueKey = item.PresentationUniqueKey
+            });
+
+            var users = AllUsers.Select(e => e.Key)
+                .Where(u => itemsMultiVersion.Any(i =>
+                    (i is Movie || i is Series) && i.IsFavoriteOrLiked(u) || i is Episode e &&
+                    (e.IsFavoriteOrLiked(u) || (e.Series != null && e.Series.IsFavoriteOrLiked(u)))))
+                .ToList();
 
             return users;
         }
