@@ -23,6 +23,7 @@ namespace StrmAssistant.Mod
         private static FieldInfo _resourcePoolField;
         private static MethodInfo _isShortcutGetter;
         private static PropertyInfo _isShortcutProperty;
+        private static MethodInfo _supportsImageCapture;
         private static MethodInfo _getImage;
         private static MethodInfo _runExtraction;
         private static Type _quickSingleImageExtractor;
@@ -31,7 +32,8 @@ namespace StrmAssistant.Mod
         private static Type _quickImageSeriesExtractor;
         private static MethodInfo _logThumbnailImageExtractionFailure;
 
-        private static readonly AsyncLocal<BaseItem> CurrentItem = new AsyncLocal<BaseItem>();
+        private static readonly AsyncLocal<BaseItem> ShortcutItem = new AsyncLocal<BaseItem>();
+        private static readonly AsyncLocal<BaseItem> ImageCaptureItem = new AsyncLocal<BaseItem>();
         private static readonly AsyncLocal<bool> SupportsThumbnailsInstancePatched = new AsyncLocal<bool>();
         private static int _currentMaxConcurrentCount;
         private static int _isShortcutPatchUsageCount;
@@ -57,6 +59,13 @@ namespace StrmAssistant.Mod
                     ?.GetGetMethod();
                 _isShortcutProperty =
                     typeof(BaseItem).GetProperty("IsShortcut", BindingFlags.Instance | BindingFlags.Public);
+
+                var embyProviders = Assembly.Load("Emby.Providers");
+                var videoImageProvider = embyProviders.GetType("Emby.Providers.MediaInfo.VideoImageProvider");
+                _supportsImageCapture =
+                    videoImageProvider.GetMethod("Supports", BindingFlags.Instance | BindingFlags.Public);
+                _getImage = videoImageProvider.GetMethod("GetImage", BindingFlags.Public | BindingFlags.Instance);
+
                 var supportsThumbnailsProperty=
                     typeof(Video).GetProperty("SupportsThumbnails", BindingFlags.Public | BindingFlags.Instance);
                 _supportsThumbnailsGetter = supportsThumbnailsProperty?.GetGetMethod();
@@ -69,10 +78,6 @@ namespace StrmAssistant.Mod
                 _quickImageSeriesExtractor =
                     mediaEncodingAssembly.GetType(
                         "Emby.Server.MediaEncoding.ImageExtraction.QuickImageSeriesExtractor");
-
-                var embyProvidersAssembly = Assembly.Load("Emby.Providers");
-                var videoImageProvider = embyProvidersAssembly.GetType("Emby.Providers.MediaInfo.VideoImageProvider");
-                _getImage = videoImageProvider.GetMethod("GetImage", BindingFlags.Public | BindingFlags.Instance);
 
                 var embyServerImplementationsAssembly = Assembly.Load("Emby.Server.Implementations");
                 var sqliteItemRepository =
@@ -111,6 +116,16 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
+                    if (!IsPatched(_supportsImageCapture, typeof(EnableImageCapture)))
+                    {
+                        HarmonyMod.Patch(_supportsImageCapture,
+                            prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("SupportsImageCapturePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)),
+                            postfix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod(
+                                "SupportsImageCapturePostfix", BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug("Patch VideoImageProvider.Supports Success by Harmony");
+                    }
+
                     if (!IsPatched(_getImage, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Patch(_getImage,
@@ -164,6 +179,15 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
+                    if (IsPatched(_supportsImageCapture, typeof(EnableImageCapture)))
+                    {
+                        HarmonyMod.Unpatch(_supportsImageCapture,
+                            AccessTools.Method(typeof(EnableImageCapture), "SupportsImageCapturePrefix"));
+                        HarmonyMod.Unpatch(_supportsImageCapture,
+                            AccessTools.Method(typeof(EnableImageCapture), "SupportsImageCapturePostfix"));
+                        Plugin.Instance.logger.Debug("Unpatch VideoImageProvider.Supports Success by Harmony");
+                    }
+
                     if (IsPatched(_getImage, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Unpatch(_getImage, AccessTools.Method(typeof(EnableImageCapture), "GetImagePrefix"));
@@ -341,7 +365,7 @@ namespace StrmAssistant.Mod
             switch (PatchApproachTracker.FallbackPatchApproach)
             {
                 case PatchApproach.Harmony:
-                    CurrentItem.Value = item;
+                    ShortcutItem.Value = item;
                     break;
 
                 case PatchApproach.Reflection:
@@ -366,7 +390,7 @@ namespace StrmAssistant.Mod
             switch (PatchApproachTracker.FallbackPatchApproach)
             {
                 case PatchApproach.Harmony:
-                    CurrentItem.Value = null;
+                    ShortcutItem.Value = null;
                     break;
 
                 case PatchApproach.Reflection:
@@ -382,6 +406,14 @@ namespace StrmAssistant.Mod
                         Plugin.Instance.logger.Debug(re.Message);
                     }
                     break;
+            }
+        }
+
+        public static void AllowImageCaptureInstance(BaseItem item)
+        {
+            if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
+            {
+                ImageCaptureItem.Value = item;
             }
         }
 
@@ -410,7 +442,7 @@ namespace StrmAssistant.Mod
                 {
                     var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
                     Plugin.Instance.logger.Info("Current FFmpeg Resource Pool: " + resourcePool?.CurrentCount ??
-                                                String.Empty);
+                                                string.Empty);
                 }
             }
         }
@@ -469,7 +501,7 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool IsShortcutPrefix(BaseItem __instance, ref bool __result)
         {
-            if (CurrentItem.Value != null && __instance.InternalId == CurrentItem.Value.InternalId)
+            if (ShortcutItem.Value != null && __instance.InternalId == ShortcutItem.Value.InternalId)
             {
                 __result = false;
                 return false;
@@ -477,7 +509,28 @@ namespace StrmAssistant.Mod
 
             return true;
         }
-        
+
+        [HarmonyPrefix]
+        private static bool SupportsImageCapturePrefix(BaseItem item, ref bool __result)
+        {
+            if (ImageCaptureItem.Value != null && item.InternalId == ImageCaptureItem.Value.InternalId)
+            {
+                PatchIsShortcutInstance(item);
+            }
+
+            return true;
+        }
+
+        [HarmonyPostfix]
+        private static void SupportsImageCapturePostfix(BaseItem item, ref bool __result)
+        {
+            if (ImageCaptureItem.Value != null && item.InternalId == ImageCaptureItem.Value.InternalId)
+            {
+                UnpatchIsShortcutInstance(item);
+                ImageCaptureItem.Value = null;
+            }
+        }
+
         [HarmonyPrefix]
         private static bool GetImagePrefix(ref BaseMetadataResult itemResult)
         {

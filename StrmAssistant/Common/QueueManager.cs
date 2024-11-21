@@ -102,7 +102,6 @@ namespace StrmAssistant
                             var taskItem = item;
                             _taskQueue.Enqueue(async () =>
                             {
-                                var isShortcutPatched = false;
                                 var isExtractAllowed = false;
 
                                 try
@@ -123,11 +122,10 @@ namespace StrmAssistant
                                     {
                                         if (taskItem.IsShortcut)
                                         {
-                                            EnableImageCapture.PatchIsShortcutInstance(taskItem);
-                                            isShortcutPatched = true;
+                                            EnableImageCapture.AllowImageCaptureInstance(taskItem);
                                         }
                                         var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
-                                        await item.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                                        await taskItem.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
                                     }
                                     else
                                     {
@@ -154,7 +152,6 @@ namespace StrmAssistant
                                 }
                                 finally
                                 {
-                                    if (isShortcutPatched) EnableImageCapture.UnpatchIsShortcutInstance(taskItem);
                                     if (isExtractAllowed) ExclusiveExtract.DisallowExtractInstance(taskItem);
                                 }
                             });
