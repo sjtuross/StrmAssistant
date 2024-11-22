@@ -1,7 +1,7 @@
 ﻿using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
 
-namespace StrmAssistant.Web
+namespace StrmAssistant.Web.Api
 {
     [Route("/{Web}/modules/shortcuts.js", "GET", IsHidden = true)]
     [Unauthenticated]

@@ -21,7 +21,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public class ChapterApi
     {
@@ -34,11 +34,11 @@ namespace StrmAssistant
 
         private const string MarkerSuffix = "#SA";
 
-        public ChapterApi(ILibraryManager libraryManager, IItemRepository itemRepository,IFileSystem fileSystem,
-            IApplicationPaths applicationPaths,IFfmpegManager ffmpegManager,IMediaEncoder mediaEncoder,
-            IMediaMountManager mediaMountManager,IJsonSerializer jsonSerializer,IServerApplicationHost serverApplicationHost)
+        public ChapterApi(ILibraryManager libraryManager, IItemRepository itemRepository, IFileSystem fileSystem,
+            IApplicationPaths applicationPaths, IFfmpegManager ffmpegManager, IMediaEncoder mediaEncoder,
+            IMediaMountManager mediaMountManager, IJsonSerializer jsonSerializer, IServerApplicationHost serverApplicationHost)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _libraryManager = libraryManager;
             _itemRepository = itemRepository;
 
@@ -233,13 +233,13 @@ namespace StrmAssistant
                     switch (markerType)
                     {
                         case MarkerType.IntroEnd:
-                        {
-                            var hasIntroStart = chapters.Any(c =>
-                                c.MarkerType == MarkerType.IntroStart && !IsMarkerAddedByIntroSkip(c));
-                            var hasIntroEnd = chapters.Any(c =>
-                                c.MarkerType == MarkerType.IntroEnd && !IsMarkerAddedByIntroSkip(c));
-                            return !hasIntroStart || !hasIntroEnd;
-                        }
+                            {
+                                var hasIntroStart = chapters.Any(c =>
+                                    c.MarkerType == MarkerType.IntroStart && !IsMarkerAddedByIntroSkip(c));
+                                var hasIntroEnd = chapters.Any(c =>
+                                    c.MarkerType == MarkerType.IntroEnd && !IsMarkerAddedByIntroSkip(c));
+                                return !hasIntroStart || !hasIntroEnd;
+                            }
                         case MarkerType.CreditsStart:
                             var hasCredits = chapters.Any(c =>
                                 c.MarkerType == MarkerType.CreditsStart && !IsMarkerAddedByIntroSkip(c));
@@ -286,7 +286,7 @@ namespace StrmAssistant
 
         public List<BaseItem> FetchClearTaskItems()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope
+            var libraryIds = Plugin.Instance.IntroSkipStore.GetOptions().LibraryScope
                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var libraries = _libraryManager.GetVirtualFolders()
                 .Where(f => libraryIds != null && libraryIds.Any()
@@ -338,7 +338,7 @@ namespace StrmAssistant
                 IncludeItemTypes = new[] { nameof(Episode) },
                 HasPath = true,
                 MediaTypes = new[] { MediaType.Video },
-                ParentIds = new[]{ item.ParentId }
+                ParentIds = new[] { item.ParentId }
             };
 
             var allEpisodesInSeason = _libraryManager.GetItemList(query);
@@ -489,7 +489,7 @@ namespace StrmAssistant
                     var lastEpisodeChapters = _itemRepository.GetChapters(lastCreditsEpisode);
                     var lastEpisodeCreditsStart = lastEpisodeChapters.FirstOrDefault(c => c.MarkerType == MarkerType.CreditsStart);
 
-                    if (lastEpisodeCreditsStart !=null)
+                    if (lastEpisodeCreditsStart != null)
                     {
                         var creditsDurationTicks = lastCreditsEpisode.RunTimeTicks.Value - lastEpisodeCreditsStart.StartPositionTicks;
                         if (creditsDurationTicks > 0)
@@ -523,8 +523,8 @@ namespace StrmAssistant
 
         public List<VirtualFolderInfo> GetMarkerEnabledLibraries(bool suppressLogging)
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions()
-                .IntroSkipOptions.MarkerEnabledLibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+            var libraryIds = Plugin.Instance.IntroSkipStore.GetOptions().MarkerEnabledLibraryScope
+                ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                 .ToArray();
 
             var libraries = _libraryManager.GetVirtualFolders()
@@ -548,8 +548,8 @@ namespace StrmAssistant
         {
             var libraries = UpdateLibraryIntroDetectionFingerprintLength();
 
-            var introDetectionFingerprintMinutes = Plugin.Instance.GetPluginOptions().IntroSkipOptions.IntroDetectionFingerprintMinutes;
-            
+            var introDetectionFingerprintMinutes = Plugin.Instance.IntroSkipStore.GetOptions().IntroDetectionFingerprintMinutes;
+
             var itemsFingerprintQuery = new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { nameof(Episode) },
@@ -567,7 +567,7 @@ namespace StrmAssistant
             };
 
             var items = _libraryManager.GetItemList(itemsFingerprintQuery).OfType<Episode>().ToList();
-            
+
             return items;
         }
 
@@ -575,7 +575,7 @@ namespace StrmAssistant
         {
             var libraries = GetMarkerEnabledLibraries(false);
 
-            var introDetectionFingerprintMinutes = Plugin.Instance.GetPluginOptions().IntroSkipOptions.IntroDetectionFingerprintMinutes;
+            var introDetectionFingerprintMinutes = Plugin.Instance.IntroSkipStore.GetOptions().IntroDetectionFingerprintMinutes;
 
             foreach (var library in libraries)
             {

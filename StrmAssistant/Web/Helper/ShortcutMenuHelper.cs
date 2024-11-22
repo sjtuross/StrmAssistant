@@ -1,10 +1,10 @@
-﻿using MediaBrowser.Controller.Configuration;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using MediaBrowser.Controller.Configuration;
 
-namespace StrmAssistant.Web
+namespace StrmAssistant.Web.Helper
 {
     internal static class ShortcutMenuHelper
     {

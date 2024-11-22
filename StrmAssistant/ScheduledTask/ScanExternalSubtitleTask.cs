@@ -1,19 +1,20 @@
 ﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.ScheduledTask
 {
-    public class ScanExternalSubtitleTask: IScheduledTask
+    public class ScanExternalSubtitleTask : IScheduledTask
     {
         private readonly ILogger _logger;
 
         public ScanExternalSubtitleTask()
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
         }
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)

@@ -2,15 +2,15 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
-using StrmAssistant.Mod;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using StrmAssistant.Mod;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public static class QueueManager
     {
@@ -33,8 +33,8 @@ namespace StrmAssistant
 
         public static void Initialize()
         {
-            _logger = Plugin.Instance.logger;
-            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
+            _logger = Plugin.Instance.Logger;
+            _currentMaxConcurrentCount = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount;
             SemaphoreMaster = new SemaphoreSlim(_currentMaxConcurrentCount);
 
             if (MasterProcessTask == null || MasterProcessTask.IsCompleted)
@@ -78,10 +78,10 @@ namespace StrmAssistant
 
                 if (!MediaInfoExtractItemQueue.IsEmpty || !ExternalSubtitleItemQueue.IsEmpty)
                 {
-                    var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
+                    var enableImageCapture = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.EnableImageCapture;
                     _logger.Info("Image Capture Enabled: " + enableImageCapture);
-                    var exclusiveExtract = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.ExclusiveExtract;
-                    var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
+                    var exclusiveExtract = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
+                    var enableIntroSkip = Plugin.Instance.IntroSkipStore.GetOptions().EnableIntroSkip;
                     _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
 
                     var dequeueMediaInfoItems = new List<BaseItem>();
@@ -230,7 +230,7 @@ namespace StrmAssistant
         private static async Task Master_ProcessTaskQueueAsync(CancellationToken cancellationToken)
         {
             _logger.Info("Master - ProcessTaskQueueAsync Started");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
+            _logger.Info("Max Concurrent Count: " + Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
 
             while (!cancellationToken.IsCancellationRequested)
             {

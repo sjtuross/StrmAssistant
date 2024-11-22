@@ -6,7 +6,7 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Reflection;
-using static StrmAssistant.LanguageUtility;
+using static StrmAssistant.Common.LanguageUtility;
 using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
@@ -26,16 +26,16 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("PinyinSortName - Patch Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("PinyinSortName - Patch Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.PinyinSortName)
+                Plugin.Instance.MetadataEnhanceStore.GetOptions().PinyinSortName)
             {
                 Patch();
             }
@@ -52,14 +52,14 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Patch(_afterMetadataRefresh,
                             prefix: new HarmonyMethod(typeof(PinyinSortName).GetMethod("AfterMetadataRefreshPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch AfterMetadataRefresh Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch AfterMetadataRefresh Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch PinyinSortName Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch PinyinSortName Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -75,14 +75,14 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_afterMetadataRefresh,
                             AccessTools.Method(typeof(PinyinSortName), "AfterMetadataRefreshPrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch AfterMetadataRefresh Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch AfterMetadataRefresh Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch PinyinSortName Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch PinyinSortName Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }

@@ -1,15 +1,16 @@
 ﻿using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Common;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
-using StrmAssistant.Properties;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using StrmAssistant.Properties;
 
-namespace StrmAssistant
+namespace StrmAssistant.Options
 {
-    public class MediaInfoExtractOptions: EditableOptionsBase
+    public class MediaInfoExtractOptions : EditableOptionsBase
     {
         [DisplayNameL("PluginOptions_EditorTitle_Strm_Extract", typeof(Resources))]
         public override string EditorTitle => Resources.PluginOptions_EditorTitle_Strm_Extract;
@@ -24,7 +25,7 @@ namespace StrmAssistant
         [Required]
         [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool EnableImageCapture { get; set; } = false;
-        
+
         [DisplayNameL("ModOptions_ExclusiveExtract_Exclusive_Extract", typeof(Resources))]
         [DescriptionL("ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_", typeof(Resources))]
         [Required]
@@ -32,7 +33,7 @@ namespace StrmAssistant
         public bool ExclusiveExtract { get; set; } = false;
 
         [Browsable(false)]
-        public IEnumerable<EditorSelectOption> LibraryList { get; set; }
+        public List<EditorSelectOption> LibraryList { get; set; } = new List<EditorSelectOption>();
 
         [DisplayNameL("PluginOptions_LibraryScope_Library_Scope", typeof(Resources))]
         [DescriptionL("PluginOptions_LibraryScope_Library_scope_to_extract__Blank_includes_all_", typeof(Resources))]
@@ -42,5 +43,31 @@ namespace StrmAssistant
 
         [Browsable(false)]
         public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;
+
+        public void Initialize(ILibraryManager libraryManager)
+        {
+            LibraryList.Clear();
+
+            LibraryList.Add(new EditorSelectOption
+            {
+                Value = "-1",
+                Name = Resources.Favorites,
+                IsEnabled = true
+            });
+
+            var libraries = libraryManager.GetVirtualFolders();
+
+            foreach (var item in libraries)
+            {
+                var selectOption = new EditorSelectOption
+                {
+                    Value = item.ItemId,
+                    Name = item.Name,
+                    IsEnabled = true,
+                };
+
+                LibraryList.Add(selectOption);
+            }
+        }
     }
 }

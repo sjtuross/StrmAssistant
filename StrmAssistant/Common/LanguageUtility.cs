@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using TinyPinyin;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public static class LanguageUtility
     {
@@ -72,7 +72,7 @@ namespace StrmAssistant
 
         public static List<string> GetFallbackLanguages()
         {
-            var currentFallbackLanguages = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.FallbackLanguages
+            var currentFallbackLanguages = Plugin.Instance.MetadataEnhanceStore.GetOptions().FallbackLanguages
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToList();
 
             return currentFallbackLanguages;

@@ -18,9 +18,9 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("Harmony Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("Harmony Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
             }
 
             EnableImageCapture.Initialize();

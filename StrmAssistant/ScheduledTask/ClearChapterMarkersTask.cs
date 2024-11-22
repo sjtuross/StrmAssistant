@@ -6,15 +6,15 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.ScheduledTask
 {
-    public class ClearChapterMarkersTask: IScheduledTask
+    public class ClearChapterMarkersTask : IScheduledTask
     {
         private readonly ILogger _logger;
 
         public ClearChapterMarkersTask()
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
         }
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
@@ -45,8 +45,8 @@ namespace StrmAssistant
                         break;
                     }
 
-                    var percentDone = (current / total) * 100;
-                    var adjustedProgress = 50 + (percentDone / 50);
+                    var percentDone = current / total * 100;
+                    var adjustedProgress = 50 + percentDone / 50;
                     progress.Report(adjustedProgress);
 
                     Plugin.ChapterApi.RemoveIntroCreditsMarkers(item);

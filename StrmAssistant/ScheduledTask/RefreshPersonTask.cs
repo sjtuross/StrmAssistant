@@ -5,24 +5,26 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Common;
 using StrmAssistant.Mod;
+using StrmAssistant.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static StrmAssistant.LanguageUtility;
+using static StrmAssistant.Common.LanguageUtility;
 
-namespace StrmAssistant
+namespace StrmAssistant.ScheduledTask
 {
-    public class RefreshPersonTask: IScheduledTask
+    public class RefreshPersonTask : IScheduledTask
     {
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
 
         public RefreshPersonTask(ILibraryManager libraryManager)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _libraryManager = libraryManager;
         }
 
@@ -103,7 +105,7 @@ namespace StrmAssistant
             const int batchSize = 100;
             var tasks = new List<Task>();
 
-            var enhanceMovieDbPerson = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.EnhanceMovieDbPerson;
+            var enhanceMovieDbPerson = Plugin.Instance.MetadataEnhanceStore.GetOptions().EnhanceMovieDbPerson;
 
             if (remainingCount > 0)
             {
@@ -111,7 +113,7 @@ namespace StrmAssistant
                 IsRunning = true;
             }
 
-            var refreshPersonMode = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.RefreshPersonMode;
+            var refreshPersonMode = Plugin.Instance.MetadataEnhanceStore.GetOptions().RefreshPersonMode;
             _logger.Info("Refresh Person Mode: " + refreshPersonMode);
 
             for (var startIndex = 0; startIndex < remainingCount; startIndex += batchSize)
@@ -125,7 +127,7 @@ namespace StrmAssistant
                 personQuery.Limit = batchSize;
                 personQuery.StartIndex = startIndex;
                 personItems = _libraryManager.GetItemList(personQuery).Cast<Person>().ToList();
-                
+
                 if (personItems.Count == 0) break;
 
                 foreach (var item in personItems)
@@ -136,9 +138,9 @@ namespace StrmAssistant
                                           IsChinese(taskItem.Name) && IsChinese(taskItem.Overview) &&
                                           taskItem.DateLastSaved >= DateTimeOffset.UtcNow.AddDays(-30);
                     var imageRefreshSkip = taskItem.HasImage(ImageType.Primary) ||
-                                           (refreshPersonMode == RefreshPersonMode.Default &&
+                                           refreshPersonMode == RefreshPersonMode.Default &&
                                             taskItem.DateLastRefreshed >=
-                                            DateTimeOffset.UtcNow.AddDays(-30));
+                                            DateTimeOffset.UtcNow.AddDays(-30);
 
                     if (nameRefreshSkip && imageRefreshSkip)
                     {

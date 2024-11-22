@@ -5,9 +5,9 @@ using StrmAssistant.Properties;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-namespace StrmAssistant
+namespace StrmAssistant.Options
 {
-    public class UIFunctionOptions: EditableOptionsBase
+    public class UIFunctionOptions : EditableOptionsBase
     {
         [DisplayNameL("UIFunctionOptions_EditorTitle_UI_Functions", typeof(Resources))]
         public override string EditorTitle => Resources.UIFunctionOptions_EditorTitle_UI_Functions;

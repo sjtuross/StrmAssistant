@@ -15,7 +15,7 @@ namespace StrmAssistant.Mod
     public static class BeautifyMissingMetadata
     {
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
-        
+
         private static MethodInfo _getBaseItemDtos;
         private static MethodInfo _getBaseItemDto;
 
@@ -40,16 +40,16 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("BeautifyMissingMetadata - Patch Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("BeautifyMissingMetadata - Patch Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().UIFunctionOptions.BeautifyMissingMetadata)
+                Plugin.Instance.UIFunctionStore.GetOptions().BeautifyMissingMetadata)
             {
                 Patch();
             }
@@ -66,7 +66,7 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Patch(_getBaseItemDtos,
                             postfix: new HarmonyMethod(typeof(BeautifyMissingMetadata).GetMethod("GetBaseItemDtosPostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch GetBaseItemDtos Success by Harmony");
                     }
                     if (!IsPatched(_getBaseItemDto, typeof(BeautifyMissingMetadata)))
@@ -74,7 +74,7 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Patch(_getBaseItemDto,
                             postfix: new HarmonyMethod(typeof(BeautifyMissingMetadata).GetMethod("GetBaseItemDtoPostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch GetBaseItemDto Success by Harmony");
                     }
                     if (!IsPatched(_getMainExpression, typeof(BeautifyMissingMetadata)))
@@ -82,14 +82,14 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Patch(_getMainExpression,
                             postfix: new HarmonyMethod(typeof(BeautifyMissingMetadata).GetMethod("GetMainExpressionPostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch GetMainExpression Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch GetMainExpression Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch BeautifyMissingMetadata Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch BeautifyMissingMetadata Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -105,26 +105,26 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_getBaseItemDtos,
                             AccessTools.Method(typeof(BeautifyMissingMetadata), "GetBaseItemDtosPostfix"));
-                        Plugin.Instance.logger.Debug("Unpatch GetBaseItemDtos Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch GetBaseItemDtos Success by Harmony");
                     }
                     if (IsPatched(_getBaseItemDto, typeof(BeautifyMissingMetadata)))
                     {
                         HarmonyMod.Unpatch(_getBaseItemDto,
                             AccessTools.Method(typeof(BeautifyMissingMetadata), "GetBaseItemDtoPostfix"));
-                        Plugin.Instance.logger.Debug("Unpatch GetBaseItemDto Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch GetBaseItemDto Success by Harmony");
                     }
                     if (IsPatched(_getMainExpression, typeof(BeautifyMissingMetadata)))
                     {
                         HarmonyMod.Unpatch(_getMainExpression,
                             AccessTools.Method(typeof(BeautifyMissingMetadata), "GetMainExpressionPostfix"));
-                        Plugin.Instance.logger.Debug("Unpatch GetMainExpression Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch GetMainExpression Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch BeautifyMissingMetadata Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch BeautifyMissingMetadata Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }

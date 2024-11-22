@@ -16,7 +16,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public class SubtitleApi
     {
@@ -40,10 +40,10 @@ namespace StrmAssistant
             ILocalizationManager localizationManager,
             IItemRepository itemRepository)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
-            _itemRepository= itemRepository;
+            _itemRepository = itemRepository;
 
             try
             {
@@ -130,15 +130,15 @@ namespace StrmAssistant
 
         public List<BaseItem> FetchScanTaskItems()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope
+            var libraryIds = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.LibraryScope
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var libraries = _libraryManager.GetVirtualFolders()
                 .Where(f => !libraryIds.Any() || libraryIds.Contains(f.Id)).ToList();
             _logger.Info("MediaInfoExtract - LibraryScope: " +
                          (libraryIds.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
-            var includeExtra = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.IncludeExtra;
+            var includeExtra = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.IncludeExtra;
             _logger.Info("Include Extra: " + includeExtra);
-            var strmOnly = Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly;
+            var strmOnly = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.StrmOnly;
             _logger.Info("Strm Only: " + strmOnly);
 
             var favoritesWithExtra = new List<BaseItem>();

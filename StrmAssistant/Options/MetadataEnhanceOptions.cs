@@ -1,5 +1,6 @@
 using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Common;
+using Emby.Web.GenericEdit.Validation;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
 using StrmAssistant.Properties;
@@ -8,8 +9,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
+using static StrmAssistant.Common.CommonUtility;
 
-namespace StrmAssistant
+namespace StrmAssistant.Options
 {
     public enum RefreshPersonMode
     {
@@ -17,11 +19,11 @@ namespace StrmAssistant
         FullRefresh
     }
 
-    public class MetadataEnhanceOptions: EditableOptionsBase
+    public class MetadataEnhanceOptions : EditableOptionsBase
     {
         [DisplayNameL("PluginOptions_MetadataEnhanceOptions_Metadata_Enhance", typeof(Resources))]
         public override string EditorTitle => Resources.PluginOptions_MetadataEnhanceOptions_Metadata_Enhance;
-        
+
         [DisplayNameL("ModOptions_ChineseMovieDb_Chinese_MovieDb", typeof(Resources))]
         [DescriptionL("ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_", typeof(Resources))]
         [EnabledCondition(nameof(IsMovieDbPluginLoaded), SimpleCondition.IsTrue)]
@@ -29,7 +31,39 @@ namespace StrmAssistant
         public bool ChineseMovieDb { get; set; } = false;
 
         [Browsable(false)]
-        public IEnumerable<EditorSelectOption> LanguageList { get; set; }
+        public List<EditorSelectOption> LanguageList { get; set; } = new List<EditorSelectOption>
+        {
+            new EditorSelectOption
+            {
+                Value = "zh-cn",
+                Name = "zh-CN",
+                IsEnabled = true
+            },
+            new EditorSelectOption
+            {
+                Value = "zh-sg",
+                Name = "zh-SG",
+                IsEnabled = true
+            },
+            new EditorSelectOption
+            {
+                Value = "zh-hk",
+                Name = "zh-HK",
+                IsEnabled = true
+            },
+            new EditorSelectOption
+            {
+                Value = "zh-tw",
+                Name = "zh-TW",
+                IsEnabled = true
+            },
+            new EditorSelectOption
+            {
+                Value = "ja-jp",
+                Name = "ja-JP",
+                IsEnabled = true
+            }
+        };
 
         [DisplayNameL("ModOptions_FallbackLanguages_Fallback_Languages", typeof(Resources))]
         [DescriptionL("ModOptions_FallbackLanguages_Fallback_languages__Default_is_zh_SG_", typeof(Resources))]
@@ -89,7 +123,7 @@ namespace StrmAssistant
         public bool IsMovieDbPluginLoaded { get; } =
             AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "MovieDb") &&
             RuntimeInformation.ProcessArchitecture == Architecture.X64;
-        
+
         [Browsable(false)]
         public bool IsNfoMetadataPluginLoaded { get; } =
             AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "NfoMetadata") &&
@@ -97,5 +131,31 @@ namespace StrmAssistant
 
         [Browsable(false)]
         public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;
+
+        protected override void Validate(ValidationContext context)
+        {
+            string errors = null;
+
+            foreach (var (value, isValid, errorResource) in new (string, Func<string, bool>, string)[]
+                     {
+                         (AltMovieDbApiUrl, IsValidHttpUrl,
+                             Resources.InvalidAltMovieDbApiUrl),
+                         (AltMovieDbImageUrl, IsValidHttpUrl,
+                             Resources.InvalidAltMovieDbImageUrl),
+                         (AltMovieDbApiKey, IsValidMovieDbApiKey,
+                             Resources.InvalidAltMovieDbApiKey)
+                     })
+            {
+                if (!string.IsNullOrWhiteSpace(value) && !isValid(value))
+                {
+                    errors = errors == null ? errorResource : $"{errors}; {errorResource}";
+                }
+            }
+
+            if (!string.IsNullOrEmpty(errors))
+            {
+                context.AddValidationError(nameof(MetadataEnhanceOptions), errors);
+            }
+        }
     }
 }

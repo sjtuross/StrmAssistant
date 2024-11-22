@@ -8,7 +8,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using static StrmAssistant.CommonUtility;
+using static StrmAssistant.Common.CommonUtility;
 using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
@@ -16,7 +16,7 @@ namespace StrmAssistant.Mod
     public static class AltMovieDbConfig
     {
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
-        
+
         private static Assembly _movieDbAssembly;
         private static MethodInfo _getMovieDbResponse;
         private static MethodInfo _saveImageFromRemoteUrl;
@@ -45,9 +45,9 @@ namespace StrmAssistant.Mod
 
                     var embyProviders = Assembly.Load("Emby.Providers");
                     var providerManager = embyProviders.GetType("Emby.Providers.Manager.ProviderManager");
-                    _saveImageFromRemoteUrl= providerManager.GetMethod("SaveImageFromRemoteUrl",
+                    _saveImageFromRemoteUrl = providerManager.GetMethod("SaveImageFromRemoteUrl",
                         BindingFlags.NonPublic | BindingFlags.Instance);
-                    
+
                     var embyApi = Assembly.Load("Emby.Api");
                     var remoteImageService = embyApi.GetType("Emby.Api.Images.RemoteImageService");
                     _downloadImage = remoteImageService.GetMethod("DownloadImage",
@@ -56,20 +56,20 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("AltMovieDbConfig - Patch Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("AltMovieDbConfig - Patch Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.AltMovieDbConfig)
+                Plugin.Instance.MetadataEnhanceStore.GetOptions().AltMovieDbConfig)
             {
                 PatchApiUrl();
 
-                if (!string.IsNullOrEmpty(Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.AltMovieDbImageUrl))
+                if (!string.IsNullOrEmpty(Plugin.Instance.MetadataEnhanceStore.GetOptions().AltMovieDbImageUrl))
                 {
                     PatchImageUrl();
                 }
@@ -88,15 +88,15 @@ namespace StrmAssistant.Mod
                             prefix: new HarmonyMethod(typeof(AltMovieDbConfig).GetMethod(
                                 "GetMovieDbResponsePrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch GetMovieDbResponse Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch GetMovieDbResponse Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch GetMovieDbResponse Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -112,14 +112,14 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_getMovieDbResponse,
                             AccessTools.Method(typeof(AltMovieDbConfig), "GetMovieDbResponsePrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch GetMovieDbResponse Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch GetMovieDbResponse Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch GetMovieDbResponse Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch GetMovieDbResponse Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }
@@ -136,7 +136,7 @@ namespace StrmAssistant.Mod
                             prefix: new HarmonyMethod(typeof(AltMovieDbConfig).GetMethod(
                                 "SaveImageFromRemoteUrlPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch SaveImageFromRemoteUrl Success by Harmony");
                     }
 
@@ -146,15 +146,15 @@ namespace StrmAssistant.Mod
                             prefix: new HarmonyMethod(typeof(AltMovieDbConfig).GetMethod(
                                 "DownloadImagePrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch DownloadImage Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch AltMovieDbImageUrl Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch AltMovieDbImageUrl Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -170,21 +170,21 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_saveImageFromRemoteUrl,
                             AccessTools.Method(typeof(AltMovieDbConfig), "SaveImageFromRemoteUrlPrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch SaveImageFromRemoteUrl Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch SaveImageFromRemoteUrl Success by Harmony");
                     }
 
                     if (IsPatched(_downloadImage, typeof(AltMovieDbConfig)))
                     {
                         HarmonyMod.Unpatch(_downloadImage,
                             AccessTools.Method(typeof(AltMovieDbConfig), "DownloadImagePrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch DownloadImage Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch DownloadImage Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch AltMovieDbImageUrl Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch AltMovieDbImageUrl Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }
@@ -192,7 +192,7 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool GetMovieDbResponsePrefix(HttpRequestOptions options)
         {
-            var metadataEnhanceOptions = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions;
+            var metadataEnhanceOptions = Plugin.Instance.MetadataEnhanceStore.GetOptions();
             var apiUrl = metadataEnhanceOptions.AltMovieDbApiUrl;
             var apiKey = metadataEnhanceOptions.AltMovieDbApiKey;
 
@@ -222,7 +222,7 @@ namespace StrmAssistant.Mod
 
         private static void ReplaceMovieDbImageUrl(ref string url)
         {
-            var imageUrl = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.AltMovieDbImageUrl;
+            var imageUrl = Plugin.Instance.MetadataEnhanceStore.GetOptions().AltMovieDbImageUrl;
 
             if (IsValidHttpUrl(imageUrl))
             {

@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.MediaInfo;
+using StrmAssistant.ScheduledTask;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -42,7 +43,7 @@ namespace StrmAssistant.Mod
 
         public static void Initialize()
         {
-            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
+            _currentMaxConcurrentCount = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount;
 
             try
             {
@@ -66,7 +67,7 @@ namespace StrmAssistant.Mod
                     videoImageProvider.GetMethod("Supports", BindingFlags.Instance | BindingFlags.Public);
                 _getImage = videoImageProvider.GetMethod("GetImage", BindingFlags.Public | BindingFlags.Instance);
 
-                var supportsThumbnailsProperty=
+                var supportsThumbnailsProperty =
                     typeof(Video).GetProperty("SupportsThumbnails", BindingFlags.Public | BindingFlags.Instance);
                 _supportsThumbnailsGetter = supportsThumbnailsProperty?.GetGetMethod();
                 _runExtraction =
@@ -87,21 +88,21 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("EnableImageCapture - Patch Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("EnableImageCapture - Patch Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture)
+                Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.EnableImageCapture)
             {
                 SemaphoreFFmpeg = new SemaphoreSlim(_currentMaxConcurrentCount);
                 PatchResourcePool();
                 var resourcePool = (SemaphoreSlim)_resourcePoolField?.GetValue(null);
-                Plugin.Instance.logger.Info(
+                Plugin.Instance.Logger.Info(
                     "Current FFmpeg ResourcePool: " + resourcePool?.CurrentCount ?? string.Empty);
 
                 Patch();
@@ -123,7 +124,7 @@ namespace StrmAssistant.Mod
                                 BindingFlags.Static | BindingFlags.NonPublic)),
                             postfix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod(
                                 "SupportsImageCapturePostfix", BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch VideoImageProvider.Supports Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch VideoImageProvider.Supports Success by Harmony");
                     }
 
                     if (!IsPatched(_getImage, typeof(EnableImageCapture)))
@@ -131,7 +132,7 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Patch(_getImage,
                             prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("GetImagePrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch VideoImageProvider.GetImage Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch VideoImageProvider.GetImage Success by Harmony");
                     }
 
                     if (!IsPatched(_supportsThumbnailsGetter, typeof(EnableImageCapture)))
@@ -141,7 +142,7 @@ namespace StrmAssistant.Mod
                                 "SupportsThumbnailsGetterPrefix", BindingFlags.Static | BindingFlags.NonPublic)),
                             postfix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod(
                                 "SupportsThumbnailsGetterPostfix", BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch SupportsThumbnailsGetter Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch SupportsThumbnailsGetter Success by Harmony");
                     }
 
                     if (!IsPatched(_runExtraction, typeof(EnableImageCapture)))
@@ -149,7 +150,7 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Patch(_runExtraction,
                             prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("RunExtractionPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch RunExtraction Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch RunExtraction Success by Harmony");
                     }
 
                     if (!IsPatched(_logThumbnailImageExtractionFailure, typeof(EnableImageCapture)))
@@ -158,14 +159,14 @@ namespace StrmAssistant.Mod
                             prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod(
                                 "LogThumbnailImageExtractionFailurePrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch LogThumbnailImageExtractionFailure Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch LogThumbnailImageExtractionFailure Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch EnableImageCapture Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch EnableImageCapture Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -185,13 +186,13 @@ namespace StrmAssistant.Mod
                             AccessTools.Method(typeof(EnableImageCapture), "SupportsImageCapturePrefix"));
                         HarmonyMod.Unpatch(_supportsImageCapture,
                             AccessTools.Method(typeof(EnableImageCapture), "SupportsImageCapturePostfix"));
-                        Plugin.Instance.logger.Debug("Unpatch VideoImageProvider.Supports Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch VideoImageProvider.Supports Success by Harmony");
                     }
 
                     if (IsPatched(_getImage, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Unpatch(_getImage, AccessTools.Method(typeof(EnableImageCapture), "GetImagePrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch VideoImageProvider.GetImage Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch VideoImageProvider.GetImage Success by Harmony");
                     }
 
                     if (IsPatched(_supportsThumbnailsGetter, typeof(EnableImageCapture)))
@@ -200,28 +201,28 @@ namespace StrmAssistant.Mod
                             AccessTools.Method(typeof(EnableImageCapture), "SupportsThumbnailsGetterPrefix"));
                         HarmonyMod.Unpatch(_supportsThumbnailsGetter,
                             AccessTools.Method(typeof(EnableImageCapture), "SupportsThumbnailsGetterPostfix"));
-                        Plugin.Instance.logger.Debug("Unpatch SupportsThumbnailsGetter Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch SupportsThumbnailsGetter Success by Harmony");
                     }
 
                     if (IsPatched(_runExtraction, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Unpatch(_runExtraction,
                             AccessTools.Method(typeof(EnableImageCapture), "RunExtractionPrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch RunExtraction Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch RunExtraction Success by Harmony");
                     }
 
                     if (IsPatched(_logThumbnailImageExtractionFailure, typeof(EnableImageCapture)))
                     {
                         HarmonyMod.Unpatch(_logThumbnailImageExtractionFailure,
                             AccessTools.Method(typeof(EnableImageCapture), "LogThumbnailImageExtractionFailurePrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch LogThumbnailImageExtractionFailure Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch LogThumbnailImageExtractionFailure Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch EnableImageCapture Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch EnableImageCapture Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }
@@ -242,25 +243,25 @@ namespace StrmAssistant.Mod
                             //    transpiler: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("ResourcePoolTranspiler",
                             //        BindingFlags.Static | BindingFlags.NonPublic)));
 
-                            Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Success by Harmony");
+                            Plugin.Instance.Logger.Debug("Patch FFmpeg ResourcePool Success by Harmony");
                         }
                     }
                     catch (Exception he)
                     {
-                        Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Harmony");
-                        Plugin.Instance.logger.Debug(he.Message);
-                        Plugin.Instance.logger.Debug(he.StackTrace);
+                        Plugin.Instance.Logger.Debug("Patch FFmpeg ResourcePool Failed by Harmony");
+                        Plugin.Instance.Logger.Debug(he.Message);
+                        Plugin.Instance.Logger.Debug(he.StackTrace);
                         PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
                         try
                         {
                             _resourcePoolField.SetValue(null, SemaphoreFFmpeg);
-                            Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Success by Reflection");
+                            Plugin.Instance.Logger.Debug("Patch FFmpeg ResourcePool Success by Reflection");
                         }
                         catch (Exception re)
                         {
-                            Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
-                            Plugin.Instance.logger.Debug(re.Message);
+                            Plugin.Instance.Logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
+                            Plugin.Instance.Logger.Debug(re.Message);
                             PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
                         }
                     }
@@ -271,18 +272,18 @@ namespace StrmAssistant.Mod
                     try
                     {
                         _resourcePoolField.SetValue(null, SemaphoreFFmpeg);
-                        Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Success by Reflection");
+                        Plugin.Instance.Logger.Debug("Patch FFmpeg ResourcePool Success by Reflection");
                     }
                     catch (Exception re)
                     {
-                        Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
-                        Plugin.Instance.logger.Debug(re.Message);
+                        Plugin.Instance.Logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
+                        Plugin.Instance.Logger.Debug(re.Message);
                         PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
                     }
                     break;
             }
         }
-        
+
         public static void PatchIsShortcut()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
@@ -295,20 +296,20 @@ namespace StrmAssistant.Mod
                             prefix: new HarmonyMethod(typeof(EnableImageCapture).GetMethod("IsShortcutPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         _isShortcutPatchUsageCount++;
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch IsShortcut Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch IsShortcut Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch IsShortcut Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
         }
-        
+
         public static void UpdateResourcePool(int maxConcurrentCount)
         {
             if (_currentMaxConcurrentCount != maxConcurrentCount)
@@ -349,15 +350,15 @@ namespace StrmAssistant.Mod
                         }
                         catch (Exception re)
                         {
-                            Plugin.Instance.logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
-                            Plugin.Instance.logger.Debug(re.Message);
+                            Plugin.Instance.Logger.Debug("Patch FFmpeg ResourcePool Failed by Reflection");
+                            Plugin.Instance.Logger.Debug(re.Message);
                         }
                         break;
                 }
             }
 
             var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
-            Plugin.Instance.logger.Info("Current FFmpeg ResourcePool: " + resourcePool?.CurrentCount ?? String.Empty);
+            Plugin.Instance.Logger.Info("Current FFmpeg ResourcePool: " + resourcePool?.CurrentCount ?? string.Empty);
         }
 
         public static void PatchIsShortcutInstance(BaseItem item)
@@ -372,13 +373,13 @@ namespace StrmAssistant.Mod
                     try
                     {
                         _isShortcutProperty.SetValue(item, true); //special logic depending on modded MediaBrowser.Controller.dll
-                        Plugin.Instance.logger.Debug("Patch IsShortcut Success by Reflection" + " - " + item.Name + " - " +
+                        Plugin.Instance.Logger.Debug("Patch IsShortcut Success by Reflection" + " - " + item.Name + " - " +
                                                      item.Path);
                     }
                     catch (Exception re)
                     {
-                        Plugin.Instance.logger.Debug("Patch IsShortcut Failed by Reflection");
-                        Plugin.Instance.logger.Debug(re.Message);
+                        Plugin.Instance.Logger.Debug("Patch IsShortcut Failed by Reflection");
+                        Plugin.Instance.Logger.Debug(re.Message);
                         PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
                     }
                     break;
@@ -397,13 +398,13 @@ namespace StrmAssistant.Mod
                     try
                     {
                         _isShortcutProperty.SetValue(item, false); //special logic depending on modded MediaBrowser.Controller.dll
-                        Plugin.Instance.logger.Debug("Unpatch IsShortcut Success by Reflection" + " - " + item.Name + " - " +
+                        Plugin.Instance.Logger.Debug("Unpatch IsShortcut Success by Reflection" + " - " + item.Name + " - " +
                                                      item.Path);
                     }
                     catch (Exception re)
                     {
-                        Plugin.Instance.logger.Debug("Unpatch IsShortcut Failed by Reflection");
-                        Plugin.Instance.logger.Debug(re.Message);
+                        Plugin.Instance.Logger.Debug("Unpatch IsShortcut Failed by Reflection");
+                        Plugin.Instance.Logger.Debug(re.Message);
                     }
                     break;
             }
@@ -429,19 +430,19 @@ namespace StrmAssistant.Mod
                             AccessTools.Method(typeof(EnableImageCapture), "ResourcePoolPrefix"));
                         //HarmonyMod.Unpatch(_staticConstructor,
                         //    AccessTools.Method(typeof(EnableImageCapture), "ResourcePoolTranspiler"));
-                        Plugin.Instance.logger.Debug("Unpatch FFmpeg ResourcePool Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch FFmpeg ResourcePool Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch FFmpeg ResourcePool Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch FFmpeg ResourcePool Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
                 finally
                 {
                     var resourcePool = (SemaphoreSlim)_resourcePoolField.GetValue(null);
-                    Plugin.Instance.logger.Info("Current FFmpeg Resource Pool: " + resourcePool?.CurrentCount ??
+                    Plugin.Instance.Logger.Info("Current FFmpeg Resource Pool: " + resourcePool?.CurrentCount ??
                                                 string.Empty);
                 }
             }
@@ -457,18 +458,18 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_isShortcutGetter,
                             AccessTools.Method(typeof(EnableImageCapture), "IsShortcutPrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch IsShortcut Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch IsShortcut Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch IsShortcut Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch IsShortcut Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }
-        
+
         [HarmonyPrefix]
         private static bool ResourcePoolPrefix()
         {
@@ -486,11 +487,11 @@ namespace StrmAssistant.Mod
                 if (codes[i].opcode == OpCodes.Ldc_I4_1)
                 {
                     codes[i] = new CodeInstruction(OpCodes.Ldc_I4_S,
-                        (sbyte)Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
+                        (sbyte)Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
                     if (i + 1 < codes.Count && codes[i + 1].opcode == OpCodes.Ldc_I4_1)
                     {
                         codes[i + 1] = new CodeInstruction(OpCodes.Ldc_I4_S,
-                            (sbyte)Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
+                            (sbyte)Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
                     }
                     break;
                 }
@@ -565,7 +566,7 @@ namespace StrmAssistant.Mod
                 __instance.GetType() == _quickSingleImageExtractor)
             {
                 var newValue =
-                    60000 * Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
+                    60000 * Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount;
                 _totalTimeoutMs.SetValue(__instance, newValue);
             }
 
@@ -577,7 +578,7 @@ namespace StrmAssistant.Mod
         {
             return false;
         }
-        
+
         [HarmonyPrefix]
         private static bool SupportsThumbnailsGetterPrefix(BaseItem __instance, ref bool __result)
         {

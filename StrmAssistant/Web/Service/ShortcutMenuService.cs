@@ -1,8 +1,10 @@
 ﻿extern alias SystemMemory;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
+using StrmAssistant.Web.Api;
+using StrmAssistant.Web.Helper;
 
-namespace StrmAssistant.Web
+namespace StrmAssistant.Web.Service
 {
     [Unauthenticated]
     public class ShortcutMenuService : IService, IRequiresRequest

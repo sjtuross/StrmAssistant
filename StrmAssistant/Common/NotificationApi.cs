@@ -6,12 +6,12 @@ using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Session;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Session;
-using StrmAssistant.Properties;
 using System;
 using System.Linq;
 using System.Threading;
+using StrmAssistant.Properties;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public class NotificationApi
     {
@@ -22,7 +22,7 @@ namespace StrmAssistant
 
         public NotificationApi(INotificationManager notificationManager, IUserManager userManager, ISessionManager sessionManager)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _notificationManager = notificationManager;
             _userManager = userManager;
             _sessionManager = sessionManager;

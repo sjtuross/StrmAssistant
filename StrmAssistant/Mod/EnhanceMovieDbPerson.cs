@@ -3,6 +3,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using StrmAssistant.ScheduledTask;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using static StrmAssistant.LanguageUtility;
+using static StrmAssistant.Common.LanguageUtility;
 using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
@@ -83,21 +84,21 @@ namespace StrmAssistant.Mod
                 }
                 else
                 {
-                    Plugin.Instance.logger.Info("EnhanceMovieDbPerson - MovieDb plugin is not installed");
+                    Plugin.Instance.Logger.Info("EnhanceMovieDbPerson - MovieDb plugin is not installed");
                 }
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("EnhanceMovieDbPerson - Patch Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("EnhanceMovieDbPerson - Patch Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.EnhanceMovieDbPerson)
+                Plugin.Instance.MetadataEnhanceStore.GetOptions().EnhanceMovieDbPerson)
             {
                 Patch();
             }
@@ -114,7 +115,7 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Patch(_movieDbPersonProviderImportData,
                             prefix: new HarmonyMethod(typeof(EnhanceMovieDbPerson).GetMethod("PersonImportDataPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch MovieDbPersonProvider.ImportData Success by Harmony");
                     }
 
@@ -123,7 +124,7 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Patch(_movieDbSeasonProviderImportData,
                             prefix: new HarmonyMethod(typeof(EnhanceMovieDbPerson).GetMethod("SeasonImportDataPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch MovieDbSeasonProvider.ImportData Success by Harmony");
                     }
 
@@ -132,15 +133,15 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Patch(_seasonGetMetadata,
                             postfix: new HarmonyMethod(typeof(EnhanceMovieDbPerson).GetMethod("SeasonGetMetadataPostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch MovieDbSeasonProvider.GetMetadata Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Warn("EnhanceMovieDbPerson - Patch Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Warn("EnhanceMovieDbPerson - Patch Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -156,30 +157,30 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_movieDbPersonProviderImportData,
                             AccessTools.Method(typeof(EnhanceMovieDbPerson), "PersonImportDataPrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch MovieDbPersonProvider.ImportData Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch MovieDbPersonProvider.ImportData Success by Harmony");
                     }
                     if (IsPatched(_movieDbSeasonProviderImportData, typeof(EnhanceMovieDbPerson)))
                     {
                         HarmonyMod.Unpatch(_movieDbSeasonProviderImportData,
                             AccessTools.Method(typeof(EnhanceMovieDbPerson), "SeasonImportDataPrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch MovieDbSeasonProvider.ImportData Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch MovieDbSeasonProvider.ImportData Success by Harmony");
                     }
                     if (IsPatched(_seasonGetMetadata, typeof(EnhanceMovieDbPerson)))
                     {
                         HarmonyMod.Unpatch(_seasonGetMetadata,
                             AccessTools.Method(typeof(EnhanceMovieDbPerson), "SeasonGetMetadataPostfix"));
-                        Plugin.Instance.logger.Debug("Unpatch MovieDbSeasonProvider.GetMetadata Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch MovieDbSeasonProvider.GetMetadata Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch EnhanceMovieDbPerson Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch EnhanceMovieDbPerson Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }
-        
+
         private static Tuple<string, bool> ProcessPersonInfoAsExpected(string input, string placeOfBirth)
         {
             var isJapaneseFallback = GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase);
@@ -192,7 +193,7 @@ namespace StrmAssistant.Mod
                 input = ConvertTraditionalToSimplified(input);
             }
 
-            if (IsChinese(input) || (considerJapanese && IsJapanese(input)))
+            if (IsChinese(input) || considerJapanese && IsJapanese(input))
             {
                 return new Tuple<string, bool>(input, true);
             }
@@ -293,7 +294,7 @@ namespace StrmAssistant.Mod
 
             return true;
         }
-        
+
         [HarmonyPostfix]
         private static void SeasonGetMetadataPostfix(RemoteMetadataFetchOptions<SeasonInfo> options,
             CancellationToken cancellationToken, Task<MetadataResult<Season>> __result)

@@ -1,9 +1,9 @@
 ﻿using Emby.Notifications;
 using MediaBrowser.Controller;
-using StrmAssistant.Properties;
 using System.Collections.Generic;
+using StrmAssistant.Properties;
 
-namespace StrmAssistant
+namespace StrmAssistant.Notification
 {
     public class CustomNotifications : INotificationTypeFactory
     {

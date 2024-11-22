@@ -19,7 +19,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public class LibraryApi
     {
@@ -59,7 +59,7 @@ namespace StrmAssistant
             IUserManager userManager)
         {
             _libraryManager = libraryManager;
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _fileSystem = fileSystem;
             _userManager = userManager;
             _mediaSourceManager = mediaSourceManager;
@@ -155,14 +155,14 @@ namespace StrmAssistant
 
         public List<BaseItem> FetchExtractQueueItems(List<BaseItem> items)
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope
+            var libraryIds = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.LibraryScope
                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var includeFavorites = libraryIds == null || !libraryIds.Any() || libraryIds.Contains("-1");
             _logger.Info("Include Favorites: " + includeFavorites);
 
-            var includeExtra = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.IncludeExtra;
-            var catchupMode=Plugin.Instance.GetPluginOptions().GeneralOptions.CatchupMode;
-            var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
+            var includeExtra = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.IncludeExtra;
+            var catchupMode = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.CatchupMode;
+            var enableIntroSkip = Plugin.Instance.IntroSkipStore.GetOptions().EnableIntroSkip;
 
             var resultItems = new List<BaseItem>();
 
@@ -212,7 +212,7 @@ namespace StrmAssistant
 
         public List<BaseItem> FetchExtractTaskItems()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope
+            var libraryIds = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.LibraryScope
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var libraries = _libraryManager.GetVirtualFolders()
                 .Where(f => !libraryIds.Any() || libraryIds.Contains(f.Id)).ToList();
@@ -222,9 +222,9 @@ namespace StrmAssistant
             _logger.Info("MediaInfoExtract - LibraryScope: " +
                          (libraryIds.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
 
-            var includeExtra = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.IncludeExtra;
+            var includeExtra = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.IncludeExtra;
             _logger.Info("Include Extra: " + includeExtra);
-            var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
+            var enableImageCapture = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.EnableImageCapture;
 
             var favoritesWithExtra = Array.Empty<BaseItem>();
             if (libraryIds.Contains("-1"))
@@ -331,7 +331,7 @@ namespace StrmAssistant
 
         private List<BaseItem> FilterUnprocessed(List<BaseItem> items)
         {
-            var strmOnly = Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly;
+            var strmOnly = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.StrmOnly;
             _logger.Info("Strm Only: " + strmOnly);
 
             var results = new List<BaseItem>();
@@ -357,13 +357,13 @@ namespace StrmAssistant
 
         public List<BaseItem> ExpandFavorites(List<BaseItem> items, bool filterNeeded)
         {
-            var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
+            var enableImageCapture = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.EnableImageCapture;
 
             var itemsMultiVersions = items.SelectMany(v =>
                     _libraryManager.GetItemList(new InternalItemsQuery
-                        {
-                            PresentationUniqueKey = v.PresentationUniqueKey
-                        }))
+                    {
+                        PresentationUniqueKey = v.PresentationUniqueKey
+                    }))
                 .ToList();
 
             var videos = itemsMultiVersions.OfType<Video>().Cast<BaseItem>().ToList();
@@ -439,12 +439,12 @@ namespace StrmAssistant
             var users = AllUsers.Select(e => e.Key)
                 .Where(u => itemsMultiVersion.Any(i =>
                     (i is Movie || i is Series) && i.IsFavoriteOrLiked(u) || i is Episode e &&
-                    (e.IsFavoriteOrLiked(u) || (e.Series != null && e.Series.IsFavoriteOrLiked(u)))))
+                    (e.IsFavoriteOrLiked(u) || e.Series != null && e.Series.IsFavoriteOrLiked(u))))
                 .ToList();
 
             return users;
         }
-        
+
         public bool HasFileChanged(BaseItem item)
         {
             if (item.IsFileProtocol)

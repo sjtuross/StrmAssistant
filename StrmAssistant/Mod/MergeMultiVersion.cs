@@ -15,23 +15,23 @@ namespace StrmAssistant.Mod
         {
             try
             {
-                 var namingAssembly = Assembly.Load("Emby.Naming");
-                 var videoListResolverType = namingAssembly.GetType("Emby.Naming.Video.VideoListResolver");
+                var namingAssembly = Assembly.Load("Emby.Naming");
+                var videoListResolverType = namingAssembly.GetType("Emby.Naming.Video.VideoListResolver");
                 _isEligibleForMultiVersion = videoListResolverType.GetMethod("IsEligibleForMultiVersion",
                     BindingFlags.Static | BindingFlags.NonPublic);
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("MergeMultiVersion - Patch Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("MergeMultiVersion - Patch Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().ModOptions.MergeMultiVersion)
+                Plugin.Instance.MainOptionsStore.GetOptions().ModOptions.MergeMultiVersion)
             {
                 Patch();
             }
@@ -48,15 +48,15 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Patch(_isEligibleForMultiVersion,
                             prefix: new HarmonyMethod(typeof(MergeMultiVersion).GetMethod("IsEligibleForMultiVersionPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch IsEligibleForMultiVersion Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch IsEligibleForMultiVersion Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch IsEligibleForMultiVersion Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -72,14 +72,14 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_isEligibleForMultiVersion,
                             AccessTools.Method(typeof(MergeMultiVersion), "IsEligibleForMultiVersionPrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch IsEligibleForMultiVersion Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch IsEligibleForMultiVersion Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch IsEligibleForMultiVersion Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch IsEligibleForMultiVersion Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }

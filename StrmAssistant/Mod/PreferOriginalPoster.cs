@@ -7,6 +7,7 @@ using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Providers;
 using MediaBrowser.Model.Serialization;
+using StrmAssistant.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -95,7 +96,7 @@ namespace StrmAssistant.Mod
                 }
                 else
                 {
-                    Plugin.Instance.logger.Info("OriginalPoster - MovieDb plugin is not installed");
+                    Plugin.Instance.Logger.Info("OriginalPoster - MovieDb plugin is not installed");
                 }
 
                 _tvdbAssembly = AppDomain.CurrentDomain
@@ -118,7 +119,7 @@ namespace StrmAssistant.Mod
                 }
                 else
                 {
-                    Plugin.Instance.logger.Info("OriginalPoster - Tvdb plugin is not installed");
+                    Plugin.Instance.Logger.Info("OriginalPoster - Tvdb plugin is not installed");
                 }
 
                 var embyProvidersAssembly = Assembly.Load("Emby.Providers");
@@ -137,16 +138,16 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("OriginalPoster - Patch Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("OriginalPoster - Patch Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.PreferOriginalPoster)
+                Plugin.Instance.MetadataEnhanceStore.GetOptions().PreferOriginalPoster)
             {
                 Patch();
             }
@@ -179,7 +180,7 @@ namespace StrmAssistant.Mod
                             postfix: new HarmonyMethod(typeof(PreferOriginalPoster).GetMethod(
                                 "GetMovieInfoTmdbPostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch MovieDbImageProvider.GetMovieInfo Success by Harmony");
                     }
 
@@ -189,15 +190,15 @@ namespace StrmAssistant.Mod
                             postfix: new HarmonyMethod(typeof(PreferOriginalPoster).GetMethod(
                                 "EnsureSeriesInfoTmdbPostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch MovieDbSeriesProvider.EnsureSeriesInfo Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch PreferOriginalPoster for MovieDb Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch PreferOriginalPoster for MovieDb Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -214,7 +215,7 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_ensureSeriesInfo,
                             AccessTools.Method(typeof(PreferOriginalPoster), "EnsureSeriesInfoTmdbPostfix"));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Unpatch MovieDbSeriesProvider.EnsureSeriesInfo Success by Harmony");
                     }
 
@@ -222,18 +223,18 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_getMovieInfo,
                             AccessTools.Method(typeof(PreferOriginalPoster), "GetMovieInfoTmdbPostfix"));
-                        Plugin.Instance.logger.Debug("Unpatch MovieDbImageProvider.GetMovieInfo Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch MovieDbImageProvider.GetMovieInfo Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch PreferOriginalPoster for MovieDb Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch PreferOriginalPoster for MovieDb Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }
-        
+
         private static void PatchTvdb()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony &&
@@ -247,7 +248,7 @@ namespace StrmAssistant.Mod
                             postfix: new HarmonyMethod(typeof(PreferOriginalPoster).GetMethod(
                                 "EnsureMovieInfoTvdbPostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch TvdbMovieProvider.EnsureMovieInfo Success by Harmony");
                     }
 
@@ -257,15 +258,15 @@ namespace StrmAssistant.Mod
                             postfix: new HarmonyMethod(typeof(PreferOriginalPoster).GetMethod(
                                 "EnsureSeriesInfoTvdbPostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch TvdbSeriesProvider.EnsureSeriesInfo Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch PreferOriginalPoster for Tvdb Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch PreferOriginalPoster for Tvdb Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -282,7 +283,7 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_ensureMovieInfoTvdb,
                             AccessTools.Method(typeof(PreferOriginalPoster), "EnsureMovieInfoTvdbPostfix"));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Unpatch TvdbMovieProvider.EnsureMovieInfo Success by Harmony");
                     }
 
@@ -290,15 +291,15 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_ensureSeriesInfoTvdb,
                             AccessTools.Method(typeof(PreferOriginalPoster), "EnsureSeriesInfoTvdbPostfix"));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Unpatch TvdbSeriesProvider.EnsureSeriesInfo Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch PreferOriginalPoster for Tvdb Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch PreferOriginalPoster for Tvdb Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }
@@ -316,15 +317,15 @@ namespace StrmAssistant.Mod
                                 "GetAvailableRemoteImagesPrefix", BindingFlags.Static | BindingFlags.NonPublic)),
                             postfix: new HarmonyMethod(typeof(PreferOriginalPoster).GetMethod(
                                 "GetAvailableRemoteImagesPostfix", BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch GetAvailableRemoteImages Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch GetAvailableRemoteImages Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch GetAvailableRemoteImages Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -342,14 +343,14 @@ namespace StrmAssistant.Mod
                             AccessTools.Method(typeof(PreferOriginalPoster), "GetAvailableRemoteImagesPrefix"));
                         HarmonyMod.Unpatch(_getAvailableRemoteImages,
                             AccessTools.Method(typeof(PreferOriginalPoster), "GetAvailableRemoteImagesPostfix"));
-                        Plugin.Instance.logger.Debug("Unpatch GetAvailableRemoteImages Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch GetAvailableRemoteImages Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch GetAvailableRemoteImages Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch GetAvailableRemoteImages Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }
@@ -358,7 +359,7 @@ namespace StrmAssistant.Mod
         {
             if (tmdbId == null && imdbId == null && tvdbId == null) return;
 
-            var item = new ContextItem { TmdbId = tmdbId, ImdbId = imdbId, TvdbId = tvdbId};
+            var item = new ContextItem { TmdbId = tmdbId, ImdbId = imdbId, TvdbId = tvdbId };
 
             if (tmdbId != null) CurrentItemsByTmdbId[tmdbId] = item;
 
@@ -417,7 +418,7 @@ namespace StrmAssistant.Mod
                 return itemLookup.OriginalLanguage;
 
             var fallbackItem = item is Movie || item is Series ? item : item is Season season ? season.Series : null;
-            
+
             if (fallbackItem != null)
             {
                 return LanguageUtility.GetLanguageByTitle(fallbackItem.OriginalTitle);
@@ -443,7 +444,7 @@ namespace StrmAssistant.Mod
                             _movieDataTmdbTaskResult = task.GetType().GetProperty("Result");
 
                         var movieData = _movieDataTmdbTaskResult?.GetValue(task);
-                        if (movieData != null && _tmdbIdMovieDataTmdb!=null && _imdbIdMovieDataTmdb!=null && _originalLanguageMovieDataTmdb!=null)
+                        if (movieData != null && _tmdbIdMovieDataTmdb != null && _imdbIdMovieDataTmdb != null && _originalLanguageMovieDataTmdb != null)
                         {
                             var tmdbId = _tmdbIdMovieDataTmdb.GetValue(movieData).ToString();
                             var imdbId = _imdbIdMovieDataTmdb.GetValue(movieData) as string;
@@ -549,12 +550,12 @@ namespace StrmAssistant.Mod
                 }, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
                 .ConfigureAwait(false);
         }
-        
+
         [HarmonyPrefix]
         private static bool GetAvailableRemoteImagesPrefix(IHasProviderIds item, LibraryOptions libraryOptions,
             ref RemoteImageQuery query, IDirectoryService directoryService, CancellationToken cancellationToken)
         {
-            query.IncludeAllLanguages=true;
+            query.IncludeAllLanguages = true;
 
             var tmdbId = item.GetProviderId(MetadataProviders.Tmdb);
             var imdbId = item.GetProviderId(MetadataProviders.Imdb);

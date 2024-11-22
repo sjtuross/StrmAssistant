@@ -12,7 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using static StrmAssistant.CommonUtility;
+using static StrmAssistant.Common.CommonUtility;
 using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
@@ -20,11 +20,11 @@ namespace StrmAssistant.Mod
     public static class EnhanceNfoMetadata
     {
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
-        
+
         private static Assembly _nfoMetadataAssembly;
         private static ConstructorInfo _genericBaseNfoParserConstructor;
         private static MethodInfo _getPersonFromXmlNode;
-        
+
         private static MethodInfo _getPersonFromXmlNodePrefix;
         private static MethodInfo _getPersonFromXmlNodePostfix;
 
@@ -75,16 +75,16 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("EnhanceNfoMetadata - Patch Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("EnhanceNfoMetadata - Patch Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.EnhanceNfoMetadata)
+                Plugin.Instance.MetadataEnhanceStore.GetOptions().EnhanceNfoMetadata)
             {
                 Patch();
             }
@@ -101,14 +101,14 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Patch(_genericBaseNfoParserConstructor,
                             prefix: new HarmonyMethod(typeof(EnhanceNfoMetadata).GetMethod("GenericBaseNfoParserConstructorPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch GenericBaseNfoParserConstructor Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch GenericBaseNfoParserConstructor Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch GenericBaseNfoParserConstructor Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch GenericBaseNfoParserConstructor Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -124,20 +124,20 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_genericBaseNfoParserConstructor,
                             AccessTools.Method(typeof(EnhanceNfoMetadata), "GenericBaseNfoParserConstructorPrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch GenericBaseNfoParserConstructor Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch GenericBaseNfoParserConstructor Success by Harmony");
                     }
                     if (IsPatched(_getPersonFromXmlNode, typeof(EnhanceNfoMetadata)))
                     {
                         HarmonyMod.Unpatch(_getPersonFromXmlNode, _getPersonFromXmlNodePostfix);
                         HarmonyMod.Unpatch(_getPersonFromXmlNode, _getPersonFromXmlNodePostfix);
-                        Plugin.Instance.logger.Debug("Unpatch GetPersonFromXmlNode Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch GetPersonFromXmlNode Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch EnhanceNfoMetadata Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch EnhanceNfoMetadata Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }
@@ -154,21 +154,21 @@ namespace StrmAssistant.Mod
             }
             catch (Exception he)
             {
-                Plugin.Instance.logger.Debug("Patch GetPersonFromXmlNode Failed by Harmony");
-                Plugin.Instance.logger.Debug(he.Message);
-                Plugin.Instance.logger.Debug(he.StackTrace);
+                Plugin.Instance.Logger.Debug("Patch GetPersonFromXmlNode Failed by Harmony");
+                Plugin.Instance.Logger.Debug(he.Message);
+                Plugin.Instance.Logger.Debug(he.StackTrace);
             }
 
             return true;
         }
-        
+
         [HarmonyPrefix]
         private static bool GetPersonFromXmlNodePrefix(ref XmlReader reader)
         {
             try
             {
                 var sb = new StringBuilder();
-    
+
                 using (var writer = new StringWriter(sb))
                 {
                     using (var xmlWriter = XmlWriter.Create(writer, WriterSettings))
@@ -189,10 +189,10 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
             }
-            
+
             return true;
         }
 
@@ -236,8 +236,8 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
             }
         }
     }

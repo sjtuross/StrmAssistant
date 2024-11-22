@@ -3,32 +3,33 @@ using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Common;
 using StrmAssistant.Mod;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.ScheduledTask
 {
-    public class ExtractMediaInfoTask: IScheduledTask
+    public class ExtractMediaInfoTask : IScheduledTask
     {
         private readonly ILogger _logger;
 
         public ExtractMediaInfoTask()
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
         }
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             _logger.Info("MediaInfoExtract - Scheduled Task Execute");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
-            var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
+            _logger.Info("Max Concurrent Count: " + Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
+            var enableImageCapture = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.EnableImageCapture;
             _logger.Info("Enable Image Capture: " + enableImageCapture);
-            var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
+            var enableIntroSkip = Plugin.Instance.IntroSkipStore.GetOptions().EnableIntroSkip;
             _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
-            var exclusiveExtract = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.ExclusiveExtract;
+            var exclusiveExtract = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
 
             var items = Plugin.LibraryApi.FetchExtractTaskItems();
 
@@ -41,7 +42,7 @@ namespace StrmAssistant
             double total = items.Count;
             var index = 0;
             var current = 0;
-            
+
             var tasks = new List<Task>();
 
             foreach (var item in items)
@@ -60,7 +61,7 @@ namespace StrmAssistant
                 {
                     break;
                 }
-                
+
                 var taskIndex = ++index;
                 var taskItem = item;
                 var task = Task.Run(async () =>

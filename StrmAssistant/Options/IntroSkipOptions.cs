@@ -1,15 +1,18 @@
 ﻿using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Common;
+using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Attributes;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LocalizationAttributes;
-using StrmAssistant.Properties;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using StrmAssistant.Properties;
+using StrmAssistant.Common;
 
-namespace StrmAssistant
+namespace StrmAssistant.Options
 {
-    public class IntroSkipOptions: EditableOptionsBase
+    public class IntroSkipOptions : EditableOptionsBase
     {
         [DisplayNameL("PluginOptions_IntroSkipOptions_Intro_Credits_Detection", typeof(Resources))]
         public override string EditorTitle => Resources.PluginOptions_IntroSkipOptions_Intro_Credits_Detection;
@@ -37,7 +40,7 @@ namespace StrmAssistant
         public int MinOpeningPlotDurationSeconds { get; set; } = 60;
 
         [Browsable(false)]
-        public IEnumerable<EditorSelectOption> LibraryList { get; set; }
+        public List<EditorSelectOption> LibraryList { get; set; } = new List<EditorSelectOption>();
 
         [DisplayNameL("IntroSkipOptions_LibraryScope_Library_Scope", typeof(Resources))]
         [DescriptionL("IntroSkipOptions_LibraryScope_TV_shows_library_scope_to_detect__Blank_includes_all_", typeof(Resources))]
@@ -47,7 +50,7 @@ namespace StrmAssistant
         public string LibraryScope { get; set; }
 
         [Browsable(false)]
-        public IEnumerable<EditorSelectOption> UserList { get; set; }
+        public List<EditorSelectOption> UserList { get; set; } = new List<EditorSelectOption>();
 
         [DisplayNameL("IntroSkipOptions_UserScope_User_Scope", typeof(Resources))]
         [DescriptionL("IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all", typeof(Resources))]
@@ -68,7 +71,7 @@ namespace StrmAssistant
         public int IntroDetectionFingerprintMinutes { get; set; } = 10;
 
         [Browsable(false)]
-        public IEnumerable<EditorSelectOption> MarkerEnabledLibraryList { get; set; }
+        public List<EditorSelectOption> MarkerEnabledLibraryList { get; set; } = new List<EditorSelectOption>();
 
         [DisplayNameL("IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope", typeof(Resources))]
         [DescriptionL("IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_", typeof(Resources))]
@@ -79,5 +82,48 @@ namespace StrmAssistant
 
         [Browsable(false)]
         public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;
+
+        public void Initialize(ILibraryManager libraryManager)
+        {
+            LibraryList.Clear();
+            UserList.Clear();
+            MarkerEnabledLibraryList.Clear();
+
+            var libraries = libraryManager.GetVirtualFolders();
+
+            foreach (var item in libraries)
+            {
+                var selectOption = new EditorSelectOption
+                {
+                    Value = item.ItemId,
+                    Name = item.Name,
+                    IsEnabled = true,
+                };
+
+                if (item.CollectionType == CollectionType.TvShows.ToString() || item.CollectionType is null) // null means mixed content library
+                {
+                    LibraryList.Add(selectOption);
+
+                    if (item.LibraryOptions.EnableMarkerDetection)
+                    {
+                        MarkerEnabledLibraryList.Add(selectOption);
+                    }
+                }
+            }
+
+            var allUsers = LibraryApi.AllUsers;
+
+            foreach (var user in allUsers)
+            {
+                var selectOption = new EditorSelectOption
+                {
+                    Value = user.Key.InternalId.ToString(),
+                    Name = (user.Value ? "\ud83d\udc51" : "\ud83d\udc64") + user.Key.Name,
+                    IsEnabled = true,
+                };
+
+                UserList.Add(selectOption);
+            }
+        }
     }
 }

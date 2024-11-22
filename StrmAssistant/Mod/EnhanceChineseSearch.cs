@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using MediaBrowser.Controller.Entities;
 using SQLitePCL.pretty;
+using StrmAssistant.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,6 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using static StrmAssistant.Mod.PatchManager;
-using static StrmAssistant.ModOptions;
 
 namespace StrmAssistant.Mod
 {
@@ -68,17 +68,17 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("EnhanceChineseSearch - Patch Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("EnhanceChineseSearch - Patch Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                (Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearch ||
-                 Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearchRestore))
+                (Plugin.Instance.MainOptionsStore.GetOptions().ModOptions.EnhanceChineseSearch ||
+                 Plugin.Instance.MainOptionsStore.GetOptions().ModOptions.EnhanceChineseSearchRestore))
             {
                 UpdateSearchScope();
                 PatchPhase1();
@@ -100,24 +100,24 @@ namespace StrmAssistant.Mod
                             HarmonyMod.Patch(_createConnection,
                                 postfix: new HarmonyMethod(typeof(EnhanceChineseSearch).GetMethod("CreateConnectionPostfix",
                                     BindingFlags.Static | BindingFlags.NonPublic)));
-                            Plugin.Instance.logger.Debug("Patch CreateConnection Success by Harmony");
+                            Plugin.Instance.Logger.Debug("Patch CreateConnection Success by Harmony");
                         }
                         return;
                     }
                     catch (Exception he)
                     {
-                        Plugin.Instance.logger.Debug("Patch CreateConnection Failed by Harmony");
-                        Plugin.Instance.logger.Debug(he.Message);
-                        Plugin.Instance.logger.Debug(he.StackTrace);
+                        Plugin.Instance.Logger.Debug("Patch CreateConnection Failed by Harmony");
+                        Plugin.Instance.Logger.Debug(he.Message);
+                        Plugin.Instance.Logger.Debug(he.StackTrace);
                         PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                     }
                 }
             }
 
-            Plugin.Instance.logger.Debug("EnhanceChineseSearch - PatchPhase1 Failed");
+            Plugin.Instance.Logger.Debug("EnhanceChineseSearch - PatchPhase1 Failed");
             ResetOptions();
         }
-        
+
         private static void PatchPhase2(IDatabaseConnection connection)
         {
             string ftsTableName;
@@ -157,11 +157,11 @@ namespace StrmAssistant.Mod
                     }
                 }
 
-                Plugin.Instance.logger.Info("EnhanceChineseSearch - Current tokenizer is " + CurrentTokenizerName);
+                Plugin.Instance.Logger.Info("EnhanceChineseSearch - Current tokenizer is " + CurrentTokenizerName);
 
                 if (!string.Equals(CurrentTokenizerName, "unknown", StringComparison.Ordinal))
                 {
-                    if (Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearchRestore)
+                    if (Plugin.Instance.MainOptionsStore.GetOptions().ModOptions.EnhanceChineseSearchRestore)
                     {
                         if (string.Equals(CurrentTokenizerName, "simple", StringComparison.Ordinal))
                         {
@@ -169,11 +169,11 @@ namespace StrmAssistant.Mod
                         }
                         if (rebuildFtsResult)
                         {
-                            Plugin.Instance.logger.Info("EnhanceChineseSearch - Restore Success");
+                            Plugin.Instance.Logger.Info("EnhanceChineseSearch - Restore Success");
                         }
                         ResetOptions();
                     }
-                    else if (Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearch)
+                    else if (Plugin.Instance.MainOptionsStore.GetOptions().ModOptions.EnhanceChineseSearch)
                     {
                         patchSearchFunctionsResult = PatchSearchFunctions();
 
@@ -186,7 +186,7 @@ namespace StrmAssistant.Mod
 
                             if (rebuildFtsResult)
                             {
-                                Plugin.Instance.logger.Info("EnhanceChineseSearch - Load Success");
+                                Plugin.Instance.Logger.Info("EnhanceChineseSearch - Load Success");
                             }
                         }
                     }
@@ -194,9 +194,9 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("EnhanceChineseSearch - PatchPhase2 Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("EnhanceChineseSearch - PatchPhase2 Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
             }
 
             if (!patchSearchFunctionsResult || !rebuildFtsResult ||
@@ -242,26 +242,26 @@ namespace StrmAssistant.Mod
                     $"CREATE VIRTUAL TABLE IF NOT EXISTS {ftsTableName} USING FTS5 (Name, OriginalTitle, SeriesName, Album, tokenize=\"{tokenizerName}\", prefix='1 2 3 4')";
                 connection.Execute(createFtsTableQuery);
 
-                Plugin.Instance.logger.Info($"EnhanceChineseSearch - Filling {ftsTableName} Start");
+                Plugin.Instance.Logger.Info($"EnhanceChineseSearch - Filling {ftsTableName} Start");
 
                 connection.Execute(populateQuery);
                 connection.CommitTransaction();
 
-                Plugin.Instance.logger.Info($"EnhanceChineseSearch - Filling {ftsTableName} Complete");
+                Plugin.Instance.Logger.Info($"EnhanceChineseSearch - Filling {ftsTableName} Complete");
 
                 return true;
             }
             catch (Exception e)
             {
                 connection.RollbackTransaction();
-                Plugin.Instance.logger.Warn("EnhanceChineseSearch - RebuildFts Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("EnhanceChineseSearch - RebuildFts Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
             }
 
             return false;
         }
-        
+
         private static string GetSearchColumnNormalization(string columnName)
         {
             return "replace(replace(" + columnName + ",'''',''),'.','')";
@@ -279,14 +279,14 @@ namespace StrmAssistant.Mod
                 if (File.Exists(_tokenizerPath))
                 {
                     var existingSha1 = ComputeSha1(_tokenizerPath);
-                    Plugin.Instance.logger.Debug(existingSha1 == expectedSha1
+                    Plugin.Instance.Logger.Debug(existingSha1 == expectedSha1
                         ? "EnhanceChineseSearch - Tokenizer exists with matching SHA-1."
                         : "EnhanceChineseSearch - Tokenizer exists but SHA-1 does not match.");
 
                     return true;
                 }
 
-                Plugin.Instance.logger.Debug("EnhanceChineseSearch - Tokenizer does not exist. Exporting...");
+                Plugin.Instance.Logger.Debug("EnhanceChineseSearch - Tokenizer does not exist. Exporting...");
                 using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
                 {
                     using (var fileStream = new FileStream(_tokenizerPath, FileMode.Create, FileAccess.Write))
@@ -295,14 +295,14 @@ namespace StrmAssistant.Mod
                     }
                 }
 
-                Plugin.Instance.logger.Info($"EnhanceChineseSearch - Exported {resourceName} to {_tokenizerPath}");
+                Plugin.Instance.Logger.Info($"EnhanceChineseSearch - Exported {resourceName} to {_tokenizerPath}");
                 return true;
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("EnhanceChineseSearch - EnsureTokenizerExists Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("EnhanceChineseSearch - EnsureTokenizerExists Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
             }
 
             return false;
@@ -347,12 +347,12 @@ namespace StrmAssistant.Mod
                 return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
             }
         }
-        
+
         private static void ResetOptions()
         {
-            Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearch = false;
-            Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearchRestore = false;
-            Plugin.Instance.SavePluginOptionsSuppress();
+            Plugin.Instance.MainOptionsStore.GetOptions().ModOptions.EnhanceChineseSearch = false;
+            Plugin.Instance.MainOptionsStore.GetOptions().ModOptions.EnhanceChineseSearchRestore = false;
+            Plugin.Instance.MainOptionsStore.SavePluginOptionsSuppress();
         }
 
         private static bool PatchSearchFunctions()
@@ -367,7 +367,7 @@ namespace StrmAssistant.Mod
                             postfix: new HarmonyMethod(typeof(EnhanceChineseSearch).GetMethod(
                                 "GetJoinCommandTextPostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch GetJoinCommandText Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch GetJoinCommandText Success by Harmony");
                     }
                     if (!IsPatched(_createSearchTerm, typeof(EnhanceChineseSearch)))
                     {
@@ -375,23 +375,23 @@ namespace StrmAssistant.Mod
                             prefix: new HarmonyMethod(typeof(EnhanceChineseSearch).GetMethod(
                                 "CreateSearchTermPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch CreateSearchTerm Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch CreateSearchTerm Success by Harmony");
                     }
                     if (!IsPatched(_cacheIdsFromTextParams, typeof(EnhanceChineseSearch)))
                     {
                         HarmonyMod.Patch(_cacheIdsFromTextParams,
                             prefix: new HarmonyMethod(typeof(EnhanceChineseSearch).GetMethod("CacheIdsFromTextParamsPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch CacheIdsFromTextParams Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch CacheIdsFromTextParams Success by Harmony");
                     }
 
                     return true;
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch SearchFunctions Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch SearchFunctions Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -403,7 +403,7 @@ namespace StrmAssistant.Mod
         {
             try
             {
-                
+
                 var db = sqlite3_db.GetValue(connection);
                 sqlite3_enable_load_extension.Invoke(raw, new[] { db, 1 });
                 connection.Execute("SELECT load_extension('" + _tokenizerPath + "')");
@@ -412,11 +412,11 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("EnhanceChineseSearch - Load tokenizer failed.");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("EnhanceChineseSearch - Load tokenizer failed.");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
             }
-            
+
             return false;
         }
 
@@ -434,72 +434,72 @@ namespace StrmAssistant.Mod
                 }
             }
         }
-        
+
         public static void UpdateSearchScope()
         {
-            var searchScope = Plugin.Instance.GetPluginOptions().ModOptions.SearchScope?
+            var searchScope = Plugin.Instance.MainOptionsStore.GetOptions().ModOptions.SearchScope?
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 
             var includeItemTypes = new List<string>();
-            
+
             foreach (var scope in searchScope)
             {
-                if (Enum.TryParse(scope, true, out SearchItemType type))
+                if (Enum.TryParse(scope, true, out ModOptions.SearchItemType type))
                 {
                     switch (type)
                     {
-                        case SearchItemType.Book:
+                        case ModOptions.SearchItemType.Book:
                             includeItemTypes.AddRange(new[] { "Book" });
                             break;
-                        case SearchItemType.Collection:
+                        case ModOptions.SearchItemType.Collection:
                             includeItemTypes.AddRange(new[] { "BoxSet" });
                             break;
-                        case SearchItemType.Episode:
+                        case ModOptions.SearchItemType.Episode:
                             includeItemTypes.AddRange(new[] { "Episode" });
                             break;
-                        case SearchItemType.Game:
+                        case ModOptions.SearchItemType.Game:
                             includeItemTypes.AddRange(new[] { "Game", "GameSystem" });
                             break;
-                        case SearchItemType.Genre:
+                        case ModOptions.SearchItemType.Genre:
                             includeItemTypes.AddRange(new[] { "MusicGenre", "GameGenre", "Genre" });
                             break;
-                        case SearchItemType.LiveTv:
+                        case ModOptions.SearchItemType.LiveTv:
                             includeItemTypes.AddRange(new[] { "LiveTvChannel", "LiveTvProgram", "LiveTvSeries" });
                             break;
-                        case SearchItemType.Movie:
+                        case ModOptions.SearchItemType.Movie:
                             includeItemTypes.AddRange(new[] { "Movie" });
                             break;
-                        case SearchItemType.Music:
+                        case ModOptions.SearchItemType.Music:
                             includeItemTypes.AddRange(new[] { "Audio", "MusicVideo" });
                             break;
-                        case SearchItemType.MusicAlbum:
+                        case ModOptions.SearchItemType.MusicAlbum:
                             includeItemTypes.AddRange(new[] { "MusicAlbum" });
                             break;
-                        case SearchItemType.Person:
+                        case ModOptions.SearchItemType.Person:
                             includeItemTypes.AddRange(new[] { "Person" });
                             break;
-                        case SearchItemType.MusicArtist:
+                        case ModOptions.SearchItemType.MusicArtist:
                             includeItemTypes.AddRange(new[] { "MusicArtist" });
                             break;
-                        case SearchItemType.Photo:
+                        case ModOptions.SearchItemType.Photo:
                             includeItemTypes.AddRange(new[] { "Photo" });
                             break;
-                        case SearchItemType.PhotoAlbum:
+                        case ModOptions.SearchItemType.PhotoAlbum:
                             includeItemTypes.AddRange(new[] { "PhotoAlbum" });
                             break;
-                        case SearchItemType.Playlist:
+                        case ModOptions.SearchItemType.Playlist:
                             includeItemTypes.AddRange(new[] { "Playlist" });
                             break;
-                        case SearchItemType.Series:
+                        case ModOptions.SearchItemType.Series:
                             includeItemTypes.AddRange(new[] { "Series" });
                             break;
-                        case SearchItemType.Studio:
+                        case ModOptions.SearchItemType.Studio:
                             includeItemTypes.AddRange(new[] { "Studio" });
                             break;
-                        case SearchItemType.Tag:
+                        case ModOptions.SearchItemType.Tag:
                             includeItemTypes.AddRange(new[] { "Tag" });
                             break;
-                        case SearchItemType.Trailer:
+                        case ModOptions.SearchItemType.Trailer:
                             includeItemTypes.AddRange(new[] { "Trailer" });
                             break;
                     }
@@ -552,7 +552,7 @@ namespace StrmAssistant.Mod
             __result = newSearchTerm;
             return false;
         }
-        
+
         [HarmonyPrefix]
         private static bool CacheIdsFromTextParamsPrefix(InternalItemsQuery query, IDatabaseConnection db)
         {

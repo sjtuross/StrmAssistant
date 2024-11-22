@@ -34,16 +34,16 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("UnlockIntroSkip - Patch Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("UnlockIntroSkip - Patch Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().IntroSkipOptions.UnlockIntroSkip)
+                Plugin.Instance.IntroSkipStore.GetOptions().UnlockIntroSkip)
             {
                 Patch();
             }
@@ -64,7 +64,7 @@ namespace StrmAssistant.Mod
                                 "IsIntroDetectionSupportedPrefix", BindingFlags.Static | BindingFlags.NonPublic)),
                             postfix: new HarmonyMethod(typeof(UnlockIntroSkip).GetMethod(
                                 "IsIntroDetectionSupportedPostfix", BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch IsIntroDetectionSupported Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch IsIntroDetectionSupported Success by Harmony");
                     }
 
                     if (!IsPatched(_createQueryForEpisodeIntroDetection, typeof(UnlockIntroSkip)))
@@ -73,14 +73,14 @@ namespace StrmAssistant.Mod
                             postfix: new HarmonyMethod(typeof(UnlockIntroSkip).GetMethod(
                                 "CreateQueryForEpisodeIntroDetectionPostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch CreateQueryForEpisodeIntroDetection Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch CreateQueryForEpisodeIntroDetection Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch UnlockIntroSkip Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch UnlockIntroSkip Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -100,21 +100,21 @@ namespace StrmAssistant.Mod
                             AccessTools.Method(typeof(UnlockIntroSkip), "IsIntroDetectionSupportedPrefix"));
                         HarmonyMod.Unpatch(_isIntroDetectionSupported,
                             AccessTools.Method(typeof(UnlockIntroSkip), "IsIntroDetectionSupportedPostfix"));
-                        Plugin.Instance.logger.Debug("Unpatch IsIntroDetectionSupported Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch IsIntroDetectionSupported Success by Harmony");
                     }
 
                     if (IsPatched(_createQueryForEpisodeIntroDetection, typeof(UnlockIntroSkip)))
                     {
                         HarmonyMod.Unpatch(_createQueryForEpisodeIntroDetection,
                             AccessTools.Method(typeof(UnlockIntroSkip), "CreateQueryForEpisodeIntroDetectionPostfix"));
-                        Plugin.Instance.logger.Debug("Unpatch CreateQueryForEpisodeIntroDetection Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch CreateQueryForEpisodeIntroDetection Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch UnlockIntroSkip Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch UnlockIntroSkip Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }

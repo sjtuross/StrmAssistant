@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using MediaBrowser.Controller.Entities;
+using StrmAssistant.Common;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -25,16 +26,16 @@ namespace StrmAssistant.Mod
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Warn("EnforceLibraryOrder - Patch Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Warn("EnforceLibraryOrder - Patch Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
                 PatchApproachTracker.FallbackPatchApproach = PatchApproach.None;
             }
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().UIFunctionOptions.EnforceLibraryOrder)
+                Plugin.Instance.UIFunctionStore.GetOptions().EnforceLibraryOrder)
             {
                 Patch();
             }
@@ -51,15 +52,15 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Patch(_getUserViews,
                             prefix: new HarmonyMethod(typeof(EnforceLibraryOrder).GetMethod("GetUserViewsPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug(
+                        Plugin.Instance.Logger.Debug(
                             "Patch GetUserViews Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Patch GetUserViews Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Patch GetUserViews Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                     PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
                 }
             }
@@ -75,14 +76,14 @@ namespace StrmAssistant.Mod
                     {
                         HarmonyMod.Unpatch(_getUserViews,
                             AccessTools.Method(typeof(EnforceLibraryOrder), "GetUserViewsPrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch GetUserViews Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Unpatch GetUserViews Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.logger.Debug("Unpatch GetUserViews Failed by Harmony");
-                    Plugin.Instance.logger.Debug(he.Message);
-                    Plugin.Instance.logger.Debug(he.StackTrace);
+                    Plugin.Instance.Logger.Debug("Unpatch GetUserViews Failed by Harmony");
+                    Plugin.Instance.Logger.Debug(he.Message);
+                    Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
             }
         }

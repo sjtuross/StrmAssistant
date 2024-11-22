@@ -2,13 +2,14 @@
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.ScheduledTask
 {
     public class ExtractIntroFingerprintTask : IScheduledTask
     {
@@ -18,7 +19,7 @@ namespace StrmAssistant
 
         public ExtractIntroFingerprintTask(IFileSystem fileSystem, ITaskManager taskManager)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _fileSystem = fileSystem;
             _taskManager = taskManager;
         }
@@ -26,8 +27,8 @@ namespace StrmAssistant
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             _logger.Info("IntroFingerprintExtract - Scheduled Task Execute");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
-            _logger.Info("Intro Detection Fingerprint Length (Minutes): " + Plugin.Instance.GetPluginOptions().IntroSkipOptions.IntroDetectionFingerprintMinutes);
+            _logger.Info("Max Concurrent Count: " + Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
+            _logger.Info("Intro Detection Fingerprint Length (Minutes): " + Plugin.Instance.IntroSkipStore.GetOptions().IntroDetectionFingerprintMinutes);
 
             var items = Plugin.ChapterApi.FetchIntroFingerprintTaskItems();
             _logger.Info("IntroFingerprintExtract - Number of items: " + items.Count);
@@ -37,7 +38,7 @@ namespace StrmAssistant
             double total = items.Count;
             var index = 0;
             var current = 0;
-            
+
             var tasks = new List<Task>();
 
             foreach (var item in items)
@@ -96,7 +97,7 @@ namespace StrmAssistant
                 tasks.Add(task);
             }
             await Task.WhenAll(tasks);
-            
+
             progress.Report(100.0);
 
             _logger.Info("IntroFingerprintExtract - Trigger Detect Episode Intros to import fingerprints");

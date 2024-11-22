@@ -15,9 +15,9 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.ScheduledTask
 {
-    public class UpdatePluginTask: IScheduledTask
+    public class UpdatePluginTask : IScheduledTask
     {
         private readonly ILogger _logger;
         private readonly IApplicationHost _applicationHost;
@@ -29,7 +29,7 @@ namespace StrmAssistant
         public UpdatePluginTask(IApplicationHost applicationHost, IApplicationPaths applicationPaths,
             IHttpClient httpClient, IActivityManager activityManager, IServerApplicationHost serverApplicationHost)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _applicationHost = applicationHost;
             _applicationPaths = applicationPaths;
             _httpClient = httpClient;
@@ -67,17 +67,17 @@ namespace StrmAssistant
             try
             {
                 var stream = await _httpClient.Get(new HttpRequestOptions
-                    {
-                        Url = RepoReleaseUrl,
-                        CancellationToken = cancellationToken,
-                        AcceptHeader = "application/json",
-                        UserAgent = PluginUserAgent,
-                        EnableDefaultUserAgent = false
-                    })
+                {
+                    Url = RepoReleaseUrl,
+                    CancellationToken = cancellationToken,
+                    AcceptHeader = "application/json",
+                    UserAgent = PluginUserAgent,
+                    EnableDefaultUserAgent = false
+                })
                     .ConfigureAwait(false);
 
                 var apiResult = await JsonSerializer.DeserializeAsync<ApiResponseInfo>(stream, null, cancellationToken);
-                
+
                 var currentVersion = ParseVersion(CurrentVersion);
                 var remoteVersion = ParseVersion(apiResult?.TagName);
 
@@ -91,13 +91,13 @@ namespace StrmAssistant
                     if (!Uri.IsWellFormedUriString(url, UriKind.Absolute)) throw new Exception("Invalid download url");
 
                     using (var responseStream = await _httpClient.Get(new HttpRequestOptions
-                               {
-                                   Url = url,
-                                   CancellationToken = cancellationToken,
-                                   UserAgent = PluginUserAgent,
-                                   EnableDefaultUserAgent = false,
-                                   Progress = progress
-                               })
+                    {
+                        Url = url,
+                        CancellationToken = cancellationToken,
+                        UserAgent = PluginUserAgent,
+                        EnableDefaultUserAgent = false,
+                        Progress = progress
+                    })
                                .ConfigureAwait(false))
                     {
                         var dllFilePath = Path.Combine(_applicationPaths.PluginsPath, PluginAssemblyFilename);

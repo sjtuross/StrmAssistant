@@ -10,9 +10,9 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static StrmAssistant.LanguageUtility;
+using static StrmAssistant.Common.LanguageUtility;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public class MetadataApi
     {
@@ -22,11 +22,11 @@ namespace StrmAssistant
         private readonly ILocalizationManager _localizationManager;
 
         public static MetadataRefreshOptions PersonRefreshOptions;
-        
+
         public MetadataApi(ILibraryManager libraryManager, IFileSystem fileSystem,
             IServerConfigurationManager configurationManager, ILocalizationManager localizationManager)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _libraryManager = libraryManager;
             _configurationManager = configurationManager;
             _localizationManager = localizationManager;
@@ -83,7 +83,7 @@ namespace StrmAssistant
 
             if (GetMovieDbPersonProvider() is IRemoteMetadataProvider<Person, PersonLookupInfo> provider)
             {
-                return await GetMetadataFromProvider<Person, PersonLookupInfo>(provider, lookupInfo, cancellationToken)
+                return await GetMetadataFromProvider(provider, lookupInfo, cancellationToken)
                     .ConfigureAwait(false);
             }
 

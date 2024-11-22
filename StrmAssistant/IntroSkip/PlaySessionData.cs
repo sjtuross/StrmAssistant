@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace StrmAssistant
+namespace StrmAssistant.IntroSkip
 {
     public class PlaySessionData
     {
@@ -10,11 +10,11 @@ namespace StrmAssistant
         public long? FirstJumpPositionTicks { get; set; } = null;
         public long? LastJumpPositionTicks { get; set; } = null;
         public long MaxIntroDurationTicks { get; set; } =
-            Plugin.Instance.GetPluginOptions().IntroSkipOptions.MaxIntroDurationSeconds * TimeSpan.TicksPerSecond;
+            Plugin.Instance.IntroSkipStore.GetOptions().MaxIntroDurationSeconds * TimeSpan.TicksPerSecond;
         public long MaxCreditsDurationTicks { get; set; } =
-            Plugin.Instance.GetPluginOptions().IntroSkipOptions.MaxCreditsDurationSeconds * TimeSpan.TicksPerSecond;
+            Plugin.Instance.IntroSkipStore.GetOptions().MaxCreditsDurationSeconds * TimeSpan.TicksPerSecond;
         public long MinOpeningPlotDurationTicks { get; set; } =
-            Plugin.Instance.GetPluginOptions().IntroSkipOptions.MinOpeningPlotDurationSeconds * TimeSpan.TicksPerSecond;
+            Plugin.Instance.IntroSkipStore.GetOptions().MinOpeningPlotDurationSeconds * TimeSpan.TicksPerSecond;
         public DateTime? LastPauseEventTime { get; set; } = null;
         public DateTime? LastPlaybackRateChangeEventTime { get; set; } = null;
     }

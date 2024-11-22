@@ -6,6 +6,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
+using StrmAssistant.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.IntroSkip
 {
     public class PlaySessionMonitor
     {
@@ -39,7 +40,7 @@ namespace StrmAssistant
         public PlaySessionMonitor(ILibraryManager libraryManager, IUserManager userManager,
             ISessionManager sessionManager)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _sessionManager = sessionManager;
@@ -50,7 +51,7 @@ namespace StrmAssistant
 
         public void UpdateLibraryPathsInScope()
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope
+            var libraryIds = Plugin.Instance.IntroSkipStore.GetOptions().LibraryScope
                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             LibraryPathsInScope = _libraryManager.GetVirtualFolders()
                 .Where(f => libraryIds != null && libraryIds.Any()
@@ -65,9 +66,9 @@ namespace StrmAssistant
 
         public void UpdateUsersInScope()
         {
-            var userIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.UserScope
+            var userIds = Plugin.Instance.IntroSkipStore.GetOptions().UserScope
                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
-            
+
             var userQuery = new UserQuery
             {
                 IsDisabled = false
@@ -254,7 +255,7 @@ namespace StrmAssistant
         private PlaySessionData GetPlaySessionData(PlaybackProgressEventArgs e)
         {
             if (!IsLibraryInScope(e.Item) || !IsUserInScope(e.Session.UserInternalId)) return null;
-            
+
             var playSessionId = e.PlaySessionId;
             if (!_playSessionData.ContainsKey(playSessionId))
             {
@@ -267,10 +268,10 @@ namespace StrmAssistant
 
         public bool IsLibraryInScope(BaseItem item)
         {
-            var strmOnly = Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly;
+            var strmOnly = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.StrmOnly;
             var isEnable = item is Episode && (!strmOnly || item.IsShortcut);
             if (!isEnable) return false;
-            
+
             var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
 
             return isLibraryInScope;
@@ -371,7 +372,7 @@ namespace StrmAssistant
                 }
             }
         }
-        
+
         public void Dispose()
         {
             _sessionManager.PlaybackStart -= OnPlaybackStart;

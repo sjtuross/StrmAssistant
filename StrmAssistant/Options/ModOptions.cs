@@ -1,3 +1,4 @@
+using Emby.Media.Common.Extensions;
 using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Common;
 using MediaBrowser.Model.Attributes;
@@ -8,9 +9,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-namespace StrmAssistant
+namespace StrmAssistant.Options
 {
-    public class ModOptions: EditableOptionsBase
+    public class ModOptions : EditableOptionsBase
     {
         [DisplayNameL("PluginOptions_ModOptions_Mod_Features", typeof(Resources))]
         public override string EditorTitle => Resources.PluginOptions_ModOptions_Mod_Features;
@@ -29,7 +30,7 @@ namespace StrmAssistant
 
         [Browsable(false)]
         public bool EnhanceChineseSearchRestore { get; set; } = false;
-        
+
         public enum SearchItemType
         {
             [DescriptionL("ItemType_Movie_Movie", typeof(Resources))] Movie,
@@ -53,7 +54,7 @@ namespace StrmAssistant
         }
 
         [Browsable(false)]
-        public IEnumerable<EditorSelectOption> SearchItemTypeList { get; set; }
+        public List<EditorSelectOption> SearchItemTypeList { get; set; } = new List<EditorSelectOption>();
 
         [DisplayNameL("ModOptions_SearchScope_Search_Scope", typeof(Resources))]
         [DescriptionL("ModOptions_SearchScope_Include_item_types__Blank_includes_all_", typeof(Resources))]
@@ -76,5 +77,22 @@ namespace StrmAssistant
                                                          new Version("4.9.0.30") &&
                                                          Plugin.Instance.ApplicationHost.ApplicationVersion <=
                                                          new Version("4.9.0.32"));
+
+        public void Initialize()
+        {
+            SearchItemTypeList.Clear();
+
+            foreach (Enum item in Enum.GetValues(typeof(SearchItemType)))
+            {
+                var selectOption = new EditorSelectOption
+                {
+                    Value = item.ToString(),
+                    Name = EnumExtensions.GetDescription(item),
+                    IsEnabled = true,
+                };
+
+                SearchItemTypeList.Add(selectOption);
+            }
+        }
     }
 }
