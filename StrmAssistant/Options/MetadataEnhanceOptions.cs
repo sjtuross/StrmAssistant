@@ -21,7 +21,7 @@ namespace StrmAssistant
     {
         [DisplayNameL("PluginOptions_MetadataEnhanceOptions_Metadata_Enhance", typeof(Resources))]
         public override string EditorTitle => Resources.PluginOptions_MetadataEnhanceOptions_Metadata_Enhance;
-
+        
         [DisplayNameL("ModOptions_ChineseMovieDb_Chinese_MovieDb", typeof(Resources))]
         [DescriptionL("ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_", typeof(Resources))]
         [EnabledCondition(nameof(IsMovieDbPluginLoaded), SimpleCondition.IsTrue)]
@@ -43,12 +43,10 @@ namespace StrmAssistant
         [EnabledCondition(nameof(IsMovieDbPluginLoaded), SimpleCondition.IsTrue)]
         [Required]
         public bool EnhanceMovieDbPerson { get; set; } = false;
-
-        [DisplayNameL("MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url", typeof(Resources))]
-        [DescriptionL("MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_url__Default_is_OFF_", typeof(Resources))]
-        [EnabledCondition(nameof(IsMovieDbPluginLoaded), SimpleCondition.IsTrue)]
+        
+        [Browsable(false)]
         [Required]
-        public bool AlternativeMovieDbApiUrl { get; set; } = false;
+        public RefreshPersonMode RefreshPersonMode { get; set; } = RefreshPersonMode.Default;
 
         [DisplayNameL("ModOptions_OriginalPoster_Original_Poster", typeof(Resources))]
         [DescriptionL("ModOptions_OriginalPoster_Show_original_poster_based_on_original_language__Default_is_OFF_", typeof(Resources))]
@@ -67,9 +65,25 @@ namespace StrmAssistant
         [Required]
         public bool EnhanceNfoMetadata { get; set; } = false;
         
-        [Browsable(false)]
+        [DisplayNameL("MetadataEnhanceOptions_EnableAltMovieDbUrl", typeof(Resources))]
+        [EnabledCondition(nameof(IsMovieDbPluginLoaded), SimpleCondition.IsTrue)]
         [Required]
-        public RefreshPersonMode RefreshPersonMode { get; set; } = RefreshPersonMode.Default;
+        public bool AltMovieDbConfig { get; set; } = false;
+
+        [DisplayNameL("MetadataEnhanceOptions_AltMovieDbApiUrl_Alternative_MovieDb_Api_Url", typeof(Resources))]
+        [DescriptionL("MetadataEnhanceOptions_AltMovieDbApiUrl_Default_alternative_is_https___api_tmdb_org", typeof(Resources))]
+        [VisibleCondition(nameof(AltMovieDbConfig), SimpleCondition.IsTrue)]
+        public string AltMovieDbApiUrl { get; set; } = "https://api.tmdb.org";
+
+        [DisplayNameL("MetadataEnhanceOptions_AltMovieDbImageUrl_Alternative_MovieDb_Image_Url", typeof(Resources))]
+        [DescriptionL("MetadataEnhanceOptions_AltMovieDbImageUrl_No_default_alternative__Provide_by_yourself_", typeof(Resources))]
+        [VisibleCondition(nameof(AltMovieDbConfig), SimpleCondition.IsTrue)]
+        public string AltMovieDbImageUrl { get; set; } = string.Empty;
+
+        [DisplayNameL("MetadataEnhanceOptions_AltMovieDbApiKey_Alternative_MovieDb_Api_Key", typeof(Resources))]
+        [DescriptionL("MetadataEnhanceOptions_AltMovieDbApiKey_Provide_your_own_MovieDb_Api_Key__Blank_uses_system_default_", typeof(Resources))]
+        [VisibleCondition(nameof(AltMovieDbConfig), SimpleCondition.IsTrue)]
+        public string AltMovieDbApiKey { get; set; } = string.Empty;
 
         [Browsable(false)]
         public bool IsMovieDbPluginLoaded { get; } =

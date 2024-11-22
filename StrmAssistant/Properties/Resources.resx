@@ -356,11 +356,8 @@
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
     <value>Library scope to extract fingerprint. Blank includes all libraries with intro detection enabled.</value>
   </data>
-  <data name="MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url" xml:space="preserve">
-    <value>Use Alternative MovieDb Api Url</value>
-  </data>
-  <data name="MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_url__Default_is_OFF_" xml:space="preserve">
-    <value>Use api.tmdb.org as alternative url. Default is OFF.</value>
+  <data name="MetadataEnhanceOptions_EnableAltMovieDbUrl" xml:space="preserve">
+    <value>Use Alternative MovieDb Config</value>
   </data>
   <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person" xml:space="preserve">
     <value>Enhance MovieDb Person</value>
@@ -370,5 +367,32 @@
   </data>
   <data name="IntroSkipOptions_MinOpeningPlotDurationSeconds" xml:space="preserve">
     <value>Min Opening Plot Duration (Seconds), Default is 60</value>
+  </data>
+  <data name="InvalidAltMovieDbApiUrl" xml:space="preserve">
+    <value>Alternative MovieDb Api Url is invalid</value>
+  </data>
+  <data name="InvalidAltMovieDbImageUrl" xml:space="preserve">
+    <value>Alternative MovieDb Image Url is invalid</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiUrl_Alternative_MovieDb_Api_Url" xml:space="preserve">
+    <value>Alternative MovieDb Api Url</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbImageUrl_Alternative_MovieDb_Image_Url" xml:space="preserve">
+    <value>Alternative MovieDb Image Url</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiUrl_Default_alternative_is_https___api_tmdb_org" xml:space="preserve">
+    <value>Default alternative URL is https://api.tmdb.org Blank uses system default https://api.themoviedb.org</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbImageUrl_No_default_alternative__Provide_by_yourself_" xml:space="preserve">
+    <value>Provide your own alternative Url. Blank uses system default https://image.tmdb.org</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiKey_Alternative_MovieDb_Api_Key" xml:space="preserve">
+    <value>Alternative MovieDb Api Key</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiKey_Provide_your_own_MovieDb_Api_Key__Blank_uses_system_default_" xml:space="preserve">
+    <value>Provide your own Api Key. Blank uses system default.</value>
+  </data>
+  <data name="InvalidAltMovieDbApiKey" xml:space="preserve">
+    <value>Alternative MovieDb Api Key is invalid</value>
   </data>
 </root>

@@ -1,10 +1,12 @@
 ﻿using Emby.Web.GenericEdit;
+using Emby.Web.GenericEdit.Validation;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
 using StrmAssistant.Properties;
 using System;
 using System.ComponentModel;
 using System.Linq;
+using static StrmAssistant.CommonUtility;
 
 namespace StrmAssistant
 {
@@ -53,5 +55,31 @@ namespace StrmAssistant
         [Browsable(false)]
         public bool IsConflictPluginLoaded { get; } =
             AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "StrmExtract");
+
+        protected override void Validate(ValidationContext context)
+        {
+            string errors = null;
+
+            foreach (var (value, isValid, errorResource) in new (string, Func<string, bool>, string)[]
+                     {
+                         (MetadataEnhanceOptions.AltMovieDbApiUrl, IsValidHttpUrl,
+                             Resources.InvalidAltMovieDbApiUrl),
+                         (MetadataEnhanceOptions.AltMovieDbImageUrl, IsValidHttpUrl,
+                             Resources.InvalidAltMovieDbImageUrl),
+                         (MetadataEnhanceOptions.AltMovieDbApiKey, IsValidMovieDbApiKey,
+                             Resources.InvalidAltMovieDbApiKey)
+                     })
+            {
+                if (!string.IsNullOrWhiteSpace(value) && !isValid(value))
+                {
+                    errors = errors == null ? errorResource : $"{errors}; {errorResource}";
+                }
+            }
+
+            if (!string.IsNullOrEmpty(errors))
+            {
+                context.AddValidationError(nameof(MetadataEnhanceOptions), errors);
+            }
+        }
     }
 }

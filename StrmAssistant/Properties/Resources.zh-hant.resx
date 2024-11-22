@@ -269,11 +269,8 @@
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
     <value>擷取聲紋的媒體庫範圍，留空包含所有啟用原生片頭探測的媒體庫。</value>
   </data>
-  <data name="MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url" xml:space="preserve">
-    <value>使用替代 TMDB API 地址</value>
-  </data>
-  <data name="MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_url__Default_is_OFF_" xml:space="preserve">
-    <value>使用 api.tmdb.org 替代地址，預設關閉。</value>
+  <data name="MetadataEnhanceOptions_EnableAltMovieDbUrl" xml:space="preserve">
+    <value>使用替代 TMDB 配置</value>
   </data>
   <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person" xml:space="preserve">
     <value>演職人員增強 TMDB</value>
@@ -283,5 +280,32 @@
   </data>
   <data name="IntroSkipOptions_MinOpeningPlotDurationSeconds" xml:space="preserve">
     <value>最小開頭劇情時長 (秒)，預設為 60</value>
+  </data>
+  <data name="InvalidAltMovieDbApiUrl" xml:space="preserve">
+    <value>替代 TMDB API 位址無效</value>
+  </data>
+  <data name="InvalidAltMovieDbImageUrl" xml:space="preserve">
+    <value>替代 TMDB 影像位址無效</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiUrl_Alternative_MovieDb_Api_Url" xml:space="preserve">
+    <value>替代 TMDB API 位址</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbImageUrl_Alternative_MovieDb_Image_Url" xml:space="preserve">
+    <value>替代 TMDB 影像位址</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiUrl_Default_alternative_is_https___api_tmdb_org" xml:space="preserve">
+    <value>預設替代位址為 https://api.tmdb.org 留空使用系統預設 https://api.themoviedb.org</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbImageUrl_No_default_alternative__Provide_by_yourself_" xml:space="preserve">
+    <value>請自備替代位址，留空使用系統預設 https://image.tmdb.org</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiKey_Alternative_MovieDb_Api_Key" xml:space="preserve">
+    <value>替代 TMDB API 金鑰</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiKey_Provide_your_own_MovieDb_Api_Key__Blank_uses_system_default_" xml:space="preserve">
+    <value>請自備 API 金鑰，留空使用系統預設。</value>
+  </data>
+  <data name="InvalidAltMovieDbApiKey" xml:space="preserve">
+    <value>替代 TMDB API 金鑰無效</value>
   </data>
 </root>

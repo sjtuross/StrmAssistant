@@ -219,6 +219,33 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string InvalidAltMovieDbApiKey {
+            get {
+                return ResourceManager.GetString("InvalidAltMovieDbApiKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alternative MovieDb Api Url is invalid.
+        /// </summary>
+        public static string InvalidAltMovieDbApiUrl {
+            get {
+                return ResourceManager.GetString("InvalidAltMovieDbApiUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alternative MovieDb Image Url is invalid.
+        /// </summary>
+        public static string InvalidAltMovieDbImageUrl {
+            get {
+                return ResourceManager.GetString("InvalidAltMovieDbImageUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Book.
         /// </summary>
         public static string ItemType_Book_Book {
@@ -381,21 +408,68 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use Alternative MovieDb Api Url.
+        ///   Looks up a localized string similar to Alternative MovieDb Api Key.
         /// </summary>
-        public static string MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url {
+        public static string MetadataEnhanceOptions_AltMovieDbApiKey_Alternative_MovieDb_Api_Key {
             get {
-                return ResourceManager.GetString("MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url", resourceCulture);
+                return ResourceManager.GetString("MetadataEnhanceOptions_AltMovieDbApiKey_Alternative_MovieDb_Api_Key", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Use api.tmdb.org as alternative url. Default is OFF..
+        ///   Looks up a localized string similar to Provide your own Api Key. Blank uses system default..
         /// </summary>
-        public static string MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_url__Default_is_OFF_ {
+        public static string MetadataEnhanceOptions_AltMovieDbApiKey_Provide_your_own_MovieDb_Api_Key__Blank_uses_system_default_ {
             get {
-                return ResourceManager.GetString("MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_u" +
-                        "rl__Default_is_OFF_", resourceCulture);
+                return ResourceManager.GetString("MetadataEnhanceOptions_AltMovieDbApiKey_Provide_your_own_MovieDb_Api_Key__Blank_u" +
+                        "ses_system_default_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alternative MovieDb Api Url.
+        /// </summary>
+        public static string MetadataEnhanceOptions_AltMovieDbApiUrl_Alternative_MovieDb_Api_Url {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_AltMovieDbApiUrl_Alternative_MovieDb_Api_Url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default alternative URL is https://api.tmdb.org Blank uses system default https://api.themoviedb.org.
+        /// </summary>
+        public static string MetadataEnhanceOptions_AltMovieDbApiUrl_Default_alternative_is_https___api_tmdb_org {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_AltMovieDbApiUrl_Default_alternative_is_https___api_tmdb_o" +
+                        "rg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alternative MovieDb Image Url.
+        /// </summary>
+        public static string MetadataEnhanceOptions_AltMovieDbImageUrl_Alternative_MovieDb_Image_Url {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_AltMovieDbImageUrl_Alternative_MovieDb_Image_Url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provide your own alternative Url. Blank uses system default https://image.tmdb.org.
+        /// </summary>
+        public static string MetadataEnhanceOptions_AltMovieDbImageUrl_No_default_alternative__Provide_by_yourself_ {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_AltMovieDbImageUrl_No_default_alternative__Provide_by_your" +
+                        "self_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use Alternative MovieDb Config.
+        /// </summary>
+        public static string MetadataEnhanceOptions_EnableAltMovieDbUrl {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_EnableAltMovieDbUrl", resourceCulture);
             }
         }
         

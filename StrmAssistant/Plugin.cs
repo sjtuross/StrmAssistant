@@ -63,7 +63,8 @@ namespace StrmAssistant
         private bool _currentMergeMultiVersion;
         private bool _currentChineseMovieDb;
         private bool _currentEnhanceMovieDbPerson;
-        private bool _currentAlternativeMovieDbApiUrl;
+        private bool _currentAltMovieDbConfig;
+        private bool _currentAltMovieDbImageUrlEnabled;
         private bool _currentExclusiveExtract;
         private bool _currentPreferOriginalPoster;
         private bool _currentEnhanceChineseSearch;
@@ -112,7 +113,9 @@ namespace StrmAssistant
             _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
             _currentChineseMovieDb = GetOptions().MetadataEnhanceOptions.ChineseMovieDb;
             _currentEnhanceMovieDbPerson = GetOptions().MetadataEnhanceOptions.EnhanceMovieDbPerson;
-            _currentAlternativeMovieDbApiUrl = GetOptions().MetadataEnhanceOptions.AlternativeMovieDbApiUrl;
+            _currentAltMovieDbConfig = GetOptions().MetadataEnhanceOptions.AltMovieDbConfig;
+            _currentAltMovieDbImageUrlEnabled =
+                !string.IsNullOrEmpty(GetOptions().MetadataEnhanceOptions.AltMovieDbImageUrl);
             _currentExclusiveExtract = GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
             _currentPreferOriginalPoster = GetOptions().MetadataEnhanceOptions.PreferOriginalPoster;
             _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
@@ -242,6 +245,23 @@ namespace StrmAssistant
             SaveOptions(GetOptions());
         }
 
+        protected override bool OnOptionsSaving(PluginOptions options)
+        {
+            var metadataEnhanceOptions = options.MetadataEnhanceOptions;
+
+            metadataEnhanceOptions.AltMovieDbApiUrl =
+                !string.IsNullOrWhiteSpace(metadataEnhanceOptions.AltMovieDbApiUrl)
+                    ? metadataEnhanceOptions.AltMovieDbApiUrl.Trim().TrimEnd('/')
+                    : metadataEnhanceOptions.AltMovieDbApiUrl?.Trim();
+
+            metadataEnhanceOptions.AltMovieDbImageUrl =
+                !string.IsNullOrWhiteSpace(metadataEnhanceOptions.AltMovieDbImageUrl)
+                    ? metadataEnhanceOptions.AltMovieDbImageUrl.Trim().TrimEnd('/')
+                    : metadataEnhanceOptions.AltMovieDbImageUrl?.Trim();
+
+            return base.OnOptionsSaving(options);
+        }
+
         protected override void OnOptionsSaved(PluginOptions options)
         {
             var suppressLogger = _currentSuppressOnOptionsSaved;
@@ -352,18 +372,51 @@ namespace StrmAssistant
             }
 
             if (!suppressLogger)
-                logger.Info("AlternativeMovieDbApiUrl is set to {0}", options.MetadataEnhanceOptions.AlternativeMovieDbApiUrl);
-            if (_currentAlternativeMovieDbApiUrl != GetOptions().MetadataEnhanceOptions.AlternativeMovieDbApiUrl)
             {
-                _currentAlternativeMovieDbApiUrl = GetOptions().MetadataEnhanceOptions.AlternativeMovieDbApiUrl;
+                logger.Info("AltMovieDbConfig is set to {0}", options.MetadataEnhanceOptions.AltMovieDbConfig);
+                logger.Info("AltMovieDbApiUrl is set to {0}",
+                    !string.IsNullOrEmpty(options.MetadataEnhanceOptions.AltMovieDbApiUrl)
+                        ? options.MetadataEnhanceOptions.AltMovieDbApiUrl
+                        : "NONE");
+                logger.Info("AltMovieDbImageUrl is set to {0}",
+                    !string.IsNullOrEmpty(options.MetadataEnhanceOptions.AltMovieDbImageUrl)
+                        ? options.MetadataEnhanceOptions.AltMovieDbImageUrl
+                        : "NONE");
+                logger.Info("AltMovieDbApiKey is set to {0}",
+                    !string.IsNullOrEmpty(options.MetadataEnhanceOptions.AltMovieDbApiKey)
+                        ? options.MetadataEnhanceOptions.AltMovieDbApiKey
+                        : "NONE");
+            }
 
-                if (_currentAlternativeMovieDbApiUrl)
+            if (_currentAltMovieDbConfig != GetOptions().MetadataEnhanceOptions.AltMovieDbConfig)
+            {
+                _currentAltMovieDbConfig = GetOptions().MetadataEnhanceOptions.AltMovieDbConfig;
+
+                if (_currentAltMovieDbConfig)
                 {
-                    ChineseMovieDb.PatchMovieDbApiUrl();
+                    AltMovieDbConfig.PatchApiUrl();
+                    if (_currentAltMovieDbImageUrlEnabled) AltMovieDbConfig.PatchImageUrl();
                 }
                 else
                 {
-                    ChineseMovieDb.UnpatchMovieDbApiUrl();
+                    AltMovieDbConfig.UnpatchApiUrl();
+                    if (_currentAltMovieDbImageUrlEnabled) AltMovieDbConfig.UnpatchImageUrl();
+                }
+            }
+
+            if (_currentAltMovieDbImageUrlEnabled !=
+                !string.IsNullOrEmpty(GetOptions().MetadataEnhanceOptions.AltMovieDbImageUrl))
+            {
+                _currentAltMovieDbImageUrlEnabled =
+                    !string.IsNullOrEmpty(GetOptions().MetadataEnhanceOptions.AltMovieDbImageUrl);
+
+                if (_currentAltMovieDbImageUrlEnabled)
+                {
+                    AltMovieDbConfig.PatchImageUrl();
+                }
+                else
+                {
+                    AltMovieDbConfig.UnpatchImageUrl();
                 }
             }
 

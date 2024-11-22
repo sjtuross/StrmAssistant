@@ -269,11 +269,8 @@
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
     <value>提取声纹的媒体库范围，留空包含所有启用原生片头探测的媒体库。</value>
   </data>
-  <data name="MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Alternative_MovieDb_Api_Url" xml:space="preserve">
-    <value>使用替代 TMDB API 地址</value>
-  </data>
-  <data name="MetadataEnhanceOptions_AlternativeMovieDbApiUrl_Use_api_tmdb_org_as_alternative_url__Default_is_OFF_" xml:space="preserve">
-    <value>使用 api.tmdb.org 替代地址，默认关闭。</value>
+  <data name="MetadataEnhanceOptions_EnableAltMovieDbUrl" xml:space="preserve">
+    <value>使用替代 TMDB 配置</value>
   </data>
   <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person" xml:space="preserve">
     <value>演职人员增强 TMDB</value>
@@ -283,5 +280,32 @@
   </data>
   <data name="IntroSkipOptions_MinOpeningPlotDurationSeconds" xml:space="preserve">
     <value>最小开头剧情时长 (秒)，默认为 60</value>
+  </data>
+  <data name="InvalidAltMovieDbApiUrl" xml:space="preserve">
+    <value>替代 TMDB API 地址无效</value>
+  </data>
+  <data name="InvalidAltMovieDbImageUrl" xml:space="preserve">
+    <value>替代 TMDB 图像地址无效</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiUrl_Alternative_MovieDb_Api_Url" xml:space="preserve">
+    <value>替代 TMDB API 地址</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbImageUrl_Alternative_MovieDb_Image_Url" xml:space="preserve">
+    <value>替代 TMDB 图像地址</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiUrl_Default_alternative_is_https___api_tmdb_org" xml:space="preserve">
+    <value>默认替代地址为 https://api.tmdb.org 留空使用系统默认 https://api.themoviedb.org</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbImageUrl_No_default_alternative__Provide_by_yourself_" xml:space="preserve">
+    <value>请自备替代地址，留空使用系统默认 https://image.tmdb.org</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiKey_Alternative_MovieDb_Api_Key" xml:space="preserve">
+    <value>替代 TMDB API 密钥</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiKey_Provide_your_own_MovieDb_Api_Key__Blank_uses_system_default_" xml:space="preserve">
+    <value>请自备 API 密钥，留空使用系统默认。</value>
+  </data>
+  <data name="InvalidAltMovieDbApiKey" xml:space="preserve">
+    <value>替代 TMDB API 密钥无效</value>
   </data>
 </root>
