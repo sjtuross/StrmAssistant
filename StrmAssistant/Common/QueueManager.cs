@@ -32,7 +32,7 @@ namespace StrmAssistant
         public static void Initialize()
         {
             _logger = Plugin.Instance.logger;
-            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount;
+            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
             SemaphoreMaster = new SemaphoreSlim(_currentMaxConcurrentCount);
 
             if (MasterProcessTask == null || MasterProcessTask.IsCompleted)
@@ -101,6 +101,12 @@ namespace StrmAssistant
                             {
                                 try
                                 {
+                                    if (cancellationToken.IsCancellationRequested)
+                                    {
+                                        _logger.Info("MediaInfoExtract - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
+                                        return;
+                                    }
+
                                     await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken)
                                         .ConfigureAwait(false);
 
@@ -117,8 +123,8 @@ namespace StrmAssistant
                                 }
                                 catch (Exception e)
                                 {
-                                    _logger.Info("MediaInfoExtract - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
-                                    _logger.Debug(e.Message);
+                                    _logger.Error("MediaInfoExtract - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
+                                    _logger.Error(e.Message);
                                     _logger.Debug(e.StackTrace);
                                 }
                             });
@@ -146,6 +152,12 @@ namespace StrmAssistant
                             {
                                 try
                                 {
+                                    if (cancellationToken.IsCancellationRequested)
+                                    {
+                                        _logger.Info("ExternalSubtitle - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
+                                        return;
+                                    }
+
                                     await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
                                         .ConfigureAwait(false);
 
@@ -157,8 +169,8 @@ namespace StrmAssistant
                                 }
                                 catch (Exception e)
                                 {
-                                    _logger.Info("ExternalSubtitle - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
-                                    _logger.Debug(e.Message);
+                                    _logger.Error("ExternalSubtitle - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
+                                    _logger.Error(e.Message);
                                     _logger.Debug(e.StackTrace);
                                 }
                             });
@@ -191,7 +203,7 @@ namespace StrmAssistant
         private static async Task Master_ProcessTaskQueueAsync(CancellationToken cancellationToken)
         {
             _logger.Info("Master - ProcessTaskQueueAsync Started");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MaxConcurrentCount);
+            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
 
             while (!cancellationToken.IsCancellationRequested)
             {

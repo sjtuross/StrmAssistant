@@ -13,6 +13,8 @@ namespace StrmAssistant
             Plugin.Instance.GetPluginOptions().IntroSkipOptions.MaxIntroDurationSeconds * TimeSpan.TicksPerSecond;
         public long MaxCreditsDurationTicks { get; set; } =
             Plugin.Instance.GetPluginOptions().IntroSkipOptions.MaxCreditsDurationSeconds * TimeSpan.TicksPerSecond;
+        public long MinOpeningPlotDurationTicks { get; set; } =
+            Plugin.Instance.GetPluginOptions().IntroSkipOptions.MinOpeningPlotDurationSeconds * TimeSpan.TicksPerSecond;
         public DateTime? LastPauseEventTime { get; set; } = null;
         public DateTime? LastPlaybackRateChangeEventTime { get; set; } = null;
     }

@@ -38,6 +38,7 @@ namespace StrmAssistant
         }
 
         private static string CurrentVersion => Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+        private static string PluginUserAgent => $"{Plugin.Instance.Name}/{CurrentVersion}";
         private static string PluginAssemblyFilename => Assembly.GetExecutingAssembly().GetName().Name + ".dll";
         private static string RepoReleaseUrl => "https://api.github.com/repos/sjtuross/StrmAssistant/releases/latest";
 
@@ -70,7 +71,8 @@ namespace StrmAssistant
                         Url = RepoReleaseUrl,
                         CancellationToken = cancellationToken,
                         AcceptHeader = "application/json",
-                        EnableDefaultUserAgent = true
+                        UserAgent = PluginUserAgent,
+                        EnableDefaultUserAgent = false
                     })
                     .ConfigureAwait(false);
 
@@ -92,7 +94,8 @@ namespace StrmAssistant
                                {
                                    Url = url,
                                    CancellationToken = cancellationToken,
-                                   EnableDefaultUserAgent = true,
+                                   UserAgent = PluginUserAgent,
+                                   EnableDefaultUserAgent = false,
                                    Progress = progress
                                })
                                .ConfigureAwait(false))

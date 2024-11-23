@@ -1,4 +1,4 @@
-﻿extern alias SystemMemory;
+extern alias SystemMemory;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -8,7 +8,6 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using static StrmAssistant.LanguageUtility;
@@ -23,7 +22,7 @@ namespace StrmAssistant
         private readonly ILocalizationManager _localizationManager;
 
         public static MetadataRefreshOptions PersonRefreshOptions;
-
+        
         public MetadataApi(ILibraryManager libraryManager, IFileSystem fileSystem,
             IServerConfigurationManager configurationManager, ILocalizationManager localizationManager)
         {
@@ -68,19 +67,24 @@ namespace StrmAssistant
             return language;
         }
 
+        public string GetServerPreferredMetadataLanguage()
+        {
+            return _configurationManager.Configuration.PreferredMetadataLanguage;
+        }
+
         public async Task<MetadataResult<Person>> GetPersonMetadataFromMovieDb(Person item,
-            CancellationToken cancellationToken)
+            string preferredMetadataLanguage, CancellationToken cancellationToken)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
-            
+
             IHasLookupInfo<PersonLookupInfo> lookupItem = item;
             var lookupInfo = lookupItem.GetLookupInfo(libraryOptions);
-            lookupInfo.MetadataLanguage = GetPreferredMetadataLanguage(item);
+            lookupInfo.MetadataLanguage = preferredMetadataLanguage;
 
             if (GetMovieDbPersonProvider() is IRemoteMetadataProvider<Person, PersonLookupInfo> provider)
             {
-                return await GetMetadataFromProvider<Person, PersonLookupInfo>(provider, lookupInfo,
-                    cancellationToken).ConfigureAwait(false);
+                return await GetMetadataFromProvider<Person, PersonLookupInfo>(provider, lookupInfo, cancellationToken)
+                    .ConfigureAwait(false);
             }
 
             return await Task.FromResult(new MetadataResult<Person>()).ConfigureAwait(false);
@@ -111,31 +115,13 @@ namespace StrmAssistant
             return providerWithOptions.GetMetadata(options, cancellationToken);
         }
 
-        public Tuple<string, bool> UpdateAsExpected(Person item, string input)
+        public string ProcessPersonInfo(string input, bool clean)
         {
-            if (item is null || string.Equals(Plugin.MetadataApi.GetPreferredMetadataLanguage(item), "zh-cn",
-                    StringComparison.OrdinalIgnoreCase))
-            {
-                if (IsChinese(input))
-                {
-                    var convertedInput = ConvertTraditionalToSimplified(input);
-                    return new Tuple<string, bool>(convertedInput, true);
-                }
+            if (IsChinese(input)) input = ConvertTraditionalToSimplified(input);
 
-                return new Tuple<string, bool>(input, false);
-            }
+            if (clean) input = CleanPersonName(input);
 
-            return new Tuple<string, bool>(input, true);
-        }
-
-        public Tuple<string, bool> UpdateAsExpected(string input)
-        {
-            return UpdateAsExpected(null, input);
-        }
-
-        public string CleanPersonName(string input)
-        {
-            return Regex.Replace(input, @"\s+", "");
+            return input;
         }
 
         public string GetCollectionOriginalLanguage(BoxSet collection)

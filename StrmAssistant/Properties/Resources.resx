@@ -105,16 +105,16 @@
     <value>Extract media info for newly added items and sync intro and credits markers. Default is OFF.</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
-    <value>Include Extra</value>
+    <value>Include Additional Part and Extra</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_media_extras_to_extract__Default_is_False_" xml:space="preserve">
-    <value>Include media extras to extract. Default is OFF.</value>
+    <value>Include additional parts and extras to extract. Default is OFF.</value>
   </data>
   <data name="PluginOptions_StrmOnly_Strm_Only" xml:space="preserve">
     <value>Strm Only</value>
   </data>
   <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
-    <value>Include Strm only. Turn off to also include Non-Strm. Default is ON.</value>
+    <value>Include Strm only. Turn off to support all. Default is ON.</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count" xml:space="preserve">
     <value>Max Concurrent Count</value>
@@ -132,10 +132,10 @@
     <value>Library scope to extract. Blank includes all.</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Enable_Image_Capture" xml:space="preserve">
-    <value>Image Capture Enhanced</value>
+    <value>Image Capture and Thumbnail Preview Enhanced</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
-    <value>Support image capture for Strm. Skip embedded image. Default is OFF.</value>
+    <value>Unlock image capture, thumbnail preview BIF for Strm. Skip embedded image. Default is OFF.</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
     <value>Adaptive Intro Skip</value>
@@ -144,10 +144,10 @@
     <value>Playback behavior-based intro and credits detection for episodes. Default is OFF.</value>
   </data>
   <data name="IntroSkipOptions_MaxIntroDurationSeconds" xml:space="preserve">
-    <value>Max Intro Duration (Seconds)</value>
+    <value>Max Intro Duration (Seconds), Default is 150</value>
   </data>
   <data name="IntroSkipOptions_MaxCreditsDurationSeconds" xml:space="preserve">
-    <value>Max Credits Duration (Seconds)</value>
+    <value>Max Credits Duration (Seconds), Default is 360</value>
   </data>
   <data name="PluginOptions_IntroSkipOptions_Intro_Credits_Detection" xml:space="preserve">
     <value>Intro and Credits Detection</value>
@@ -201,7 +201,7 @@
     <value>Customize MovieDb Fallback Language</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
-    <value>Try to get Chinese or Japanese metadata from MovieDb, including actors. Default is OFF.</value>
+    <value>Try to get Chinese or Japanese metadata from MovieDb. Default is OFF.</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
     <value>Fallback Languages</value>
@@ -216,7 +216,7 @@
     <value>Exclusive MediaInfo Extract</value>
   </data>
   <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
-    <value>Only allow this plugin to extract media info (ffprobe) and capture image (ffmpeg). Default is OFF.</value>
+    <value>Only allow this plugin to extract media info (ffprobe) and capture image (ffmpeg) for all libraries. Default is OFF.</value>
   </data>
   <data name="Repo_Link" xml:space="preserve">
     <value>Repo Link</value>
@@ -240,10 +240,10 @@
     <value>Prefer original poster based on the original language. Support TMDB, TVDB and FANART. Default is OFF.</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced" xml:space="preserve">
-    <value>Built-in Intro Detection Unlock</value>
+    <value>Built-in Intro Detection Enhanced</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
-    <value>Unlock Strm support for built-in intro skip detection</value>
+    <value>Customize intro detection fingerprint length. Default is OFF.</value>
   </data>
   <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
     <value>Enhance Chinese Search</value>
@@ -276,7 +276,7 @@
     <value>Music</value>
   </data>
   <data name="ItemType_MusicAlbum_MusicAlbum" xml:space="preserve">
-    <value>MusicAlbum</value>
+    <value>Music Album</value>
   </data>
   <data name="ItemType_Person_Person" xml:space="preserve">
     <value>Person</value>
@@ -285,7 +285,7 @@
     <value>Photo</value>
   </data>
   <data name="ItemType_PhotoAlbum_PhotoAlbum" xml:space="preserve">
-    <value>PhotoAlbum</value>
+    <value>Photo Album</value>
   </data>
   <data name="ItemType_Playlist_Playlist" xml:space="preserve">
     <value>Playlist</value>
@@ -307,5 +307,92 @@
   </data>
   <data name="ModOptions_SearchScope_Include_item_types__Blank_includes_all_" xml:space="preserve">
     <value>Include search item types. Default is Movie, Collection, Series. Blank includes all.</value>
+  </data>
+  <data name="ModOptions_PinyinSortName_Pinyin_Sort_Title" xml:space="preserve">
+    <value>Pinyin Initials Sort Title</value>
+  </data>
+  <data name="ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title" xml:space="preserve">
+    <value>Auto generate pinyin initials as sort title when library scan. Default is OFF.</value>
+  </data>
+  <data name="PluginOptions_MetadataEnhanceOptions_Metadata_Enhance" xml:space="preserve">
+    <value>Metadata Enhance</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnhanceNfoMetadata_Nfo_Metadata_Import_Enhanced" xml:space="preserve">
+    <value>Nfo Metadata Import Enhanced</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnhanceNfoMetadata_Add_support_to_import_actor_image_url__Default_is_OFF_" xml:space="preserve">
+    <value>Add support to import actor image URL from Nfo. Default is OFF.</value>
+  </data>
+  <data name="ModOptions_HidePersonNoImage_Hide_Person_without_Image" xml:space="preserve">
+    <value>Hide Person without Image</value>
+  </data>
+  <data name="ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_" xml:space="preserve">
+    <value>Hide person without image. Default is OFF.</value>
+  </data>
+  <data name="ItemType_MusicArtist_MusicArtist" xml:space="preserve">
+    <value>Music Artist</value>
+  </data>
+  <data name="UIFunctionOptions_EditorTitle_UI_Functions" xml:space="preserve">
+    <value>UI Functions</value>
+  </data>
+  <data name="UIFunctionOptions_BeautifyMissingMetadata_Beautify_Missing_Metadata" xml:space="preserve">
+    <value>Beautify Episode Title</value>
+  </data>
+  <data name="UIFunctionOptions_BeautifyMissingMetadata_Beautify_missing_metadata_for_episode_display__Default_is_OFF_" xml:space="preserve">
+    <value>Beautify episode title display with no metadata. Default is OFF.</value>
+  </data>
+  <data name="UIFunctionOptions_EnforceLibraryOrder_Enforce_Library_Order" xml:space="preserve">
+    <value>Enforce Library Order</value>
+  </data>
+  <data name="UIFunctionOptions_EnforceLibraryOrder_Enforce_library_order_per_the_first_admin__Default_if_OFF_" xml:space="preserve">
+    <value>Enforce customized library order per the first admin. Default if OFF.</value>
+  </data>
+  <data name="IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes" xml:space="preserve">
+    <value>Intro Detection Fingerprint Length (Minute), Default is 10</value>
+  </data>
+  <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope" xml:space="preserve">
+    <value>Library Scope</value>
+  </data>
+  <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
+    <value>Library scope to extract fingerprint. Blank includes all libraries with intro detection enabled.</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnableAltMovieDbUrl" xml:space="preserve">
+    <value>Use Alternative MovieDb Config</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person" xml:space="preserve">
+    <value>Enhance MovieDb Person</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_" xml:space="preserve">
+    <value>Extract also_known_as when refresh person, import season cast, update series cast. Default is OFF.</value>
+  </data>
+  <data name="IntroSkipOptions_MinOpeningPlotDurationSeconds" xml:space="preserve">
+    <value>Min Opening Plot Duration (Seconds), Default is 60</value>
+  </data>
+  <data name="InvalidAltMovieDbApiUrl" xml:space="preserve">
+    <value>Alternative MovieDb Api Url is invalid</value>
+  </data>
+  <data name="InvalidAltMovieDbImageUrl" xml:space="preserve">
+    <value>Alternative MovieDb Image Url is invalid</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiUrl_Alternative_MovieDb_Api_Url" xml:space="preserve">
+    <value>Alternative MovieDb Api Url</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbImageUrl_Alternative_MovieDb_Image_Url" xml:space="preserve">
+    <value>Alternative MovieDb Image Url</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiUrl_Default_alternative_is_https___api_tmdb_org" xml:space="preserve">
+    <value>Default alternative URL is https://api.tmdb.org Blank uses system default https://api.themoviedb.org</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbImageUrl_No_default_alternative__Provide_by_yourself_" xml:space="preserve">
+    <value>Provide your own alternative Url. Blank uses system default https://image.tmdb.org</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiKey_Alternative_MovieDb_Api_Key" xml:space="preserve">
+    <value>Alternative MovieDb Api Key</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiKey_Provide_your_own_MovieDb_Api_Key__Blank_uses_system_default_" xml:space="preserve">
+    <value>Provide your own Api Key. Blank uses system default.</value>
+  </data>
+  <data name="InvalidAltMovieDbApiKey" xml:space="preserve">
+    <value>Alternative MovieDb Api Key is invalid</value>
   </data>
 </root>

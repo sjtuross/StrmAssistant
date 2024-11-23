@@ -2,6 +2,7 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
@@ -54,7 +55,7 @@ namespace StrmAssistant
             LibraryPathsInScope = _libraryManager.GetVirtualFolders()
                 .Where(f => libraryIds != null && libraryIds.Any()
                     ? libraryIds.Contains(f.Id)
-                    : f.CollectionType == "tvshows" || f.CollectionType is null)
+                    : f.CollectionType == CollectionType.TvShows.ToString() || f.CollectionType is null)
                 .SelectMany(l => l.Locations)
                 .Select(ls => ls.EndsWith(Path.DirectorySeparatorChar.ToString())
                     ? ls
@@ -154,7 +155,7 @@ namespace StrmAssistant
                         positionTimeDiff > 0) //fast-forward only
                     {
                         playSessionData.FirstJumpPositionTicks = playSessionData.PreviousPositionTicks;
-                        if (playSessionData.PreviousPositionTicks > 60 * TimeSpan.TicksPerSecond)
+                        if (playSessionData.PreviousPositionTicks > playSessionData.MinOpeningPlotDurationTicks)
                         {
                             _logger.Info("First jump start time: " +
                                          new TimeSpan(playSessionData.FirstJumpPositionTicks.Value).ToString(
@@ -176,7 +177,10 @@ namespace StrmAssistant
                     if (playSessionData.LastJumpPositionTicks.HasValue)
                     {
                         UpdateIntroTask(e.Item as Episode, e.Session,
-                            playSessionData.FirstJumpPositionTicks ?? new TimeSpan(0, 0, 0).Ticks,
+                            playSessionData.FirstJumpPositionTicks.HasValue &&
+                            playSessionData.FirstJumpPositionTicks.Value > playSessionData.MinOpeningPlotDurationTicks
+                                ? playSessionData.FirstJumpPositionTicks.Value
+                                : new TimeSpan(0, 0, 0).Ticks,
                             playSessionData.LastJumpPositionTicks.Value);
                     }
                 }
@@ -263,7 +267,8 @@ namespace StrmAssistant
 
         public bool IsLibraryInScope(BaseItem item)
         {
-            var isEnable = item is Episode && (Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly ? item.IsShortcut : true);
+            var strmOnly = Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly;
+            var isEnable = item is Episode && (!strmOnly || item.IsShortcut);
             if (!isEnable) return false;
             
             var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));

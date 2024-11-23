@@ -18,16 +18,16 @@
     <value>电影洗版或剧集有更新后实时提取媒体信息以及同步片头片尾标记，默认关闭。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
-    <value>包含附加内容</value>
+    <value>包含分集和附加内容</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_media_extras_to_extract__Default_is_False_" xml:space="preserve">
-    <value>提取电影或剧集附加内容的媒体信息，默认关闭。</value>
+    <value>提取电影或剧集的分集和附加内容的媒体信息，默认关闭。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Strm_Only" xml:space="preserve">
-    <value>仅支持Strm</value>
+    <value>仅支持 STRM</value>
   </data>
   <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
-    <value>仅支持Strm，关闭后也支持非Strm，默认开启。</value>
+    <value>仅支持 STRM，关闭后支持所有，默认开启。</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count" xml:space="preserve">
     <value>最大线程数</value>
@@ -45,10 +45,10 @@
     <value>媒体库范围，留空包含所有。</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Enable_Image_Capture" xml:space="preserve">
-    <value>视频截图增强</value>
+    <value>视频截图预览缩略图增强</value>
   </data>
   <data name="PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_" xml:space="preserve">
-    <value>魔改支持Strm视频截图，跳过内嵌封面，默认关闭。</value>
+    <value>解锁 STRM 视频截图，预览缩略图 BIF，跳过内嵌封面，默认关闭。</value>
   </data>
   <data name="PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_" xml:space="preserve">
     <value>播放行为片头探测</value>
@@ -57,10 +57,10 @@
     <value>基于播放行为的剧集片头片尾探测，默认关闭。</value>
   </data>
   <data name="IntroSkipOptions_MaxCreditsDurationSeconds" xml:space="preserve">
-    <value>最大片尾时长 (秒)</value>
+    <value>最大片尾时长 (秒)，默认为 360</value>
   </data>
   <data name="IntroSkipOptions_MaxIntroDurationSeconds" xml:space="preserve">
-    <value>最大片头时长 (秒)</value>
+    <value>最大片头时长 (秒)，默认为 150</value>
   </data>
   <data name="PluginOptions_IntroSkipOptions_Intro_Credits_Detection" xml:space="preserve">
     <value>片头片尾探测</value>
@@ -114,7 +114,7 @@
     <value>自定义 TMDB 备选语言</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_" xml:space="preserve">
-    <value>尽可能从 TMDB 获取中文或日文元数据，包括演员，默认关闭。</value>
+    <value>尽可能从 TMDB 获取中文或日文元数据，默认关闭。</value>
   </data>
   <data name="ModOptions_FallbackLanguages_Fallback_Languages" xml:space="preserve">
     <value>备选语言</value>
@@ -129,7 +129,7 @@
     <value>独占媒体信息提取</value>
   </data>
   <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
-    <value>仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg)，默认关闭。</value>
+    <value>仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg)，全媒体库生效，默认关闭。</value>
   </data>
   <data name="Repo_Link" xml:space="preserve">
     <value>项目链接</value>
@@ -153,10 +153,10 @@
     <value>优先使用原语言海报，支持 TMDB, TVDB, Fanart，默认关闭。</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced" xml:space="preserve">
-    <value>原生片头探测解锁</value>
+    <value>原生片头探测增强</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
-    <value>魔改原生跳片头探测，解锁Strm支持，默认关闭。</value>
+    <value>自定义片头声纹探测时长，默认关闭。</value>
   </data>
   <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
     <value>中文搜索增强</value>
@@ -220,5 +220,92 @@
   </data>
   <data name="ModOptions_SearchScope_Include_item_types__Blank_includes_all_" xml:space="preserve">
     <value>搜索包含的类型，默认为电影，合集，电视节目，留空包含所有。</value>
+  </data>
+  <data name="ModOptions_PinyinSortName_Pinyin_Sort_Title" xml:space="preserve">
+    <value>拼音首字母排序</value>
+  </data>
+  <data name="ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title" xml:space="preserve">
+    <value>扫库时自动把标题中的中文转换为拼音首字母作为排序标题，默认关闭。</value>
+  </data>
+  <data name="PluginOptions_MetadataEnhanceOptions_Metadata_Enhance" xml:space="preserve">
+    <value>元数据增强</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnhanceNfoMetadata_Nfo_Metadata_Import_Enhanced" xml:space="preserve">
+    <value>NFO 元数据导入增强</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnhanceNfoMetadata_Add_support_to_import_actor_image_url__Default_is_OFF_" xml:space="preserve">
+    <value>添加支持从 NFO 导入演员头像链接，默认关闭。</value>
+  </data>
+  <data name="ModOptions_HidePersonNoImage_Hide_Person_without_Image" xml:space="preserve">
+    <value>隐藏无头像人员</value>
+  </data>
+  <data name="ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_" xml:space="preserve">
+    <value>电影剧集页面隐藏无头像人员，非删除，仍可搜索，默认关闭。</value>
+  </data>
+  <data name="ItemType_MusicArtist_MusicArtist" xml:space="preserve">
+    <value>艺术家</value>
+  </data>
+  <data name="UIFunctionOptions_EditorTitle_UI_Functions" xml:space="preserve">
+    <value>UI 功能</value>
+  </data>
+  <data name="UIFunctionOptions_BeautifyMissingMetadata_Beautify_Missing_Metadata" xml:space="preserve">
+    <value>剧集集标题自动补全</value>
+  </data>
+  <data name="UIFunctionOptions_BeautifyMissingMetadata_Beautify_missing_metadata_for_episode_display__Default_is_OFF_" xml:space="preserve">
+    <value>对于缺少元数据匹配的剧集集标题自动补全显示，默认关闭。</value>
+  </data>
+  <data name="UIFunctionOptions_EnforceLibraryOrder_Enforce_Library_Order" xml:space="preserve">
+    <value>强制媒体库排序</value>
+  </data>
+  <data name="UIFunctionOptions_EnforceLibraryOrder_Enforce_library_order_per_the_first_admin__Default_if_OFF_" xml:space="preserve">
+    <value>首位管理员的自定义媒体库排序作用于所有用户，默认关闭。</value>
+  </data>
+  <data name="IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes" xml:space="preserve">
+    <value>片头声纹探测时长 (分钟)，默认为 10</value>
+  </data>
+  <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope" xml:space="preserve">
+    <value>媒体库范围</value>
+  </data>
+  <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
+    <value>提取声纹的媒体库范围，留空包含所有启用原生片头探测的媒体库。</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnableAltMovieDbUrl" xml:space="preserve">
+    <value>使用替代 TMDB 配置</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person" xml:space="preserve">
+    <value>演职人员增强 TMDB</value>
+  </data>
+  <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_" xml:space="preserve">
+    <value>刷新演员提取别名，导入季的演职人员，更新节目系列的演职人员为各季合并，默认关闭。</value>
+  </data>
+  <data name="IntroSkipOptions_MinOpeningPlotDurationSeconds" xml:space="preserve">
+    <value>最小开头剧情时长 (秒)，默认为 60</value>
+  </data>
+  <data name="InvalidAltMovieDbApiUrl" xml:space="preserve">
+    <value>替代 TMDB API 地址无效</value>
+  </data>
+  <data name="InvalidAltMovieDbImageUrl" xml:space="preserve">
+    <value>替代 TMDB 图像地址无效</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiUrl_Alternative_MovieDb_Api_Url" xml:space="preserve">
+    <value>替代 TMDB API 地址</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbImageUrl_Alternative_MovieDb_Image_Url" xml:space="preserve">
+    <value>替代 TMDB 图像地址</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiUrl_Default_alternative_is_https___api_tmdb_org" xml:space="preserve">
+    <value>默认替代地址为 https://api.tmdb.org 留空使用系统默认 https://api.themoviedb.org</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbImageUrl_No_default_alternative__Provide_by_yourself_" xml:space="preserve">
+    <value>请自备替代地址，留空使用系统默认 https://image.tmdb.org</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiKey_Alternative_MovieDb_Api_Key" xml:space="preserve">
+    <value>替代 TMDB API 密钥</value>
+  </data>
+  <data name="MetadataEnhanceOptions_AltMovieDbApiKey_Provide_your_own_MovieDb_Api_Key__Blank_uses_system_default_" xml:space="preserve">
+    <value>请自备 API 密钥，留空使用系统默认。</value>
+  </data>
+  <data name="InvalidAltMovieDbApiKey" xml:space="preserve">
+    <value>替代 TMDB API 密钥无效</value>
   </data>
 </root>

@@ -13,11 +13,6 @@ namespace StrmAssistant
         [DisplayNameL("PluginOptions_EditorTitle_Strm_Extract", typeof(Resources))]
         public override string EditorTitle => Resources.PluginOptions_EditorTitle_Strm_Extract;
 
-        [DisplayNameL("PluginOptions_MaxConcurrentCount_Max_Concurrent_Count", typeof(Resources))]
-        [DescriptionL("PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_", typeof(Resources))]
-        [Required, MinValue(1), MaxValue(10)]
-        public int MaxConcurrentCount { get; set; } = 1;
-
         [DisplayNameL("PluginOptions_IncludeExtra_Include_Extra", typeof(Resources))]
         [DescriptionL("PluginOptions_IncludeExtra_Include_media_extras_to_extract__Default_is_False_", typeof(Resources))]
         [Required]
@@ -32,7 +27,7 @@ namespace StrmAssistant
             get => false;
             set { }
         }
-
+        
         [Browsable(false)]
         public IEnumerable<EditorSelectOption> LibraryList { get; set; }
 

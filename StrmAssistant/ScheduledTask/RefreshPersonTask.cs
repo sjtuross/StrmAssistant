@@ -1,4 +1,6 @@
 ﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.Movies;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
@@ -8,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using static StrmAssistant.LanguageUtility;
 
 namespace StrmAssistant
 {
@@ -27,6 +30,18 @@ namespace StrmAssistant
             _logger.Info("RefreshPerson - Task Execute");
             await Task.Yield();
             progress.Report(0);
+
+            var serverPreferredMetadataLanguage = Plugin.MetadataApi.GetServerPreferredMetadataLanguage();
+            _logger.Info("Server Preferred Metadata Language: " + serverPreferredMetadataLanguage);
+            var isServerPreferZh = string.Equals(serverPreferredMetadataLanguage.Split('-')[0], "zh",
+                StringComparison.OrdinalIgnoreCase);
+            if (!isServerPreferZh)
+            {
+                progress.Report(100.0);
+                _logger.Warn("Server Preferred Metadata Language is not set to Chinese.");
+                _logger.Warn("RefreshPerson - Task Aborted");
+                return;
+            }
 
             var personQuery = new InternalItemsQuery
             {
@@ -55,7 +70,8 @@ namespace StrmAssistant
                     {
                         PersonIds = new[] { dupItem.InternalId },
                         Recursive = true,
-                        IncludeItemTypes = new[] { "Movie", "Series", "Episode", "Video", "Trailer" }
+                        IncludeItemTypes = new[]
+                            { nameof(Movie), nameof(Series), nameof(Episode), nameof(Video), nameof(Trailer) }
                     });
                     foreach (var relatedItem in relatedItems)
                     {
@@ -65,21 +81,38 @@ namespace StrmAssistant
                 }
                 _libraryManager.DeleteItems(dupPersonItems.Select(i => i.InternalId).ToArray());
             }
-
             _logger.Info("RefreshPerson - Number of Duplicate Persons Deleted: " + dupPersonItems.Count);
-            var remainingCount = personItems.Count - dupPersonItems.Count;
+
+            var skipCount = personItems
+                .Count(item => item.ProviderIds != null &&
+                               !item.ProviderIds.Keys.Any(key =>
+                                   string.Equals(key, "tmdb", StringComparison.OrdinalIgnoreCase)));
+            _logger.Info("RefreshPerson - Number of Persons without TmdbId Skipped: " + skipCount);
+
+            var remainingCount = personItems.Count - dupPersonItems.Count - skipCount;
             _logger.Info("RefreshPerson - Number of Persons After: " + remainingCount);
 
             personItems.Clear();
             personItems.TrimExcess();
+
+            personQuery.HasAnyProviderId = new[] { "tmdb" };
 
             double total = remainingCount;
             var current = 0;
             const int batchSize = 100;
             var tasks = new List<Task>();
 
+            var refreshPersonMode = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.RefreshPersonMode;
+            _logger.Info("Refresh Person Mode: " + refreshPersonMode);
+
             for (var startIndex = 0; startIndex < remainingCount; startIndex += batchSize)
             {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    _logger.Info("RefreshPerson - Task Cancelled");
+                    break;
+                }
+
                 personQuery.Limit = batchSize;
                 personQuery.StartIndex = startIndex;
                 personItems = _libraryManager.GetItemList(personQuery).Cast<Person>().ToList();
@@ -88,47 +121,76 @@ namespace StrmAssistant
 
                 foreach (var item in personItems)
                 {
+                    var taskItem = item;
+
+                    var nameRefreshSkip = refreshPersonMode == RefreshPersonMode.Default && isServerPreferZh &&
+                                          IsChinese(taskItem.Name) && IsChinese(taskItem.Overview) &&
+                                          taskItem.DateLastSaved >= DateTimeOffset.UtcNow.AddDays(-30);
+                    var imageRefreshSkip = taskItem.HasImage(ImageType.Primary) ||
+                                           (refreshPersonMode == RefreshPersonMode.Default &&
+                                            taskItem.DateLastRefreshed >=
+                                            DateTimeOffset.UtcNow.AddDays(-30));
+
+                    if (nameRefreshSkip && imageRefreshSkip)
+                    {
+                        var currentCount = Interlocked.Increment(ref current);
+                        progress.Report(currentCount / total * 100);
+                        _logger.Info("RefreshPerson - Task " + currentCount + "/" + total + " Skipped - " +
+                                     taskItem.Name);
+                        continue;
+                    }
+
                     if (cancellationToken.IsCancellationRequested)
                     {
                         _logger.Info("RefreshPerson - Task Cancelled");
                         break;
                     }
 
-                    await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                    try
+                    {
+                        await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                    }
+                    catch
+                    {
+                        break;
+                    }
 
-                    var taskItem = item;
                     var task = Task.Run(async () =>
                     {
                         try
                         {
-                            var result = await Plugin.MetadataApi
-                                .GetPersonMetadataFromMovieDb(taskItem, cancellationToken)
-                                .ConfigureAwait(false);
-
-                            if (result?.Item != null)
+                            if (cancellationToken.IsCancellationRequested)
                             {
-                                var newName = result.Item.Name;
-                                if (!string.IsNullOrEmpty(newName))
-                                {
-                                    var updateResult = Plugin.MetadataApi.UpdateAsExpected(taskItem, newName);
-                                    if (updateResult.Item2)
-                                    {
-                                        taskItem.Name = taskItem.SortName =
-                                            Plugin.MetadataApi.CleanPersonName(updateResult.Item1);
-                                    }
-                                }
-
-                                var newOverview = result.Item.Overview;
-                                if (!string.IsNullOrEmpty(newOverview))
-                                {
-                                    var updateResult = Plugin.MetadataApi.UpdateAsExpected(taskItem, newOverview);
-                                    if (updateResult.Item2) taskItem.Overview = updateResult.Item1;
-                                }
-
-                                _libraryManager.UpdateItem(taskItem, null, ItemUpdateType.MetadataEdit);
+                                _logger.Info("RefreshPerson - Task Cancelled");
+                                return;
                             }
 
-                            if (!taskItem.HasImage(ImageType.Primary))
+                            if (!nameRefreshSkip)
+                            {
+                                var result = await Plugin.MetadataApi
+                                    .GetPersonMetadataFromMovieDb(taskItem, serverPreferredMetadataLanguage,
+                                        cancellationToken)
+                                    .ConfigureAwait(false);
+
+                                if (result?.Item != null)
+                                {
+                                    var newName = result.Item.Name;
+                                    if (!string.IsNullOrEmpty(newName))
+                                    {
+                                        taskItem.Name = Plugin.MetadataApi.ProcessPersonInfo(newName, true);
+                                    }
+
+                                    var newOverview = result.Item.Overview;
+                                    if (!string.IsNullOrEmpty(newOverview))
+                                    {
+                                        taskItem.Overview = Plugin.MetadataApi.ProcessPersonInfo(newOverview, false);
+                                    }
+
+                                    _libraryManager.UpdateItem(taskItem, null, ItemUpdateType.MetadataEdit);
+                                }
+                            }
+
+                            if (!imageRefreshSkip)
                             {
                                 await taskItem.RefreshMetadata(MetadataApi.PersonRefreshOptions, cancellationToken)
                                     .ConfigureAwait(false);
@@ -140,16 +202,17 @@ namespace StrmAssistant
                         }
                         catch (Exception e)
                         {
-                            _logger.Info("RefreshPerson - Item Failed: " + taskItem.Name);
-                            _logger.Debug(e.Message);
+                            _logger.Error("RefreshPerson - Item Failed: " + taskItem.Name);
+                            _logger.Error(e.Message);
                             _logger.Debug(e.StackTrace);
                         }
                         finally
                         {
+                            QueueManager.SemaphoreMaster.Release();
+
                             var currentCount = Interlocked.Increment(ref current);
                             progress.Report(currentCount / total * 100);
                             _logger.Info("RefreshPerson - Task " + currentCount + "/" + total + " - " + taskItem.Name);
-                            QueueManager.SemaphoreMaster.Release();
                         }
                     }, cancellationToken);
 
@@ -169,9 +232,9 @@ namespace StrmAssistant
 
         public string Key => "RefreshPersonTask";
 
-        public string Description => "Refreshes and repairs persons";
+        public string Description => "Refreshes and repairs Chinese actors";
 
-        public string Name => "Refresh Persons";
+        public string Name => "Refresh Chinese Actor";
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

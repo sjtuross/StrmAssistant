@@ -27,6 +27,7 @@ namespace StrmAssistant
         private readonly IFileSystem _fileSystem;
         private readonly IUserManager _userManager;
         private readonly IMediaSourceManager _mediaSourceManager;
+        private readonly IMediaMountManager _mediaMountManager;
         private readonly ILogger _logger;
 
         public static MetadataRefreshOptions MediaInfoRefreshOptions;
@@ -46,6 +47,7 @@ namespace StrmAssistant
         };
 
         public static Dictionary<User, bool> AllUsers = new Dictionary<User, bool>();
+        public static string[] AdminOrderedViews = Array.Empty<string>();
 
         private readonly bool _fallbackProbeApproach;
         private readonly MethodInfo GetPlayackMediaSources;
@@ -53,6 +55,7 @@ namespace StrmAssistant
         public LibraryApi(ILibraryManager libraryManager,
             IFileSystem fileSystem,
             IMediaSourceManager mediaSourceManager,
+            IMediaMountManager mediaMountManager,
             IUserManager userManager)
         {
             _libraryManager = libraryManager;
@@ -60,6 +63,7 @@ namespace StrmAssistant
             _fileSystem = fileSystem;
             _userManager = userManager;
             _mediaSourceManager = mediaSourceManager;
+            _mediaMountManager = mediaMountManager;
 
             FetchUsers();
 
@@ -96,7 +100,7 @@ namespace StrmAssistant
                 ReplaceAllImages = true
             };
 
-            if (Plugin.Instance.ApplicationHost.ApplicationVersion > new Version("4.9.0.23"))
+            if (Plugin.Instance.ApplicationHost.ApplicationVersion >= new Version("4.9.0.25"))
             {
                 try
                 {
@@ -130,6 +134,15 @@ namespace StrmAssistant
             {
                 AllUsers[user] = _userManager.GetUserById(user.InternalId).Policy.IsAdministrator;
             }
+
+            FetchAdminOrderedViews();
+        }
+
+        public void FetchAdminOrderedViews()
+        {
+            var firstAdmin = AllUsers.Where(kvp => kvp.Value).Select(u => u.Key).OrderBy(u => u.DateCreated)
+                .FirstOrDefault();
+            AdminOrderedViews = firstAdmin?.Configuration.OrderedViews ?? AdminOrderedViews;
         }
 
         public bool HasMediaStream(BaseItem item)
@@ -157,7 +170,7 @@ namespace StrmAssistant
             {
                 if (includeFavorites) resultItems = ExpandFavorites(items, true);
 
-                var incomingItems = items.OfType<Movie>().Cast<BaseItem>().Concat(items.OfType<Episode>()).ToList();
+                var incomingItems = items.OfType<Video>().Cast<BaseItem>().ToList();
 
                 var libraryPathsInScope = _libraryManager.GetVirtualFolders()
                     .Where(f => libraryIds == null || !libraryIds.Any() || libraryIds.Contains(f.Id))
@@ -333,7 +346,7 @@ namespace StrmAssistant
                 }
                 else
                 {
-                    _logger.Debug("MediaInfoExtract - Item dropped: " + item.Name + " - " + item.Path);
+                    _logger.Debug("MediaInfoExtract - Item dropped: " + item.Name + " - " + item.Path); // video without audio
                 }
             }
 
@@ -346,10 +359,17 @@ namespace StrmAssistant
         {
             var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
 
-            var movies = items.OfType<Movie>().Cast<BaseItem>().ToList();
+            var itemsMultiVersions = items.SelectMany(v =>
+                    _libraryManager.GetItemList(new InternalItemsQuery
+                        {
+                            PresentationUniqueKey = v.PresentationUniqueKey
+                        }))
+                .ToList();
 
-            var seriesIds = items.OfType<Series>().Select(s => s.InternalId)
-                .Union(items.OfType<Episode>().Select(e => e.SeriesId)).ToArray();
+            var videos = itemsMultiVersions.OfType<Video>().Cast<BaseItem>().ToList();
+
+            var seriesIds = itemsMultiVersions.OfType<Series>().Select(s => s.InternalId)
+                .Union(itemsMultiVersions.OfType<Episode>().Select(e => e.SeriesId)).ToArray();
 
             var episodes = Array.Empty<BaseItem>();
             if (seriesIds.Length > 0)
@@ -384,34 +404,43 @@ namespace StrmAssistant
                 }
             }
 
-            var combined = movies.Concat(episodes).ToList();
+            var combined = videos.Concat(episodes).GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
+
             return filterNeeded ? FilterByFavorites(combined) : combined;
         }
 
         private List<BaseItem> FilterByFavorites(List<BaseItem> items)
         {
-            var movies = AllUsers.Select(e => e.Key)
-                .SelectMany(u => items.OfType<Movie>()
-                .Where(i => i.IsFavoriteOrLiked(u)));
+            var videos = AllUsers.Select(e => e.Key)
+                .SelectMany(u => items.OfType<Video>().Where(i => i.IsFavoriteOrLiked(u)));
+
             var episodes = AllUsers.Select(e => e.Key)
                 .SelectMany(u => items.OfType<Episode>()
-                .GroupBy(e => e.SeriesId)
-                .Where(g => g.Any(i => i.IsFavoriteOrLiked(u)) || g.First().Series.IsFavoriteOrLiked(u))
-                .SelectMany(g => g)
-                );
-            var results = movies.Cast<BaseItem>().Concat(episodes.Cast<BaseItem>())
-                .GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
+                    .GroupBy(e => e.SeriesId)
+                    .Where(g => g.Any(i => i.IsFavoriteOrLiked(u)) || g.First().Series.IsFavoriteOrLiked(u))
+                    .SelectMany(g => g));
+
+            var results = videos.Cast<BaseItem>()
+                .Concat(episodes)
+                .GroupBy(i => i.InternalId)
+                .Select(g => g.First())
+                .ToList();
 
             return results;
         }
 
         public List<User> GetUsersByFavorites(BaseItem item)
         {
-            var users = AllUsers.Select(e=>e.Key).Where(u =>
-                (item is Movie || item is Series) && item.IsFavoriteOrLiked(u) ||
-                item is Episode e && (e.IsFavoriteOrLiked(u) ||
-                                            (e.Series != null && e.Series.IsFavoriteOrLiked(u)))
-            ).ToList();
+            var itemsMultiVersion = _libraryManager.GetItemList(new InternalItemsQuery
+            {
+                PresentationUniqueKey = item.PresentationUniqueKey
+            });
+
+            var users = AllUsers.Select(e => e.Key)
+                .Where(u => itemsMultiVersion.Any(i =>
+                    (i is Movie || i is Series) && i.IsFavoriteOrLiked(u) || i is Episode e &&
+                    (e.IsFavoriteOrLiked(u) || (e.Series != null && e.Series.IsFavoriteOrLiked(u)))))
+                .ToList();
 
             return users;
         }
@@ -466,6 +495,71 @@ namespace StrmAssistant
                     }
                 }));
             }
+        }
+
+        public async Task<string> GetStrmMountPath(string strmPath)
+        {
+            var path = SystemMemory::System.MemoryExtensions.AsMemory(strmPath);
+
+            using (IMediaMount mediaMount = await _mediaMountManager.Mount(path, null, CancellationToken.None))
+            {
+                if (mediaMount != null)
+                {
+                    return mediaMount.MountedPath;
+                }
+            }
+
+            return null;
+        }
+
+        public BaseItem[] GetItemsByIds(long[] itemIds)
+        {
+            var items = _libraryManager.GetItemList(new InternalItemsQuery { ItemIds = itemIds });
+
+            var dict = items.ToDictionary(i => i.InternalId, i => i);
+
+            return itemIds.Select(id => dict[id]).ToArray();
+        }
+
+        public void UpdateSeriesPeople(Series series)
+        {
+            if (!series.ProviderIds.ContainsKey("Tmdb")) return;
+
+            var seriesPeople = _libraryManager.GetItemPeople(series);
+
+            var seasonQuery = new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { nameof(Season) },
+                ParentWithPresentationUniqueKeyFromItemId = series.InternalId,
+                MinIndexNumber = 1,
+                OrderBy = new (string, SortOrder)[] { (ItemSortBy.IndexNumber, SortOrder.Ascending) }
+            };
+
+            var seasons = _libraryManager.GetItemList(seasonQuery);
+            var peopleLists = seasons
+                .Select(s => _libraryManager.GetItemPeople(s))
+                .ToList();
+
+            peopleLists.Add(seriesPeople);
+
+            var maxPeopleCount = peopleLists.Max(seasonPeople => seasonPeople.Count);
+
+            var combinedPeople = new List<PersonInfo>();
+            var uniqueNames = new HashSet<string>();
+
+            for (var i = 0; i < maxPeopleCount; i++)
+            {
+                foreach (var seasonPeople in peopleLists)
+                {
+                    var person = i < seasonPeople.Count ? seasonPeople[i] : null;
+                    if (person != null && uniqueNames.Add(person.Name))
+                    {
+                        combinedPeople.Add(person);
+                    }
+                }
+            }
+
+            _libraryManager.UpdatePeople(series, combinedPeople);
         }
     }
 }

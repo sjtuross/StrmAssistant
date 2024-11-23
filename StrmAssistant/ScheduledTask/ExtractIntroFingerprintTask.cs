@@ -1,34 +1,38 @@
-using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Model.Entities;
+﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
-    public class ExtractMediaInfoTask: IScheduledTask
+    public class ExtractIntroFingerprintTask : IScheduledTask
     {
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
+        private readonly ITaskManager _taskManager;
 
-        public ExtractMediaInfoTask()
+        public ExtractIntroFingerprintTask(IFileSystem fileSystem, ITaskManager taskManager)
         {
             _logger = Plugin.Instance.logger;
+            _fileSystem = fileSystem;
+            _taskManager = taskManager;
         }
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            _logger.Info("MediaInfoExtract - Scheduled Task Execute");
+            _logger.Info("IntroFingerprintExtract - Scheduled Task Execute");
             _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
-            var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
-            _logger.Info("Enable Image Capture: " + enableImageCapture);
-            var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
-            _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
+            _logger.Info("Intro Detection Fingerprint Length (Minutes): " + Plugin.Instance.GetPluginOptions().IntroSkipOptions.IntroDetectionFingerprintMinutes);
 
-            var items = Plugin.LibraryApi.FetchExtractTaskItems();
+            var items = Plugin.ChapterApi.FetchIntroFingerprintTaskItems();
+            _logger.Info("IntroFingerprintExtract - Number of items: " + items.Count);
+
+            var directoryService = new DirectoryService(_logger, _fileSystem);
 
             double total = items.Count;
             var index = 0;
@@ -40,7 +44,7 @@ namespace StrmAssistant
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.Info("MediaInfoExtract - Scheduled Task Cancelled");
+                    _logger.Info("IntroFingerprintExtract - Scheduled Task Cancelled");
                     break;
                 }
 
@@ -52,7 +56,7 @@ namespace StrmAssistant
                 {
                     break;
                 }
-                
+
                 var taskIndex = ++index;
                 var taskItem = item;
                 var task = Task.Run(async () =>
@@ -61,27 +65,20 @@ namespace StrmAssistant
                     {
                         if (cancellationToken.IsCancellationRequested)
                         {
-                            _logger.Info("MediaInfoExtract - Scheduled Task Cancelled");
+                            _logger.Info("IntroFingerprintExtract - Scheduled Task Cancelled");
                             return;
                         }
 
-                        await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken).ConfigureAwait(false);
-
-                        if (enableIntroSkip && Plugin.PlaySessionMonitor.IsLibraryInScope(taskItem))
-                        {
-                            if (taskItem is Episode episode && Plugin.ChapterApi.SeasonHasIntroCredits(episode))
-                            {
-                                QueueManager.IntroSkipItemQueue.Enqueue(episode);
-                            }
-                        }
+                        await Plugin.ChapterApi.ExtractIntroFingerprint(item, directoryService, cancellationToken)
+                            .ConfigureAwait(false);
                     }
                     catch (TaskCanceledException)
                     {
-                        _logger.Info("MediaInfoExtract - Item cancelled: " + taskItem.Name + " - " + taskItem.Path);
+                        _logger.Info("IntroFingerprintExtract - Item cancelled: " + taskItem.Name + " - " + taskItem.Path);
                     }
                     catch (Exception e)
                     {
-                        _logger.Error("MediaInfoExtract - Item failed: " + taskItem.Name + " - " + taskItem.Path);
+                        _logger.Error("IntroFingerprintExtract - Item failed: " + taskItem.Name + " - " + taskItem.Path);
                         _logger.Error(e.Message);
                         _logger.Debug(e.StackTrace);
                     }
@@ -91,7 +88,7 @@ namespace StrmAssistant
 
                         var currentCount = Interlocked.Increment(ref current);
                         progress.Report(currentCount / total * 100);
-                        _logger.Info("MediaInfoExtract - Progress " + currentCount + "/" + total + " - " +
+                        _logger.Info("IntroFingerprintExtract - Progress " + currentCount + "/" + total + " - " +
                                      "Task " + taskIndex + ": " +
                                      taskItem.Path);
                     }
@@ -99,18 +96,28 @@ namespace StrmAssistant
                 tasks.Add(task);
             }
             await Task.WhenAll(tasks);
-
+            
             progress.Report(100.0);
-            _logger.Info("MediaInfoExtract - Scheduled Task Complete");
+
+            _logger.Info("IntroFingerprintExtract - Trigger Detect Episode Intros to import fingerprints");
+
+            var markerTask = _taskManager.ScheduledTasks.FirstOrDefault(t =>
+                t.Name.Equals("Detect Episode Intros", StringComparison.OrdinalIgnoreCase));
+            if (markerTask != null)
+            {
+                _ = _taskManager.Execute(markerTask, new TaskOptions());
+            }
+
+            _logger.Info("IntroFingerprintExtract - Task Complete");
         }
 
         public string Category => Plugin.Instance.Name;
 
-        public string Key => "MediaInfoExtractTask";
+        public string Key => "IntroFingerprintExtractTask";
 
-        public string Description => "Extracts media info from videos";
+        public string Description => "Extracts intro fingerprint from episodes";
 
-        public string Name => "Extract MediaInfo";
+        public string Name => "Extract Intro Fingerprint";
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

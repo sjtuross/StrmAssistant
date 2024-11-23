@@ -107,6 +107,16 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Intro Detection Fingerprint Length (Minute), Default is 10.
+        /// </summary>
+        public static string IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Min" +
+                        "utes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Library Scope.
         /// </summary>
         public static string IntroSkipOptions_LibraryScope_Library_Scope {
@@ -126,7 +136,26 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Max Credits Duration (Seconds).
+        ///   Looks up a localized string similar to Library scope to extract fingerprint. Blank includes all libraries with intro detection enabled..
+        /// </summary>
+        public static string IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_ {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope_" +
+                        "_Blank_includes_all_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Library Scope.
+        /// </summary>
+        public static string IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Max Credits Duration (Seconds), Default is 360.
         /// </summary>
         public static string IntroSkipOptions_MaxCreditsDurationSeconds {
             get {
@@ -135,7 +164,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Max Intro Duration (Seconds).
+        ///   Looks up a localized string similar to Max Intro Duration (Seconds), Default is 150.
         /// </summary>
         public static string IntroSkipOptions_MaxIntroDurationSeconds {
             get {
@@ -144,7 +173,16 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Built-in Intro Detection Unlock.
+        ///   Looks up a localized string similar to Min Opening Plot Duration (Seconds), Default is 60.
+        /// </summary>
+        public static string IntroSkipOptions_MinOpeningPlotDurationSeconds {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_MinOpeningPlotDurationSeconds", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Built-in Intro Detection Enhanced.
         /// </summary>
         public static string IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced {
             get {
@@ -153,7 +191,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unlock Strm support for built-in intro skip detection.
+        ///   Looks up a localized string similar to Customize intro detection fingerprint length. Default is OFF..
         /// </summary>
         public static string IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection {
             get {
@@ -177,6 +215,33 @@ namespace StrmAssistant.Properties {
         public static string IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all {
             get {
                 return ResourceManager.GetString("IntroSkipOptions_UserScope_Users_allowed_to_detect__Blank_includes_all", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alternative MovieDb Api Key is invalid.
+        /// </summary>
+        public static string InvalidAltMovieDbApiKey {
+            get {
+                return ResourceManager.GetString("InvalidAltMovieDbApiKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alternative MovieDb Api Url is invalid.
+        /// </summary>
+        public static string InvalidAltMovieDbApiUrl {
+            get {
+                return ResourceManager.GetString("InvalidAltMovieDbApiUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alternative MovieDb Image Url is invalid.
+        /// </summary>
+        public static string InvalidAltMovieDbImageUrl {
+            get {
+                return ResourceManager.GetString("InvalidAltMovieDbImageUrl", resourceCulture);
             }
         }
         
@@ -253,11 +318,20 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to MusicAlbum.
+        ///   Looks up a localized string similar to Music Album.
         /// </summary>
         public static string ItemType_MusicAlbum_MusicAlbum {
             get {
                 return ResourceManager.GetString("ItemType_MusicAlbum_MusicAlbum", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Music Artist.
+        /// </summary>
+        public static string ItemType_MusicArtist_MusicArtist {
+            get {
+                return ResourceManager.GetString("ItemType_MusicArtist_MusicArtist", resourceCulture);
             }
         }
         
@@ -280,7 +354,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to PhotoAlbum.
+        ///   Looks up a localized string similar to Photo Album.
         /// </summary>
         public static string ItemType_PhotoAlbum_PhotoAlbum {
             get {
@@ -334,6 +408,110 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Alternative MovieDb Api Key.
+        /// </summary>
+        public static string MetadataEnhanceOptions_AltMovieDbApiKey_Alternative_MovieDb_Api_Key {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_AltMovieDbApiKey_Alternative_MovieDb_Api_Key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provide your own Api Key. Blank uses system default..
+        /// </summary>
+        public static string MetadataEnhanceOptions_AltMovieDbApiKey_Provide_your_own_MovieDb_Api_Key__Blank_uses_system_default_ {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_AltMovieDbApiKey_Provide_your_own_MovieDb_Api_Key__Blank_u" +
+                        "ses_system_default_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alternative MovieDb Api Url.
+        /// </summary>
+        public static string MetadataEnhanceOptions_AltMovieDbApiUrl_Alternative_MovieDb_Api_Url {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_AltMovieDbApiUrl_Alternative_MovieDb_Api_Url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Default alternative URL is https://api.tmdb.org Blank uses system default https://api.themoviedb.org.
+        /// </summary>
+        public static string MetadataEnhanceOptions_AltMovieDbApiUrl_Default_alternative_is_https___api_tmdb_org {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_AltMovieDbApiUrl_Default_alternative_is_https___api_tmdb_o" +
+                        "rg", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alternative MovieDb Image Url.
+        /// </summary>
+        public static string MetadataEnhanceOptions_AltMovieDbImageUrl_Alternative_MovieDb_Image_Url {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_AltMovieDbImageUrl_Alternative_MovieDb_Image_Url", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provide your own alternative Url. Blank uses system default https://image.tmdb.org.
+        /// </summary>
+        public static string MetadataEnhanceOptions_AltMovieDbImageUrl_No_default_alternative__Provide_by_yourself_ {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_AltMovieDbImageUrl_No_default_alternative__Provide_by_your" +
+                        "self_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use Alternative MovieDb Config.
+        /// </summary>
+        public static string MetadataEnhanceOptions_EnableAltMovieDbUrl {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_EnableAltMovieDbUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enhance MovieDb Person.
+        /// </summary>
+        public static string MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Extract also_known_as when refresh person, import season cast, update series cast. Default is OFF..
+        /// </summary>
+        public static string MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_" +
+                        "people__Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add support to import actor image URL from Nfo. Default is OFF..
+        /// </summary>
+        public static string MetadataEnhanceOptions_EnhanceNfoMetadata_Add_support_to_import_actor_image_url__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_EnhanceNfoMetadata_Add_support_to_import_actor_image_url__" +
+                        "Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nfo Metadata Import Enhanced.
+        /// </summary>
+        public static string MetadataEnhanceOptions_EnhanceNfoMetadata_Nfo_Metadata_Import_Enhanced {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_EnhanceNfoMetadata_Nfo_Metadata_Import_Enhanced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Customize MovieDb Fallback Language.
         /// </summary>
         public static string ModOptions_ChineseMovieDb_Chinese_MovieDb {
@@ -343,7 +521,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Try to get Chinese or Japanese metadata from MovieDb, including actors. Default is OFF..
+        ///   Looks up a localized string similar to Try to get Chinese or Japanese metadata from MovieDb. Default is OFF..
         /// </summary>
         public static string ModOptions_ChineseMovieDb_Optimize_MovieDb_for_Chinese_metadata__Default_is_OFF_ {
             get {
@@ -380,7 +558,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Only allow this plugin to extract media info (ffprobe) and capture image (ffmpeg). Default is OFF..
+        ///   Looks up a localized string similar to Only allow this plugin to extract media info (ffprobe) and capture image (ffmpeg) for all libraries. Default is OFF..
         /// </summary>
         public static string ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_ {
             get {
@@ -408,6 +586,24 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Hide Person without Image.
+        /// </summary>
+        public static string ModOptions_HidePersonNoImage_Hide_Person_without_Image {
+            get {
+                return ResourceManager.GetString("ModOptions_HidePersonNoImage_Hide_Person_without_Image", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide person without image. Default is OFF..
+        /// </summary>
+        public static string ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Original Language Poster.
         /// </summary>
         public static string ModOptions_OriginalPoster_Original_Poster {
@@ -427,7 +623,25 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include item types. Blank includes all..
+        ///   Looks up a localized string similar to Auto generate pinyin initials as sort title when library scan. Default is OFF..
+        /// </summary>
+        public static string ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title {
+            get {
+                return ResourceManager.GetString("ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Pinyin Initials Sort Title.
+        /// </summary>
+        public static string ModOptions_PinyinSortName_Pinyin_Sort_Title {
+            get {
+                return ResourceManager.GetString("ModOptions_PinyinSortName_Pinyin_Sort_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Include search item types. Default is Movie, Collection, Series. Blank includes all..
         /// </summary>
         public static string ModOptions_SearchScope_Include_item_types__Blank_includes_all_ {
             get {
@@ -545,7 +759,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Image Capture Enhanced.
+        ///   Looks up a localized string similar to Image Capture and Thumbnail Preview Enhanced.
         /// </summary>
         public static string PluginOptions_EnableImageCapture_Enable_Image_Capture {
             get {
@@ -554,7 +768,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Support image capture for Strm. Skip embedded image. Default is OFF..
+        ///   Looks up a localized string similar to Unlock image capture, thumbnail preview BIF for Strm. Skip embedded image. Default is OFF..
         /// </summary>
         public static string PluginOptions_EnableImageCapture_Perform_image_capture_for_videos_without_primary_image__Default_is_False_ {
             get {
@@ -583,7 +797,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include Extra.
+        ///   Looks up a localized string similar to Include Additional Part and Extra.
         /// </summary>
         public static string PluginOptions_IncludeExtra_Include_Extra {
             get {
@@ -592,7 +806,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include media extras to extract. Default is OFF..
+        ///   Looks up a localized string similar to Include additional parts and extras to extract. Default is OFF..
         /// </summary>
         public static string PluginOptions_IncludeExtra_Include_media_extras_to_extract__Default_is_False_ {
             get {
@@ -657,6 +871,15 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Metadata Enhance.
+        /// </summary>
+        public static string PluginOptions_MetadataEnhanceOptions_Metadata_Enhance {
+            get {
+                return ResourceManager.GetString("PluginOptions_MetadataEnhanceOptions_Metadata_Enhance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Mod.
         /// </summary>
         public static string PluginOptions_ModOptions_Mod_Features {
@@ -666,7 +889,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Include Strm only. Turn off to also include Non-Strm. Default is ON..
+        ///   Looks up a localized string similar to Include Strm only. Turn off to support all. Default is ON..
         /// </summary>
         public static string PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_ {
             get {
@@ -689,6 +912,53 @@ namespace StrmAssistant.Properties {
         public static string Repo_Link {
             get {
                 return ResourceManager.GetString("Repo_Link", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Beautify Episode Title.
+        /// </summary>
+        public static string UIFunctionOptions_BeautifyMissingMetadata_Beautify_Missing_Metadata {
+            get {
+                return ResourceManager.GetString("UIFunctionOptions_BeautifyMissingMetadata_Beautify_Missing_Metadata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Beautify episode title display with no metadata. Default is OFF..
+        /// </summary>
+        public static string UIFunctionOptions_BeautifyMissingMetadata_Beautify_missing_metadata_for_episode_display__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("UIFunctionOptions_BeautifyMissingMetadata_Beautify_missing_metadata_for_episode_d" +
+                        "isplay__Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UI Functions.
+        /// </summary>
+        public static string UIFunctionOptions_EditorTitle_UI_Functions {
+            get {
+                return ResourceManager.GetString("UIFunctionOptions_EditorTitle_UI_Functions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enforce Library Order.
+        /// </summary>
+        public static string UIFunctionOptions_EnforceLibraryOrder_Enforce_Library_Order {
+            get {
+                return ResourceManager.GetString("UIFunctionOptions_EnforceLibraryOrder_Enforce_Library_Order", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enforce customized library order per the first admin. Default if OFF..
+        /// </summary>
+        public static string UIFunctionOptions_EnforceLibraryOrder_Enforce_library_order_per_the_first_admin__Default_if_OFF_ {
+            get {
+                return ResourceManager.GetString("UIFunctionOptions_EnforceLibraryOrder_Enforce_library_order_per_the_first_admin__" +
+                        "Default_if_OFF_", resourceCulture);
             }
         }
         

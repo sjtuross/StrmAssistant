@@ -37,13 +37,26 @@ namespace StrmAssistant
                     break;
                 }
 
-                await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                try
+                {
+                    await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                }
+                catch
+                {
+                    break;
+                }
 
                 var taskItem = item;
                 var task = Task.Run(async () =>
                 {
                     try
                     {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            _logger.Info("ExternalSubtitle - Scan Task Cancelled");
+                            return;
+                        }
+
                         if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))
                         {
                             await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken).ConfigureAwait(false);
@@ -63,9 +76,10 @@ namespace StrmAssistant
                     }
                     finally
                     {
+                        QueueManager.SemaphoreMaster.Release();
+
                         var currentCount = Interlocked.Increment(ref current);
                         progress.Report(currentCount / total * 100);
-                        QueueManager.SemaphoreMaster.Release();
                     }
                 }, cancellationToken);
                 tasks.Add(task);
