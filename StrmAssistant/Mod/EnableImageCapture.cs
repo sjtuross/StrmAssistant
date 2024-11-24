@@ -33,7 +33,7 @@ namespace StrmAssistant.Mod
         private static MethodInfo _logThumbnailImageExtractionFailure;
 
         private static readonly AsyncLocal<BaseItem> ShortcutItem = new AsyncLocal<BaseItem>();
-        private static readonly AsyncLocal<BaseItem> ImageCaptureItem = new AsyncLocal<BaseItem>();
+        private static readonly AsyncLocal<long> ImageCaptureItem = new AsyncLocal<long>();
         private static readonly AsyncLocal<bool> SupportsThumbnailsInstancePatched = new AsyncLocal<bool>();
         private static int _currentMaxConcurrentCount;
         private static int _isShortcutPatchUsageCount;
@@ -413,7 +413,7 @@ namespace StrmAssistant.Mod
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
-                ImageCaptureItem.Value = item;
+                ImageCaptureItem.Value = item.InternalId;
             }
         }
 
@@ -513,7 +513,7 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool SupportsImageCapturePrefix(BaseItem item, ref bool __result)
         {
-            if (ImageCaptureItem.Value != null && item.InternalId == ImageCaptureItem.Value.InternalId)
+            if (ImageCaptureItem.Value != 0 && item.InternalId == ImageCaptureItem.Value)
             {
                 PatchIsShortcutInstance(item);
             }
@@ -524,10 +524,9 @@ namespace StrmAssistant.Mod
         [HarmonyPostfix]
         private static void SupportsImageCapturePostfix(BaseItem item, ref bool __result)
         {
-            if (ImageCaptureItem.Value != null && item.InternalId == ImageCaptureItem.Value.InternalId)
+            if (ImageCaptureItem.Value != 0 && item.InternalId == ImageCaptureItem.Value)
             {
                 UnpatchIsShortcutInstance(item);
-                ImageCaptureItem.Value = null;
             }
         }
 

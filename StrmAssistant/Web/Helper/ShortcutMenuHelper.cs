@@ -14,8 +14,17 @@ namespace StrmAssistant.Web
 
         public static void Initialize(IServerConfigurationManager configurationManager)
         {
-            StrmAssistantJs = GetResourceStream("strmassistant.js");
-            ModifyShortcutMenu(configurationManager);
+            try
+            {
+                StrmAssistantJs = GetResourceStream("strmassistant.js");
+                ModifyShortcutMenu(configurationManager);
+            }
+            catch (Exception e)
+            {
+                Plugin.Instance.logger.Debug("ShortcutMenuHelper - Init Failed");
+                Plugin.Instance.logger.Debug(e.Message);
+                Plugin.Instance.logger.Debug(e.StackTrace);
+            }
         }
 
         private static MemoryStream GetResourceStream(string resourceName)

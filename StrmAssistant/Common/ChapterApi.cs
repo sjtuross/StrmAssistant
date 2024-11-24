@@ -557,7 +557,6 @@ namespace StrmAssistant
                 GroupByPresentationUniqueKey = false,
                 WithoutChapterMarkers = new[] { MarkerType.IntroStart },
                 MinRunTimeTicks = TimeSpan.FromMinutes(introDetectionFingerprintMinutes).Ticks,
-                IsInSeasonWithMultipleEpisodes = true,
                 HasIntroDetectionFailure = false,
                 HasAudioStream = true,
                 PathStartsWithAny = libraries.SelectMany(l => l.Locations)
