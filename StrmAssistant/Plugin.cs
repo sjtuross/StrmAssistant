@@ -268,7 +268,6 @@ namespace StrmAssistant
 
             if (!suppressLogger)
             {
-                logger.Info("StrmOnly is set to {0}", options.GeneralOptions.StrmOnly);
                 logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
                 logger.Info("MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
                 var libraryScope = string.Join(", ",

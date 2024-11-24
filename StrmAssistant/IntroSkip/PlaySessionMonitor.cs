@@ -267,9 +267,7 @@ namespace StrmAssistant
 
         public bool IsLibraryInScope(BaseItem item)
         {
-            var strmOnly = Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly;
-            var isEnable = item is Episode && (!strmOnly || item.IsShortcut);
-            if (!isEnable) return false;
+            if (!(item is Episode)) return false;
             
             var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
 

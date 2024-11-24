@@ -138,8 +138,6 @@ namespace StrmAssistant
                          (libraryIds.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
             var includeExtra = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.IncludeExtra;
             _logger.Info("Include Extra: " + includeExtra);
-            var strmOnly = Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly;
-            _logger.Info("Strm Only: " + strmOnly);
 
             var favoritesWithExtra = new List<BaseItem>();
             if (libraryIds.Contains("-1"))
@@ -189,7 +187,6 @@ namespace StrmAssistant
             }
 
             var combined = favoritesWithExtra.Concat(itemsWithExtras)
-                .Where(i => !strmOnly || i.IsShortcut)
                 .GroupBy(i => i.InternalId)
                 .Select(g => g.First())
                 .ToList();

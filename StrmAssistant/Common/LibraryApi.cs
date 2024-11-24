@@ -331,16 +331,13 @@ namespace StrmAssistant
 
         private List<BaseItem> FilterUnprocessed(List<BaseItem> items)
         {
-            var strmOnly = Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly;
-            _logger.Info("Strm Only: " + strmOnly);
-
             var results = new List<BaseItem>();
 
             foreach (var item in items)
             {
-                if ((!strmOnly || item.IsShortcut) && (!HasMediaStream(item) || !item.HasImage(ImageType.Primary) &&
-                        !(HasMediaStream(item) && item.MediaContainer.HasValue &&
-                          ExcludeMediaContainers.Contains(item.MediaContainer.Value))))
+                if (!HasMediaStream(item) || !item.HasImage(ImageType.Primary) &&
+                    !(HasMediaStream(item) && item.MediaContainer.HasValue &&
+                      ExcludeMediaContainers.Contains(item.MediaContainer.Value)))
                 {
                     results.Add(item);
                 }
