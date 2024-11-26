@@ -81,6 +81,13 @@ namespace StrmAssistant
                 .Any(c => c.MarkerType == MarkerType.IntroStart || c.MarkerType == MarkerType.IntroEnd);
         }
 
+        public long? GetIntroStart(BaseItem item)
+        {
+            var introStart = _itemRepository.GetChapters(item)
+                .FirstOrDefault(c => c.MarkerType == MarkerType.IntroStart);
+            return introStart?.StartPositionTicks;
+        }
+
         public long? GetIntroEnd(BaseItem item)
         {
             var introEnd = _itemRepository.GetChapters(item)
@@ -104,6 +111,8 @@ namespace StrmAssistant
         public void UpdateIntro(Episode item, SessionInfo session, long introStartPositionTicks,
             long introEndPositionTicks)
         {
+            if (introStartPositionTicks > introEndPositionTicks) return;
+
             var resultEpisodes = FetchEpisodes(item, MarkerType.IntroEnd);
 
             foreach (var episode in resultEpisodes)
