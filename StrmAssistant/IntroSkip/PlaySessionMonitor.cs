@@ -106,6 +106,8 @@ namespace StrmAssistant
             var playSessionData = GetPlaySessionData(e);
             if (playSessionData is null) return;
 
+            _logger.Info("IntroSkip - Client Name: " + e.ClientName);
+
             playSessionData.PlaybackStartTicks = e.PlaybackPositionTicks.Value;
             playSessionData.PreviousPositionTicks = e.PlaybackPositionTicks.Value;
             playSessionData.PreviousEventTime = DateTime.UtcNow;
@@ -257,7 +259,8 @@ namespace StrmAssistant
 
         private PlaySessionData GetPlaySessionData(PlaybackProgressEventArgs e)
         {
-            if (!IsLibraryInScope(e.Item) || !IsUserInScope(e.Session.UserInternalId)) return null;
+            if (!IsLibraryInScope(e.Item) || !IsUserInScope(e.Session.UserInternalId) ||
+                !IsClientInScope(e.ClientName)) return null;
             
             var playSessionId = e.PlaySessionId;
             if (!_playSessionData.ContainsKey(playSessionId))
@@ -286,6 +289,11 @@ namespace StrmAssistant
             var isUserInScope = UsersInScope.Any(u => u.InternalId == userInternalId);
 
             return isUserInScope;
+        }
+
+        public bool IsClientInScope(string clientName)
+        {
+            return clientName.StartsWith("Emby");
         }
 
         private void UpdateIntroTask(Episode episode, SessionInfo session, long introStartPositionTicks,
