@@ -308,4 +308,10 @@
   <data name="InvalidAltMovieDbApiKey" xml:space="preserve">
     <value>替代 TMDB API 密钥无效</value>
   </data>
+  <data name="MediaInfoExtractOptions_PersistMediaInfo_Persist_MediaInfo" xml:space="preserve">
+    <value>媒体信息持久化</value>
+  </data>
+  <data name="MediaInfoExtractOptions_PersistMediaInfo_Persist_media_info_in_JSON_file__Default_is_OFF_" xml:space="preserve">
+    <value>保存或加载媒体信息和章节片头片尾标记至/自 JSON 文件，默认关闭。</value>
+  </data>
 </root>

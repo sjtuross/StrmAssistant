@@ -408,6 +408,25 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Persist media info in JSON file. Default is OFF..
+        /// </summary>
+        public static string MediaInfoExtractOptions_PersistMediaInfo_Persist_media_info_in_JSON_file__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("MediaInfoExtractOptions_PersistMediaInfo_Persist_media_info_in_JSON_file__Default" +
+                        "_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Persist MediaInfo.
+        /// </summary>
+        public static string MediaInfoExtractOptions_PersistMediaInfo_Persist_MediaInfo {
+            get {
+                return ResourceManager.GetString("MediaInfoExtractOptions_PersistMediaInfo_Persist_MediaInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Alternative MovieDb Api Key.
         /// </summary>
         public static string MetadataEnhanceOptions_AltMovieDbApiKey_Alternative_MovieDb_Api_Key {

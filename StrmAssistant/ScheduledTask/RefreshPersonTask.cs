@@ -148,7 +148,7 @@ namespace StrmAssistant
 
                     try
                     {
-                        await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                        await QueueManager.SemaphoreLocal.WaitAsync(cancellationToken);
                     }
                     catch
                     {
@@ -208,7 +208,7 @@ namespace StrmAssistant
                         }
                         finally
                         {
-                            QueueManager.SemaphoreMaster.Release();
+                            QueueManager.SemaphoreLocal.Release();
 
                             var currentCount = Interlocked.Increment(ref current);
                             progress.Report(currentCount / total * 100);

@@ -106,6 +106,8 @@ namespace StrmAssistant
             var playSessionData = GetPlaySessionData(e);
             if (playSessionData is null) return;
 
+            _logger.Info("IntroSkip - Client Name: " + e.ClientName);
+
             playSessionData.PlaybackStartTicks = e.PlaybackPositionTicks.Value;
             playSessionData.PreviousPositionTicks = e.PlaybackPositionTicks.Value;
             playSessionData.PreviousEventTime = DateTime.UtcNow;
@@ -134,6 +136,7 @@ namespace StrmAssistant
             var currentPositionTicks = e.PlaybackPositionTicks.Value;
             var currentEventTime = DateTime.UtcNow;
             var introEnd = Plugin.ChapterApi.GetIntroEnd(e.Item);
+            var introStart = Plugin.ChapterApi.GetIntroStart(e.Item);
             var creditsStart = Plugin.ChapterApi.GetCreditsStart(e.Item);
 
             if (e.EventName == ProgressEvent.TimeUpdate && !introEnd.HasValue)
@@ -210,15 +213,18 @@ namespace StrmAssistant
             }
 
             if (e.EventName == ProgressEvent.Unpause && playSessionData.LastPauseEventTime.HasValue &&
-                currentPositionTicks < playSessionData.MaxIntroDurationTicks && introEnd.HasValue &&
+                (currentEventTime - playSessionData.LastPauseEventTime.Value).TotalMilliseconds < 5000 &&
+                introStart.HasValue && introStart.Value < currentPositionTicks && introEnd.HasValue &&
+                currentPositionTicks < Math.Max(playSessionData.MaxIntroDurationTicks, introEnd.Value) &&
                 Math.Abs(TimeSpan.FromTicks(currentPositionTicks - introEnd.Value).TotalMilliseconds) >
                 (playSessionData.LastPlaybackRateChangeEventTime.HasValue ? 500 : 0))
             {
-                UpdateIntroTask(e.Item as Episode, e.Session, new TimeSpan(0, 0, 0).Ticks, currentPositionTicks);
+                UpdateIntroTask(e.Item as Episode, e.Session, introStart.Value, currentPositionTicks);
             }
 
             if (e.EventName == ProgressEvent.Unpause && e.Item.RunTimeTicks.HasValue &&
                 playSessionData.LastPauseEventTime.HasValue &&
+                (currentEventTime - playSessionData.LastPauseEventTime.Value).TotalMilliseconds < 5000 &&
                 currentPositionTicks > e.Item.RunTimeTicks - playSessionData.MaxCreditsDurationTicks &&
                 creditsStart.HasValue)
             {
@@ -253,7 +259,8 @@ namespace StrmAssistant
 
         private PlaySessionData GetPlaySessionData(PlaybackProgressEventArgs e)
         {
-            if (!IsLibraryInScope(e.Item) || !IsUserInScope(e.Session.UserInternalId)) return null;
+            if (!IsLibraryInScope(e.Item) || !IsUserInScope(e.Session.UserInternalId) ||
+                !IsClientInScope(e.ClientName)) return null;
             
             var playSessionId = e.PlaySessionId;
             if (!_playSessionData.ContainsKey(playSessionId))
@@ -267,9 +274,7 @@ namespace StrmAssistant
 
         public bool IsLibraryInScope(BaseItem item)
         {
-            var strmOnly = Plugin.Instance.GetPluginOptions().GeneralOptions.StrmOnly;
-            var isEnable = item is Episode && (!strmOnly || item.IsShortcut);
-            if (!isEnable) return false;
+            if (!(item is Episode)) return false;
             
             var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
 
@@ -284,6 +289,11 @@ namespace StrmAssistant
             var isUserInScope = UsersInScope.Any(u => u.InternalId == userInternalId);
 
             return isUserInScope;
+        }
+
+        public bool IsClientInScope(string clientName)
+        {
+            return clientName.StartsWith("Emby");
         }
 
         private void UpdateIntroTask(Episode episode, SessionInfo session, long introStartPositionTicks,

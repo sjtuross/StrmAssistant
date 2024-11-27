@@ -24,6 +24,7 @@ namespace StrmAssistant
         public static CancellationTokenSource MasterTokenSource;
         public static CancellationTokenSource IntroSkipTokenSource;
         public static SemaphoreSlim SemaphoreMaster;
+        public static SemaphoreSlim SemaphoreLocal;
         public static ConcurrentQueue<BaseItem> MediaInfoExtractItemQueue = new ConcurrentQueue<BaseItem>();
         public static ConcurrentQueue<BaseItem> ExternalSubtitleItemQueue = new ConcurrentQueue<BaseItem>();
         public static ConcurrentQueue<Episode> IntroSkipItemQueue = new ConcurrentQueue<Episode>();
@@ -34,6 +35,7 @@ namespace StrmAssistant
             _logger = Plugin.Instance.logger;
             _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
             SemaphoreMaster = new SemaphoreSlim(_currentMaxConcurrentCount);
+            SemaphoreLocal = new SemaphoreSlim(_currentMaxConcurrentCount);
 
             if (MasterProcessTask == null || MasterProcessTask.IsCompleted)
             {
@@ -46,10 +48,16 @@ namespace StrmAssistant
             if (_currentMaxConcurrentCount != maxConcurrentCount)
             {
                 _currentMaxConcurrentCount = maxConcurrentCount;
+
                 var newSemaphoreMaster = new SemaphoreSlim(maxConcurrentCount);
                 var oldSemaphoreMaster = SemaphoreMaster;
                 SemaphoreMaster = newSemaphoreMaster;
                 oldSemaphoreMaster.Dispose();
+
+                var newSemaphoreLocal = new SemaphoreSlim(maxConcurrentCount);
+                var oldSemaphoreLocal = SemaphoreLocal;
+                SemaphoreLocal = newSemaphoreLocal;
+                oldSemaphoreLocal.Dispose();
             }
         }
 
@@ -76,6 +84,8 @@ namespace StrmAssistant
 
                 if (!MediaInfoExtractItemQueue.IsEmpty || !ExternalSubtitleItemQueue.IsEmpty)
                 {
+                    var persistMediaInfo = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.PersistMediaInfo;
+                    _logger.Info("Persist Media Info: " + persistMediaInfo);
                     var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
                     _logger.Info("Image Capture Enabled: " + enableImageCapture);
                     var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
@@ -99,6 +109,8 @@ namespace StrmAssistant
                             var taskItem = item;
                             _taskQueue.Enqueue(async () =>
                             {
+                                var deserializeResult = false;
+
                                 try
                                 {
                                     if (cancellationToken.IsCancellationRequested)
@@ -107,15 +119,39 @@ namespace StrmAssistant
                                         return;
                                     }
 
-                                    await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken)
-                                        .ConfigureAwait(false);
-
-                                    _logger.Info("MediaInfoExtract - Item Processed: " + taskItem.Name + " - " + taskItem.Path);
+                                    if (persistMediaInfo)
+                                    {
+                                        deserializeResult = await Plugin.LibraryApi
+                                            .DeserializeMediaInfo(taskItem, cancellationToken)
+                                            .ConfigureAwait(false);
+                                    }
+                                    if (!deserializeResult)
+                                    {
+                                        await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken)
+                                            .ConfigureAwait(false);
+                                    }
 
                                     if (enableIntroSkip && Plugin.PlaySessionMonitor.IsLibraryInScope(taskItem))
                                     {
                                         IntroSkipItemQueue.Enqueue(taskItem as Episode);
                                     }
+
+                                    if (persistMediaInfo)
+                                    {
+                                        if (!deserializeResult)
+                                        {
+                                            await Plugin.LibraryApi
+                                                .SerializeMediaInfo(taskItem, true, cancellationToken)
+                                                .ConfigureAwait(false);
+                                        }
+                                        else if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))
+                                        {
+                                            await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
+                                                .ConfigureAwait(false);
+                                        }
+                                    }
+
+                                    _logger.Info("MediaInfoExtract - Item Processed: " + taskItem.Name + " - " + taskItem.Path);
                                 }
                                 catch (TaskCanceledException)
                                 {

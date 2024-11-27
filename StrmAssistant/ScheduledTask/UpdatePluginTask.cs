@@ -100,11 +100,19 @@ namespace StrmAssistant
                                })
                                .ConfigureAwait(false))
                     {
-                        var dllFilePath = Path.Combine(_applicationPaths.PluginsPath, PluginAssemblyFilename);
-                        using (var fileStream = new FileStream(dllFilePath, FileMode.Create, FileAccess.Write))
+                        using (var memoryStream = new MemoryStream())
                         {
-                            await responseStream.CopyToAsync(fileStream, 81920, cancellationToken)
+                            await responseStream.CopyToAsync(memoryStream, 81920, cancellationToken)
                                 .ConfigureAwait(false);
+
+                            memoryStream.Seek(0, SeekOrigin.Begin);
+                            var dllFilePath = Path.Combine(_applicationPaths.PluginsPath, PluginAssemblyFilename);
+
+                            using (var fileStream = new FileStream(dllFilePath, FileMode.Create, FileAccess.Write))
+                            {
+                                await memoryStream.CopyToAsync(fileStream, 81920, cancellationToken)
+                                    .ConfigureAwait(false);
+                            }
                         }
                     }
 

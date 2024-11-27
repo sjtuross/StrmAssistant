@@ -14,11 +14,12 @@
 6. 独占模式提取媒体信息
 7. 独立的外挂字幕扫描
 8. 自定义`TMDB`备选语言
-9. 使用替代`TMDB`API地址
+9. 使用替代`TMDB`配置
 10. 演职人员增强`TMDB`
 11. 获取原语言海报
 12. 中文搜索增强
 13. 拼音首字母排序
+14. 媒体信息持久化
 
 ## 更新
 
@@ -35,7 +36,7 @@
 11. 仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg), 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/变相多线程入库)
 12. 独立于扫库的外挂字幕扫描并更新，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/外挂字幕扫描-(External-Subtitle-Scan))
 13. 尽可能从`TMDB`获取中文或日文元数据, 说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/自定义-TMDB-备选语言)
-14. 使用替代`TMDB`API地址
+14. 使用替代`TMDB`配置，支持自定义配置API地址，图像地址和API密钥
 15. 刷新`TMDB`中文演员并修复相关问题，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/中文演员-(Chinese-Actor))
 16. 导入季的演职人员，更新节目系列的演职人员为各季合并
 17. 优先使用原语言海报，支持`TMDB`, `TVDB`, `Fanart`，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/原语言海报--(Original-Poster))
@@ -46,6 +47,8 @@
 22. 电影剧集页面隐藏无头像人员，非删除，仍可搜索
 23. 首位管理员的自定义媒体库排序作用于所有用户
 24. 剧集集标题自动补全
+25. 复制媒体库，快速创建一个同配置的媒体库
+26. 保存或加载媒体信息和章节片头信息至/自 JSON 文件，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/媒体信息持久化-(MediaInfo-Persist))
 
 ## 安装
 
