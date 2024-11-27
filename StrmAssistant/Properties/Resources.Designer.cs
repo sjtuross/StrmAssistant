@@ -219,7 +219,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Alternative MovieDb Api Key is invalid.
         /// </summary>
         public static string InvalidAltMovieDbApiKey {
             get {
@@ -404,6 +404,25 @@ namespace StrmAssistant.Properties {
         public static string ItemType_Trailer_Trailer {
             get {
                 return ResourceManager.GetString("ItemType_Trailer_Trailer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Persist media info in JSON file. Default is OFF..
+        /// </summary>
+        public static string MediaInfoExtractOptions_PersistMediaInfo_Persist_media_info_in_JSON_file__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("MediaInfoExtractOptions_PersistMediaInfo_Persist_media_info_in_JSON_file__Default" +
+                        "_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Persist MediaInfo.
+        /// </summary>
+        public static string MediaInfoExtractOptions_PersistMediaInfo_Persist_MediaInfo {
+            get {
+                return ResourceManager.GetString("MediaInfoExtractOptions_PersistMediaInfo_Persist_MediaInfo", resourceCulture);
             }
         }
         

@@ -395,4 +395,10 @@
   <data name="InvalidAltMovieDbApiKey" xml:space="preserve">
     <value>Alternative MovieDb Api Key is invalid</value>
   </data>
+  <data name="MediaInfoExtractOptions_PersistMediaInfo_Persist_MediaInfo" xml:space="preserve">
+    <value>MediaInfo Persist</value>
+  </data>
+  <data name="MediaInfoExtractOptions_PersistMediaInfo_Persist_media_info_in_JSON_file__Default_is_OFF_" xml:space="preserve">
+    <value>Store or load media info and chapters to/from JSON file. Default is OFF.</value>
+  </data>
 </root>

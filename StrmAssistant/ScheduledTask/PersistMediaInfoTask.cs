@@ -1,4 +1,6 @@
-﻿using MediaBrowser.Model.Logging;
+using MediaBrowser.Controller.Providers;
+using MediaBrowser.Model.IO;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using System;
 using System.Collections.Generic;
@@ -7,38 +9,41 @@ using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
-    public class ScanExternalSubtitleTask: IScheduledTask
+    public class PersistMediaInfoTask: IScheduledTask
     {
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
-        public ScanExternalSubtitleTask()
+        public PersistMediaInfoTask(IFileSystem fileSystem)
         {
             _logger = Plugin.Instance.logger;
+            _fileSystem = fileSystem;
         }
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            _logger.Info("ExternalSubtitle - Scan Task Execute");
-            _logger.Info(
-                "Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
+            _logger.Info("MediaInfoPersist - Scheduled Task Execute");
+            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
 
             await Task.Yield();
             progress.Report(0);
 
-            var items = Plugin.LibraryApi.FetchPostExtractTaskItems(false);
-            _logger.Info("ExternalSubtitle - Number of items: " + items.Count);
+            var items = Plugin.LibraryApi.FetchPostExtractTaskItems(true);
+            _logger.Info("MediaInfoPersist - Number of items: " + items.Count);
+
+            var directoryService = new DirectoryService(_logger, _fileSystem);
 
             double total = items.Count;
             var index = 0;
             var current = 0;
-
+            
             var tasks = new List<Task>();
 
             foreach (var item in items)
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.Info("ExternalSubtitle - Scan Task Cancelled");
+                    _logger.Info("MediaInfoPersist - Scheduled Task Cancelled");
                     break;
                 }
 
@@ -50,7 +55,7 @@ namespace StrmAssistant
                 {
                     break;
                 }
-
+                
                 var taskIndex = ++index;
                 var taskItem = item;
                 var task = Task.Run(async () =>
@@ -59,25 +64,21 @@ namespace StrmAssistant
                     {
                         if (cancellationToken.IsCancellationRequested)
                         {
-                            _logger.Info("ExternalSubtitle - Scan Task Cancelled");
+                            _logger.Info("MediaInfoPersist - Scheduled Task Cancelled");
                             return;
                         }
 
-                        if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))
-                        {
-                            await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken).ConfigureAwait(false);
-
-                            _logger.Info("ExternalSubtitle - Item Processed: " + taskItem.Name + " - " + taskItem.Path);
-                        }
+                        await Plugin.LibraryApi.SerializeMediaInfo(taskItem, directoryService, false, cancellationToken)
+                            .ConfigureAwait(false);
                     }
                     catch (TaskCanceledException)
                     {
-                        _logger.Info("ExternalSubtitle - Item cancelled: " + taskItem.Name + " - " + taskItem.Path);
+                        _logger.Info("MediaInfoPersist - Item cancelled: " + taskItem.Name + " - " + taskItem.Path);
                     }
                     catch (Exception e)
                     {
-                        _logger.Info("ExternalSubtitle - Item failed: " + taskItem.Name + " - " + taskItem.Path);
-                        _logger.Debug(e.Message);
+                        _logger.Error("MediaInfoPersist - Item failed: " + taskItem.Name + " - " + taskItem.Path);
+                        _logger.Error(e.Message);
                         _logger.Debug(e.StackTrace);
                     }
                     finally
@@ -96,16 +97,16 @@ namespace StrmAssistant
             await Task.WhenAll(tasks);
 
             progress.Report(100.0);
-            _logger.Info("ExternalSubtitle - Scan Task Complete");
+            _logger.Info("MediaInfoPersist - Scheduled Task Complete");
         }
 
         public string Category => Plugin.Instance.Name;
 
-        public string Key => "ScanExternalSubtitleTask";
+        public string Key => "MediaInfoPersistTask";
 
-        public string Description => "Scans external subtitles for videos";
+        public string Description => "Persists media info to json file";
 
-        public string Name => "Scan External Subtitles";
+        public string Name => "Persist MediaInfo";
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {
