@@ -178,6 +178,8 @@ namespace StrmAssistant.Mod
                         ls.EndsWith(Path.DirectorySeparatorChar.ToString()) ? ls : ls + Path.DirectorySeparatorChar)
                     .ToArray();
             }
+
+            __result.HasIntroDetectionFailure = null;
         }
 
         [HarmonyPrefix]
