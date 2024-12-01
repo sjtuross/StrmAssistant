@@ -603,7 +603,7 @@ namespace StrmAssistant
 
             var file = directoryService.GetFile(mediaInfoJsonPath);
 
-            if (file?.Exists == true && !HasMediaStream(item) && !HasFileChanged(item))
+            if (file?.Exists == true && !HasMediaStream(item))
             {
                 try
                 {
@@ -611,23 +611,29 @@ namespace StrmAssistant
                         (await _jsonSerializer
                             .DeserializeFromFileAsync<List<MediaSourceWithChapters>>(mediaInfoJsonPath)
                             .ConfigureAwait(false)).ToArray()[0];
-                    _itemRepository.SaveMediaStreams(item.InternalId,
-                        mediaSourceWithChapters.MediaSourceInfo.MediaStreams, cancellationToken);
 
-                    item.Size = mediaSourceWithChapters.MediaSourceInfo.Size.GetValueOrDefault();
-                    item.RunTimeTicks = mediaSourceWithChapters.MediaSourceInfo.RunTimeTicks;
-                    item.Container = mediaSourceWithChapters.MediaSourceInfo.Container;
-                    item.TotalBitrate = mediaSourceWithChapters.MediaSourceInfo.Bitrate.GetValueOrDefault();
-                    _libraryManager.UpdateItem(item, null, ItemUpdateType.MetadataImport);
-
-                    if (item is Video)
+                    if (mediaSourceWithChapters.MediaSourceInfo.RunTimeTicks.HasValue && !HasFileChanged(item))
                     {
-                        _itemRepository.SaveChapters(item.InternalId, true, mediaSourceWithChapters.Chapters);
+                        _itemRepository.SaveMediaStreams(item.InternalId,
+                            mediaSourceWithChapters.MediaSourceInfo.MediaStreams, cancellationToken);
+
+                        item.Size = mediaSourceWithChapters.MediaSourceInfo.Size.GetValueOrDefault();
+                        item.RunTimeTicks = mediaSourceWithChapters.MediaSourceInfo.RunTimeTicks;
+                        item.Container = mediaSourceWithChapters.MediaSourceInfo.Container;
+                        item.TotalBitrate = mediaSourceWithChapters.MediaSourceInfo.Bitrate.GetValueOrDefault();
+                        _libraryManager.UpdateItem(item, null, ItemUpdateType.MetadataImport);
+
+                        if (item is Video)
+                        {
+                            _itemRepository.SaveChapters(item.InternalId, true, mediaSourceWithChapters.Chapters);
+                        }
+
+                        _logger.Info("MediaInfoPersist - Deserialization Success: " + mediaInfoJsonPath);
+
+                        return true;
                     }
 
-                    _logger.Info("MediaInfoPersist - Deserialization Success: " + mediaInfoJsonPath);
-
-                    return true;
+                    _logger.Info("MediaInfoPersist - Deserialization Skipped: " + mediaInfoJsonPath);
                 }
                 catch (Exception e)
                 {
@@ -654,23 +660,26 @@ namespace StrmAssistant
 
             if (!_fallbackProbeApproach)
             {
-                await Task.WhenAll(probeMediaSources.Select(async probeMediaSource =>
+                await Task.WhenAll(probeMediaSources.Select(async pms =>
                 {
                     var resultMediaSources = await _mediaSourceManager
-                        .GetPlayackMediaSources(item, null, true, probeMediaSource.Id, false, cancellationToken)
+                        .GetPlayackMediaSources(item, null, true, pms.Id, false, cancellationToken)
                         .ConfigureAwait(false);
 
-                    foreach (var resultMediaSource in resultMediaSources)
+                    var rms = resultMediaSources.FirstOrDefault(m => m.Id == pms.Id);
+
+                    if (rms != null)
                     {
-                        resultMediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(
-                            SystemMemory::System.MemoryExtensions.AsSpan(resultMediaSource.Container),
-                            SystemMemory::System.MemoryExtensions.AsSpan(resultMediaSource.Path), null, DlnaProfileType.Video);
+                        rms.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(
+                            SystemMemory::System.MemoryExtensions.AsSpan(rms.Container),
+                            SystemMemory::System.MemoryExtensions.AsSpan(rms.Path), null,
+                            DlnaProfileType.Video);
                     }
                 }));
             }
             else
             {
-                await Task.WhenAll(probeMediaSources.Select(async probeMediaSource =>
+                await Task.WhenAll(probeMediaSources.Select(async pms =>
                 {
                     //Method Signature:
                     //Task<List<MediaSourceInfo>> GetPlayackMediaSources(BaseItem item, User user, bool allowMediaProbe,
@@ -678,14 +687,17 @@ namespace StrmAssistant
                     //    CancellationToken cancellationToken);
                     var resultMediaSources = await ((Task<List<MediaSourceInfo>>)GetPlayackMediaSources.Invoke(
                             _mediaSourceManager,
-                            new object[] { item, null, true, probeMediaSource.Id, false, true, cancellationToken }))
+                            new object[] { item, null, true, pms.Id, false, true, cancellationToken }))
                         .ConfigureAwait(false);
 
-                    foreach (var resultMediaSource in resultMediaSources)
+                    var rms = resultMediaSources.FirstOrDefault(m => m.Id == pms.Id);
+
+                    if (rms != null)
                     {
-                        resultMediaSource.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(
-                            SystemMemory::System.MemoryExtensions.AsSpan(resultMediaSource.Container),
-                            SystemMemory::System.MemoryExtensions.AsSpan(resultMediaSource.Path), null, DlnaProfileType.Video);
+                        rms.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(
+                            SystemMemory::System.MemoryExtensions.AsSpan(rms.Container),
+                            SystemMemory::System.MemoryExtensions.AsSpan(rms.Path), null,
+                            DlnaProfileType.Video);
                     }
                 }));
             }
