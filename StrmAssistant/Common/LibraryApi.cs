@@ -1,4 +1,5 @@
 extern alias SystemMemory;
+using Emby.Media.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
@@ -47,10 +48,44 @@ namespace StrmAssistant
             ExtraType.Trailer
         };
 
-        public static MediaContainers[] ExcludeMediaContainers =
+        public static MediaContainers[] ExcludeMediaContainers
         {
-            MediaContainers.MpegTs, MediaContainers.Ts, MediaContainers.M2Ts
-        };
+            get
+            {
+                return Plugin.Instance.GetPluginOptions()
+                    .MediaInfoExtractOptions.ImageCaptureExcludeMediaContainers
+                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(c =>
+                        Enum.TryParse<MediaContainers>(c.Trim(), true, out var container)
+                            ? container
+                            : (MediaContainers?)null)
+                    .Where(container => container.HasValue)
+                    .Select(container => container.Value)
+                    .ToArray();
+            }
+        }
+
+        public static string[] ExcludeMediaExtensions
+        {
+            get
+            {
+                return Plugin.Instance.GetPluginOptions()
+                    .MediaInfoExtractOptions.ImageCaptureExcludeMediaContainers
+                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .SelectMany(c =>
+                    {
+                        if (Enum.TryParse<MediaContainers>(c.Trim(), true, out var container))
+                        {
+                            var aliases = container.GetAliases();
+                            return aliases?.Where(a => !string.IsNullOrWhiteSpace(a)) ??
+                                   Array.Empty<string>();
+                        }
+
+                        return Array.Empty<string>();
+                    })
+                    .ToArray();
+            }
+        }
 
         public static Dictionary<User, bool> AllUsers = new Dictionary<User, bool>();
         public static string[] AdminOrderedViews = Array.Empty<string>();

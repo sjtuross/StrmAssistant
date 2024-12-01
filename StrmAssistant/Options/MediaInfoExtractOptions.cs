@@ -2,6 +2,7 @@
 using Emby.Web.GenericEdit.Common;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
+using MediaBrowser.Model.MediaInfo;
 using StrmAssistant.Properties;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,7 +25,12 @@ namespace StrmAssistant
         [Required]
         [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool EnableImageCapture { get; set; } = false;
-        
+
+        [Browsable(false)]
+        [Required]
+        public string ImageCaptureExcludeMediaContainers { get; set; } =
+            string.Join(",", new[] { MediaContainers.MpegTs, MediaContainers.Ts, MediaContainers.M2Ts });
+
         [DisplayNameL("ModOptions_ExclusiveExtract_Exclusive_Extract", typeof(Resources))]
         [DescriptionL("ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_", typeof(Resources))]
         [Required]

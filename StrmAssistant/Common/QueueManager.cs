@@ -6,6 +6,7 @@ using StrmAssistant.Mod;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -112,7 +113,6 @@ namespace StrmAssistant
                             var taskItem = item;
                             _taskQueue.Enqueue(async () =>
                             {
-                                var deserializeResult = false;
                                 var isExtractAllowed = false;
 
                                 try
@@ -129,16 +129,35 @@ namespace StrmAssistant
                                         isExtractAllowed = true;
                                     }
 
+                                    var imageCapture = false;
+
                                     if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
                                     {
+                                        var filePath = taskItem.Path;
                                         if (taskItem.IsShortcut)
                                         {
-                                            EnableImageCapture.AllowImageCaptureInstance(taskItem);
+                                            filePath = await Plugin.LibraryApi.GetStrmMountPath(filePath)
+                                                .ConfigureAwait(false);
                                         }
-                                        var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
-                                        await taskItem.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+                                        var fileExtension = Path.GetExtension(filePath).TrimStart('.');
+                                        if (!LibraryApi.ExcludeMediaExtensions.Contains(fileExtension))
+                                        {
+                                            if (taskItem.IsShortcut)
+                                            {
+                                                EnableImageCapture.AllowImageCaptureInstance(taskItem);
+                                            }
+
+                                            imageCapture = true;
+                                            var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
+                                            await taskItem.RefreshMetadata(refreshOptions, cancellationToken)
+                                                .ConfigureAwait(false);
+                                        }
                                     }
-                                    else
+
+                                    var deserializeResult = false;
+
+                                    if(!imageCapture)
                                     {
                                         if (persistMediaInfo)
                                         {
