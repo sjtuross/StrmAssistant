@@ -576,6 +576,24 @@ namespace StrmAssistant
             return false;
         }
 
+        private string GetMediaInfoJsonPath(BaseItem item)
+        {
+            var jsonRootFolder = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.MediaInfoJsonRootFolder;
+
+            var relativePath = item.ContainingFolderPath;
+            if (!string.IsNullOrEmpty(jsonRootFolder) && Path.IsPathRooted(item.ContainingFolderPath))
+            {
+                relativePath = Path.GetRelativePath(Path.GetPathRoot(item.ContainingFolderPath)!,
+                    item.ContainingFolderPath);
+            }
+
+            var mediaInfoJsonPath = !string.IsNullOrEmpty(jsonRootFolder)
+                ? Path.Combine(jsonRootFolder, relativePath, item.FileNameWithoutExtension + MediaInfoFileExtension)
+                : Path.Combine(item.ContainingFolderPath!, item.FileNameWithoutExtension + MediaInfoFileExtension);
+
+            return mediaInfoJsonPath;
+        }
+
         public async Task SerializeMediaInfo(BaseItem item, IDirectoryService directoryService, bool overwrite,
             CancellationToken cancellationToken)
         {
@@ -585,9 +603,7 @@ namespace StrmAssistant
                 workItem = _libraryManager.GetItemById(item.InternalId);
             }
 
-            var mediaInfoJsonPath = Path.Combine(workItem.ContainingFolderPath,
-                workItem.FileNameWithoutExtension + MediaInfoFileExtension);
-
+            var mediaInfoJsonPath = GetMediaInfoJsonPath(workItem);
             var file = directoryService.GetFile(mediaInfoJsonPath);
 
             if ((overwrite || file?.Exists != true || HasFileChanged(workItem)) && HasMediaStream(workItem) &&
@@ -603,6 +619,12 @@ namespace StrmAssistant
                             var mediaSourcesWithChapters = mediaSources.Select(mediaSource =>
                                     new MediaSourceWithChapters { MediaSourceInfo = mediaSource, Chapters = chapters })
                                 .ToList();
+
+                            var parentDirectory = Path.GetDirectoryName(mediaInfoJsonPath);
+                            if (!string.IsNullOrEmpty(parentDirectory))
+                            {
+                                Directory.CreateDirectory(parentDirectory);
+                            }
 
                             _jsonSerializer.SerializeToFile(mediaSourcesWithChapters, mediaInfoJsonPath);
                         }, cancellationToken)
@@ -632,9 +654,7 @@ namespace StrmAssistant
         public async Task<bool> DeserializeMediaInfo(BaseItem item, IDirectoryService directoryService,
             CancellationToken cancellationToken)
         {
-            var mediaInfoJsonPath = Path.Combine(item.ContainingFolderPath,
-                item.FileNameWithoutExtension + MediaInfoFileExtension);
-
+            var mediaInfoJsonPath = GetMediaInfoJsonPath(item);
             var file = directoryService.GetFile(mediaInfoJsonPath);
 
             if (file?.Exists == true && !HasMediaStream(item))

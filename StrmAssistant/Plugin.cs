@@ -279,6 +279,10 @@ namespace StrmAssistant
             if (!suppressLogger)
             {
                 logger.Info("PersistMediaInfo is set to {0}", options.MediaInfoExtractOptions.PersistMediaInfo);
+                logger.Info("MediaInfoJsonRootFolder is set to {0}",
+                    !string.IsNullOrEmpty(options.MediaInfoExtractOptions.MediaInfoJsonRootFolder)
+                        ? options.MediaInfoExtractOptions.MediaInfoJsonRootFolder
+                        : "EMPTY");
                 logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
                 logger.Info("MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
                 var libraryScope = string.Join(", ",
@@ -387,15 +391,15 @@ namespace StrmAssistant
                 logger.Info("AltMovieDbApiUrl is set to {0}",
                     !string.IsNullOrEmpty(options.MetadataEnhanceOptions.AltMovieDbApiUrl)
                         ? options.MetadataEnhanceOptions.AltMovieDbApiUrl
-                        : "NONE");
+                        : "EMPTY");
                 logger.Info("AltMovieDbImageUrl is set to {0}",
                     !string.IsNullOrEmpty(options.MetadataEnhanceOptions.AltMovieDbImageUrl)
                         ? options.MetadataEnhanceOptions.AltMovieDbImageUrl
-                        : "NONE");
+                        : "EMPTY");
                 logger.Info("AltMovieDbApiKey is set to {0}",
                     !string.IsNullOrEmpty(options.MetadataEnhanceOptions.AltMovieDbApiKey)
                         ? options.MetadataEnhanceOptions.AltMovieDbApiKey
-                        : "NONE");
+                        : "EMPTY");
             }
 
             if (_currentAltMovieDbConfig != GetOptions().MetadataEnhanceOptions.AltMovieDbConfig)

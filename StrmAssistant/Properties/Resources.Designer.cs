@@ -408,6 +408,25 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Optional MediaInfo JSON Root Folder.
+        /// </summary>
+        public static string MediaInfoExtractOptions_MediaInfoJsonRootFolder_MediaInfo_Json_Root_Folder {
+            get {
+                return ResourceManager.GetString("MediaInfoExtractOptions_MediaInfoJsonRootFolder_MediaInfo_Json_Root_Folder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store or load media info JSON files under this root folder. Default is EMPTY..
+        /// </summary>
+        public static string MediaInfoExtractOptions_MediaInfoJsonRootFolder_Store_or_load_media_info_JSON_files_under_this_root_folder__Default_is_EMPTY_ {
+            get {
+                return ResourceManager.GetString("MediaInfoExtractOptions_MediaInfoJsonRootFolder_Store_or_load_media_info_JSON_fil" +
+                        "es_under_this_root_folder__Default_is_EMPTY_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Store or load media info and chapters to/from JSON file. Default is OFF..
         /// </summary>
         public static string MediaInfoExtractOptions_PersistMediaInfo_Persist_media_info_in_JSON_file__Default_is_OFF_ {
@@ -982,7 +1001,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Add MovieDb support for the missing episodes function. Default is OFF..
+        ///   Looks up a localized string similar to Add MovieDb support for the view missing episodes function. Default is OFF..
         /// </summary>
         public static string UIFunctionOptions_EnhanceMissingEpisodes_Add_MovieDb_support_for_the_missing_episodes_function__Default_is_OFF_ {
             get {

@@ -42,6 +42,12 @@ namespace StrmAssistant
         [Required]
         public bool PersistMediaInfo { get; set; } = false;
 
+        [DisplayNameL("MediaInfoExtractOptions_MediaInfoJsonRootFolder_MediaInfo_Json_Root_Folder", typeof(Resources))]
+        [DescriptionL("MediaInfoExtractOptions_MediaInfoJsonRootFolder_Store_or_load_media_info_JSON_files_under_this_root_folder__Default_is_EMPTY_", typeof(Resources))]
+        [EditFolderPicker]
+        [VisibleCondition(nameof(PersistMediaInfo), SimpleCondition.IsTrue)]
+        public string MediaInfoJsonRootFolder { get; set; } = string.Empty;
+
         [Browsable(false)]
         public IEnumerable<EditorSelectOption> LibraryList { get; set; }
 
