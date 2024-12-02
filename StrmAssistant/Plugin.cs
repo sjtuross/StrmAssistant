@@ -261,6 +261,30 @@ namespace StrmAssistant
 
         protected override bool OnOptionsSaving(PluginOptions options)
         {
+            options.MediaInfoExtractOptions.LibraryScope = string.Join(",",
+                options.MediaInfoExtractOptions.LibraryScope
+                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(v => options.MediaInfoExtractOptions.LibraryList.Any(option => option.Value == v)) ??
+                Enumerable.Empty<string>());
+
+            options.IntroSkipOptions.LibraryScope = string.Join(",",
+                options.IntroSkipOptions.LibraryScope
+                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(v => options.IntroSkipOptions.LibraryList.Any(option => option.Value == v)) ??
+                Enumerable.Empty<string>());
+
+            options.IntroSkipOptions.UserScope = string.Join(",",
+                options.IntroSkipOptions.UserScope
+                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(v => options.IntroSkipOptions.UserList.Any(option => option.Value == v)) ??
+                Enumerable.Empty<string>());
+
+            options.IntroSkipOptions.MarkerEnabledLibraryScope = string.Join(",",
+                options.IntroSkipOptions.MarkerEnabledLibraryScope
+                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(v => options.IntroSkipOptions.MarkerEnabledLibraryList.Any(option => option.Value == v)) ??
+                Enumerable.Empty<string>());
+
             var metadataEnhanceOptions = options.MetadataEnhanceOptions;
 
             metadataEnhanceOptions.AltMovieDbApiUrl =

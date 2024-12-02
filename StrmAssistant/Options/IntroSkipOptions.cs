@@ -44,7 +44,7 @@ namespace StrmAssistant
         [EditMultilSelect]
         [SelectItemsSource(nameof(LibraryList))]
         [VisibleCondition(nameof(EnableIntroSkip), SimpleCondition.IsTrue)]
-        public string LibraryScope { get; set; }
+        public string LibraryScope { get; set; } = string.Empty;
 
         [Browsable(false)]
         public IEnumerable<EditorSelectOption> UserList { get; set; }
@@ -54,7 +54,7 @@ namespace StrmAssistant
         [EditMultilSelect]
         [SelectItemsSource(nameof(UserList))]
         [VisibleCondition(nameof(EnableIntroSkip), SimpleCondition.IsTrue)]
-        public string UserScope { get; set; }
+        public string UserScope { get; set; } = string.Empty;
 
         [DisplayNameL("IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced", typeof(Resources))]
         [DescriptionL("IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection", typeof(Resources))]
@@ -75,7 +75,7 @@ namespace StrmAssistant
         [EditMultilSelect]
         [SelectItemsSource(nameof(MarkerEnabledLibraryList))]
         [VisibleCondition(nameof(UnlockIntroSkip), SimpleCondition.IsTrue)]
-        public string MarkerEnabledLibraryScope { get; set; }
+        public string MarkerEnabledLibraryScope { get; set; } = string.Empty;
 
         [Browsable(false)]
         public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;

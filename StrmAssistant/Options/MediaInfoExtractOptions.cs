@@ -55,7 +55,7 @@ namespace StrmAssistant
         [DescriptionL("PluginOptions_LibraryScope_Library_scope_to_extract__Blank_includes_all_", typeof(Resources))]
         [EditMultilSelect]
         [SelectItemsSource(nameof(LibraryList))]
-        public string LibraryScope { get; set; }
+        public string LibraryScope { get; set; } = string.Empty;
 
         [Browsable(false)]
         public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;
