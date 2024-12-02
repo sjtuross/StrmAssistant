@@ -4,7 +4,6 @@ using SQLitePCL.pretty;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
@@ -533,7 +532,9 @@ namespace StrmAssistant.Mod
                         {
                             currentValue = currentValue
                                 .Substring(currentValue.IndexOf(":", StringComparison.Ordinal) + 1)
-                                .Trim('\"', '^', '$');
+                                .Trim('\"', '^', '$')
+                                .Replace(".", string.Empty)
+                                .Replace("'", string.Empty);
                         }
 
                         bindParams[i] = new KeyValuePair<string, string>(kvp.Key, currentValue);
@@ -545,11 +546,8 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool CreateSearchTermPrefix(string searchTerm, ref string __result)
         {
-            var newSearchTerm = searchTerm;
-            var quoteCount = searchTerm.Count(c => c == '\'');
-            if (quoteCount >= 3) newSearchTerm = searchTerm.Replace("'", "");
+            __result = searchTerm.Replace(".", string.Empty).Replace("'", string.Empty);
 
-            __result = newSearchTerm;
             return false;
         }
         
