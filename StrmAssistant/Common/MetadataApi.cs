@@ -1,5 +1,4 @@
-﻿extern alias SystemMemory;
-using MediaBrowser.Common.Net;
+﻿using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -155,7 +154,7 @@ namespace StrmAssistant
             if (string.Equals(language, "zho", StringComparison.OrdinalIgnoreCase))
                 return "zh-hk";
             var languageInfo =
-                _localizationManager.FindLanguageInfo(SystemMemory::System.MemoryExtensions.AsSpan(language));
+                _localizationManager.FindLanguageInfo(language.AsSpan());
             return languageInfo != null ? languageInfo.TwoLetterISOLanguageName : language;
         }
 

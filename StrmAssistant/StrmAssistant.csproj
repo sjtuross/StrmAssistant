@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
     <AssemblyVersion>1.0.0.44</AssemblyVersion>
     <FileVersion>1.0.0.44</FileVersion>
     <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
@@ -34,12 +34,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Resource.Embedder" Version="2.2.0" />
-    <PackageReference Include="System.Memory" Version="4.6.0">
-      <Aliases>SystemMemory</Aliases>
-    </PackageReference>
+    <PackageReference Include="System.Memory" Version="4.6.0" />
     <PackageReference Include="System.Text.Json" Version="4.7.2" />
     <PackageReference Include="SQLitePCL.pretty.core" Version="1.2.2" />
-    <PackageReference Include="TinyPinyin.Net" Version="1.0.2">
+    <PackageReference Include="TinyPinyin" Version="1.1.0">
       <GeneratePathProperty>True</GeneratePathProperty>
     </PackageReference>
   </ItemGroup>
@@ -63,6 +61,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="$(ILRepack) /out:%25AppData%25\Emby-Server\programdata\plugins\$(TargetFileName) $(TargetPath) $(PkgLib_Harmony_Thin)\lib\net6.0\0Harmony.dll $(TargetDir)Mono*.dll $(PkgCHTCHSConv)\lib\netstandard2.0\ChineseConverter.dll $(PkgTinyPinyin_Net)\lib\netstandard2.0\TinyPinyin.dll /lib:$(TargetDir) /wildcards" />
+    <Exec Command="$(ILRepack) /out:%25AppData%25\Emby-Server\programdata\plugins\$(TargetFileName) $(TargetPath) $(PkgLib_Harmony_Thin)\lib\net6.0\0Harmony.dll $(TargetDir)Mono*.dll $(PkgCHTCHSConv)\lib\netstandard2.0\ChineseConverter.dll $(PkgTinyPinyin)\lib\netstandard2.1\TinyPinyin.dll /lib:$(TargetDir) /wildcards" />
   </Target>
 </Project>

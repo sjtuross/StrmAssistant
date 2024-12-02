@@ -41,16 +41,9 @@ namespace StrmAssistant
             return IsChinese(input) ? "zh" : IsJapanese(input) ? "jp" : IsKorean(input) ? "ko" : "en";
         }
 
-        //https://github.com/hstarorg/TinyPinyin.Net/issues/5
-        //can't use this library directly because it doesn't provide netstandard2.0 dll
-        public static string ConvertToPinyinInitials(string input, string separator = "")
+        public static string ConvertToPinyinInitials(string input)
         {
-            var result = PinyinHelper.GetPinyin(input, "|");
-
-            return string.Join(separator,
-                result.Split('|')
-                    .Select(x => !string.IsNullOrWhiteSpace(x) && x.Length > 0 ? x.Substring(0, 1) : x)
-                    .ToArray());
+            return PinyinHelper.GetPinyinInitials(input);
         }
 
         public static string RemoveDefaultCollectionName(string input)

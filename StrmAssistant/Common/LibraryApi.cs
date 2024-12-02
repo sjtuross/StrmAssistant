@@ -1,4 +1,3 @@
-extern alias SystemMemory;
 using Emby.Media.Common.Extensions;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
@@ -705,10 +704,9 @@ namespace StrmAssistant
 
                     if (rms != null)
                     {
-                        rms.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(
-                            SystemMemory::System.MemoryExtensions.AsSpan(rms.Container),
-                            SystemMemory::System.MemoryExtensions.AsSpan(rms.Path), null,
-                            DlnaProfileType.Video);
+                        rms.Container =
+                            StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(rms.Container.AsSpan(),
+                                rms.Path.AsSpan(), null, DlnaProfileType.Video);
                     }
                 }));
             }
@@ -730,9 +728,8 @@ namespace StrmAssistant
                     if (rms != null)
                     {
                         rms.Container = StreamBuilder.NormalizeMediaSourceFormatIntoSingleContainer(
-                            SystemMemory::System.MemoryExtensions.AsSpan(rms.Container),
-                            SystemMemory::System.MemoryExtensions.AsSpan(rms.Path), null,
-                            DlnaProfileType.Video);
+                            rms.Container.AsSpan(),
+                            rms.Path.AsSpan(), null, DlnaProfileType.Video);
                     }
                 }));
             }
@@ -740,17 +737,11 @@ namespace StrmAssistant
 
         public async Task<string> GetStrmMountPath(string strmPath)
         {
-            var path = SystemMemory::System.MemoryExtensions.AsMemory(strmPath);
+            var path = strmPath.AsMemory();
 
-            using (IMediaMount mediaMount = await _mediaMountManager.Mount(path, null, CancellationToken.None))
-            {
-                if (mediaMount != null)
-                {
-                    return mediaMount.MountedPath;
-                }
-            }
-
-            return null;
+            using var mediaMount = await _mediaMountManager.Mount(path, null, CancellationToken.None);
+            
+            return mediaMount?.MountedPath;
         }
 
         public BaseItem[] GetItemsByIds(long[] itemIds)
