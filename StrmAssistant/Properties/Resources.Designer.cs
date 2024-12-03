@@ -752,6 +752,15 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string No_Update_Message {
+            get {
+                return ResourceManager.GetString("No_Update_Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Catch-up mode update - {0}\n\n{1}&apos;s favorite.
         /// </summary>
         public static string Notification_CatchupUpdate_EventDescription {

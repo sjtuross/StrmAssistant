@@ -458,4 +458,7 @@
   <data name="Uninstall_Warning" xml:space="preserve">
     <value>Warning: Emby won't work without turning off Chinese Search Enhanced properly.</value>
   </data>
+  <data name="No_Update_Message" xml:space="preserve">
+    <value>No Update</value>
+  </data>
 </root>

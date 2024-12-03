@@ -58,8 +58,9 @@ namespace StrmAssistant
         {
             yield return new TaskTriggerInfo
             {
-                Type = TaskTriggerInfo.TriggerDaily,
-                TimeOfDayTicks = TimeSpan.FromHours(3).Ticks
+                Type = TaskTriggerInfo.TriggerWeekly,
+                DayOfWeek = (DayOfWeek)new Random().Next(7),
+                TimeOfDayTicks = TimeSpan.FromMinutes(new Random().Next(24 * 4) * 15).Ticks
             };
         }
 
@@ -70,13 +71,21 @@ namespace StrmAssistant
 
             try
             {
+                var githubToken= Plugin.Instance.GetPluginOptions().AboutOptions.GitHubToken;
+
                 var stream = await _httpClient.Get(new HttpRequestOptions
                     {
                         Url = RepoReleaseUrl,
                         CancellationToken = cancellationToken,
                         AcceptHeader = "application/json",
                         UserAgent = Plugin.Instance.UserAgent,
-                        EnableDefaultUserAgent = false
+                        EnableDefaultUserAgent = false,
+                        RequestHeaders =
+                        {
+                            ["Authorization"] = !string.IsNullOrWhiteSpace(githubToken)
+                                ? $"token {githubToken}"
+                                : null
+                        }
                     })
                     .ConfigureAwait(false);
 
@@ -94,15 +103,25 @@ namespace StrmAssistant
                         ?.BrowserDownloadUrl;
                     if (!Uri.IsWellFormedUriString(url, UriKind.Absolute)) throw new Exception("Invalid download url");
 
-                    using (var responseStream = await _httpClient.Get(new HttpRequestOptions
-                               {
-                                   Url = url,
-                                   CancellationToken = cancellationToken,
-                                   UserAgent = Plugin.Instance.UserAgent,
-                                   EnableDefaultUserAgent = false,
-                                   Progress = progress
-                               })
-                               .ConfigureAwait(false))
+                    var githubProxy = Plugin.Instance.GetPluginOptions().AboutOptions.GitHubProxy;
+
+                    await using (var responseStream = await _httpClient.Get(new HttpRequestOptions
+                                     {
+                                         Url = string.IsNullOrWhiteSpace(githubProxy)
+                                             ? url
+                                             : $"{githubProxy.TrimEnd('/')}/{url.TrimStart('/')}",
+                                         CancellationToken = cancellationToken,
+                                         UserAgent = Plugin.Instance.UserAgent,
+                                         EnableDefaultUserAgent = false,
+                                         Progress = progress,
+                                         RequestHeaders =
+                                         {
+                                             ["Authorization"] = !string.IsNullOrWhiteSpace(githubToken)
+                                                 ? $"token {githubToken}"
+                                                 : null
+                                         }
+                                     })
+                                     .ConfigureAwait(false))
                     {
                         using (var memoryStream = new MemoryStream())
                         {
@@ -112,7 +131,8 @@ namespace StrmAssistant
                             memoryStream.Seek(0, SeekOrigin.Begin);
                             var dllFilePath = Path.Combine(_applicationPaths.PluginsPath, PluginAssemblyFilename);
 
-                            using (var fileStream = new FileStream(dllFilePath, FileMode.Create, FileAccess.Write))
+                            await using (var fileStream =
+                                         new FileStream(dllFilePath, FileMode.Create, FileAccess.Write))
                             {
                                 await memoryStream.CopyToAsync(fileStream, 81920, cancellationToken)
                                     .ConfigureAwait(false);
@@ -134,6 +154,7 @@ namespace StrmAssistant
                 }
                 else
                 {
+                    Plugin.NotificationApi.SendPluginNoUpdateMessage();
                     _logger.Info("No need to update");
                 }
             }
