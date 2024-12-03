@@ -1,4 +1,5 @@
 ﻿extern alias SystemMemory;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
@@ -6,6 +7,8 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
+using StrmAssistant.Provider;
 using System;
 using System.Linq;
 using System.Threading;
@@ -20,16 +23,21 @@ namespace StrmAssistant
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILocalizationManager _localizationManager;
+        private readonly IJsonSerializer _jsonSerializer;
+        private readonly IHttpClient _httpClient;
 
         public static MetadataRefreshOptions PersonRefreshOptions;
         
         public MetadataApi(ILibraryManager libraryManager, IFileSystem fileSystem,
-            IServerConfigurationManager configurationManager, ILocalizationManager localizationManager)
+            IServerConfigurationManager configurationManager, ILocalizationManager localizationManager,
+            IJsonSerializer jsonSerializer, IHttpClient httpClient)
         {
             _logger = Plugin.Instance.logger;
             _libraryManager = libraryManager;
             _configurationManager = configurationManager;
             _localizationManager = localizationManager;
+            _jsonSerializer = jsonSerializer;
+            _httpClient = httpClient;
 
             PersonRefreshOptions = new MetadataRefreshOptions(fileSystem)
             {
@@ -98,7 +106,7 @@ namespace StrmAssistant
 
             return movieDbPersonProvider;
         }
-
+        
         private Task<MetadataResult<TItemType>> GetMetadataFromProvider<TItemType, TIdType>(
             IRemoteMetadataProvider<TItemType, TIdType> provider,
             TIdType id, CancellationToken cancellationToken)
@@ -149,6 +157,11 @@ namespace StrmAssistant
             var languageInfo =
                 _localizationManager.FindLanguageInfo(SystemMemory::System.MemoryExtensions.AsSpan(language));
             return languageInfo != null ? languageInfo.TwoLetterISOLanguageName : language;
+        }
+
+        public ISeriesMetadataProvider GetMovieDbSeriesProvider()
+        {
+            return new MovieDbSeriesProvider(_jsonSerializer, _httpClient);
         }
     }
 }

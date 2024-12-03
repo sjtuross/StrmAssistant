@@ -408,7 +408,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Persist media info in JSON file. Default is OFF..
+        ///   Looks up a localized string similar to Store or load media info and chapters to/from JSON file. Default is OFF..
         /// </summary>
         public static string MediaInfoExtractOptions_PersistMediaInfo_Persist_media_info_in_JSON_file__Default_is_OFF_ {
             get {
@@ -418,7 +418,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Persist MediaInfo.
+        ///   Looks up a localized string similar to MediaInfo Persist.
         /// </summary>
         public static string MediaInfoExtractOptions_PersistMediaInfo_Persist_MediaInfo {
             get {
@@ -978,6 +978,25 @@ namespace StrmAssistant.Properties {
             get {
                 return ResourceManager.GetString("UIFunctionOptions_EnforceLibraryOrder_Enforce_library_order_per_the_first_admin__" +
                         "Default_if_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add MovieDb support for the missing episodes function. Default is OFF..
+        /// </summary>
+        public static string UIFunctionOptions_EnhanceMissingEpisodes_Add_MovieDb_support_for_the_missing_episodes_function__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("UIFunctionOptions_EnhanceMissingEpisodes_Add_MovieDb_support_for_the_missing_epis" +
+                        "odes_function__Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to View Missing Episodes Enhanced.
+        /// </summary>
+        public static string UIFunctionOptions_EnhanceMissingEpisodes_Missing_Episodes_Enhanced {
+            get {
+                return ResourceManager.GetString("UIFunctionOptions_EnhanceMissingEpisodes_Missing_Episodes_Enhanced", resourceCulture);
             }
         }
         

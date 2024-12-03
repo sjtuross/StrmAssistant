@@ -27,6 +27,35 @@ namespace StrmAssistant.Mod
         private static readonly string DefaultMovieDbImageUrl = "https://image.tmdb.org";
         private static string SystemDefaultMovieDbApiKey;
 
+        public static string CurrentMovieDbApiKey
+        {
+            get
+            {
+                var options = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions;
+                return IsValidMovieDbApiKey(options.AltMovieDbApiKey)
+                    ? options.AltMovieDbApiKey
+                    : SystemDefaultMovieDbApiKey;
+            }
+        }
+
+        public static string CurrentMovieDbApiUrl
+        {
+            get
+            {
+                var options = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions;
+                return IsValidHttpUrl(options.AltMovieDbApiUrl) ? options.AltMovieDbApiUrl : DefaultMovieDbApiUrl;
+            }
+        }
+
+        public static string CurrentMovieDbImageUrl
+        {
+            get
+            {
+                var options = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions;
+                return IsValidHttpUrl(options.AltMovieDbImageUrl) ? options.AltMovieDbImageUrl : DefaultMovieDbImageUrl;
+            }
+        }
+
         public static void Initialize()
         {
             try

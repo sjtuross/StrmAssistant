@@ -4,6 +4,7 @@ using Emby.Web.GenericEdit.Elements;
 using Emby.Web.GenericEdit.Elements.List;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -74,6 +75,7 @@ namespace StrmAssistant
         private bool _currentHidePersonNoImage;
         private bool _currentEnforceLibraryOrder;
         private bool _currentBeautifyMissingMetadata;
+        private bool _currentEnhanceMissingEpisodes;
 
         public Plugin(IApplicationHost applicationHost,
             IApplicationPaths applicationPaths,
@@ -92,6 +94,7 @@ namespace StrmAssistant
             IFfmpegManager ffmpegManager,
             IMediaEncoder mediaEncoder,
             IJsonSerializer jsonSerializer,
+            IHttpClient httpClient,
             IServerApplicationHost serverApplicationHost,
             IServerConfigurationManager configurationManager) : base(applicationHost)
         {
@@ -125,6 +128,7 @@ namespace StrmAssistant
             _currentHidePersonNoImage = GetOptions().UIFunctionOptions.HidePersonNoImage;
             _currentEnforceLibraryOrder = GetOptions().UIFunctionOptions.EnforceLibraryOrder;
             _currentBeautifyMissingMetadata = GetOptions().UIFunctionOptions.BeautifyMissingMetadata;
+            _currentEnhanceMissingEpisodes=GetOptions().UIFunctionOptions.EnhanceMissingEpisodes;
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, mediaMountManager,
                 itemRepository, jsonSerializer, userManager);
@@ -134,7 +138,8 @@ namespace StrmAssistant
             NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
             SubtitleApi = new SubtitleApi(libraryManager, fileSystem, mediaProbeManager, localizationManager,
                 itemRepository);
-            MetadataApi = new MetadataApi(libraryManager, fileSystem, configurationManager, localizationManager);
+            MetadataApi = new MetadataApi(libraryManager, fileSystem, configurationManager, localizationManager,
+                jsonSerializer, httpClient);
             ShortcutMenuHelper.Initialize(configurationManager);
 
             PatchManager.Initialize();
@@ -228,6 +233,10 @@ namespace StrmAssistant
         public override Guid Id => _id;
 
         public sealed override string Name => "Strm Assistant";
+
+        public string CurrentVersion => Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+
+        public string UserAgent => $"{Name}/{CurrentVersion}";
 
         public Stream GetThumbImage()
         {
@@ -534,6 +543,22 @@ namespace StrmAssistant
                 else
                 {
                     BeautifyMissingMetadata.Unpatch();
+                }
+            }
+
+            if (!suppressLogger)
+                logger.Info("EnhanceMissingEpisodes is set to {0}", options.UIFunctionOptions.EnhanceMissingEpisodes);
+            if (_currentEnhanceMissingEpisodes != GetOptions().UIFunctionOptions.EnhanceMissingEpisodes)
+            {
+                _currentEnhanceMissingEpisodes = GetOptions().UIFunctionOptions.EnhanceMissingEpisodes;
+
+                if (_currentEnhanceMissingEpisodes)
+                {
+                    EnhanceMissingEpisodes.Patch();
+                }
+                else
+                {
+                    EnhanceMissingEpisodes.Unpatch();
                 }
             }
 
