@@ -75,8 +75,6 @@ namespace StrmAssistant
                 var taskItem = item;
                 var task = Task.Run(async () =>
                 {
-                    var isExtractAllowed = false;
-
                     try
                     {
                         if (cancellationToken.IsCancellationRequested)
@@ -88,7 +86,6 @@ namespace StrmAssistant
                         if (exclusiveExtract)
                         {
                             ExclusiveExtract.AllowExtractInstance(taskItem);
-                            isExtractAllowed = true;
                         }
 
                         var imageCapture = false;
@@ -175,8 +172,6 @@ namespace StrmAssistant
                         _logger.Info("MediaInfoExtract - Progress " + currentCount + "/" + total + " - " +
                                      "Task " + taskIndex + ": " +
                                      taskItem.Path);
-
-                        if (isExtractAllowed) ExclusiveExtract.DisallowExtractInstance(taskItem);
                     }
                 }, cancellationToken);
                 tasks.Add(task);

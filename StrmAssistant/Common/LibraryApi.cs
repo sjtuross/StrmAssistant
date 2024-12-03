@@ -606,41 +606,44 @@ namespace StrmAssistant
             var mediaInfoJsonPath = GetMediaInfoJsonPath(workItem);
             var file = directoryService.GetFile(mediaInfoJsonPath);
 
-            if ((overwrite || file?.Exists != true || HasFileChanged(workItem)) && HasMediaStream(workItem) &&
-                workItem.RunTimeTicks.HasValue)
+            if (overwrite || file?.Exists != true || HasFileChanged(workItem))
             {
-                try
+                if (HasMediaStream(workItem) && workItem.RunTimeTicks.HasValue)
                 {
-                    await Task.Run(() =>
-                        {
-                            var options = _libraryManager.GetLibraryOptions(workItem);
-                            var mediaSources = workItem.GetMediaSources(false, false, options);
-                            var chapters = BaseItem.ItemRepository.GetChapters(workItem);
-                            var mediaSourcesWithChapters = mediaSources.Select(mediaSource =>
-                                    new MediaSourceWithChapters { MediaSourceInfo = mediaSource, Chapters = chapters })
-                                .ToList();
-
-                            var parentDirectory = Path.GetDirectoryName(mediaInfoJsonPath);
-                            if (!string.IsNullOrEmpty(parentDirectory))
+                    try
+                    {
+                        await Task.Run(() =>
                             {
-                                Directory.CreateDirectory(parentDirectory);
-                            }
+                                var options = _libraryManager.GetLibraryOptions(workItem);
+                                var mediaSources = workItem.GetMediaSources(false, false, options);
+                                var chapters = BaseItem.ItemRepository.GetChapters(workItem);
+                                var mediaSourcesWithChapters = mediaSources.Select(mediaSource =>
+                                        new MediaSourceWithChapters
+                                            { MediaSourceInfo = mediaSource, Chapters = chapters })
+                                    .ToList();
 
-                            _jsonSerializer.SerializeToFile(mediaSourcesWithChapters, mediaInfoJsonPath);
-                        }, cancellationToken)
-                        .ConfigureAwait(false);
-                    _logger.Info("MediaInfoPersist - Serialization Success: " + mediaInfoJsonPath);
+                                var parentDirectory = Path.GetDirectoryName(mediaInfoJsonPath);
+                                if (!string.IsNullOrEmpty(parentDirectory))
+                                {
+                                    Directory.CreateDirectory(parentDirectory);
+                                }
+
+                                _jsonSerializer.SerializeToFile(mediaSourcesWithChapters, mediaInfoJsonPath);
+                            }, cancellationToken)
+                            .ConfigureAwait(false);
+                        _logger.Info("MediaInfoPersist - Serialization Success: " + mediaInfoJsonPath);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Error("MediaInfoPersist - Serialization Failed: " + mediaInfoJsonPath);
+                        _logger.Error(e.Message);
+                        _logger.Debug(e.StackTrace);
+                    }
                 }
-                catch (Exception e)
+                else
                 {
-                    _logger.Error("MediaInfoPersist - Serialization Failed: " + mediaInfoJsonPath);
-                    _logger.Error(e.Message);
-                    _logger.Debug(e.StackTrace);
+                    _logger.Info("MediaInfoPersist - Serialization Skipped: " + mediaInfoJsonPath);
                 }
-            }
-            else
-            {
-                _logger.Info("MediaInfoPersist - Serialization Skipped: " + mediaInfoJsonPath);
             }
         }
 
@@ -671,15 +674,19 @@ namespace StrmAssistant
                         _itemRepository.SaveMediaStreams(item.InternalId,
                             mediaSourceWithChapters.MediaSourceInfo.MediaStreams, cancellationToken);
 
-                        item.Size = mediaSourceWithChapters.MediaSourceInfo.Size.GetValueOrDefault();
-                        item.RunTimeTicks = mediaSourceWithChapters.MediaSourceInfo.RunTimeTicks;
-                        item.Container = mediaSourceWithChapters.MediaSourceInfo.Container;
-                        item.TotalBitrate = mediaSourceWithChapters.MediaSourceInfo.Bitrate.GetValueOrDefault();
-                        _libraryManager.UpdateItem(item, null, ItemUpdateType.MetadataImport);
+                        var workItem = _libraryManager.GetItemById(item.InternalId);
+                        var parentItem = _libraryManager.GetItemById(workItem.ParentId);
 
-                        if (item is Video)
+                        workItem.Size = mediaSourceWithChapters.MediaSourceInfo.Size.GetValueOrDefault();
+                        workItem.RunTimeTicks = mediaSourceWithChapters.MediaSourceInfo.RunTimeTicks;
+                        workItem.Container = mediaSourceWithChapters.MediaSourceInfo.Container;
+                        workItem.TotalBitrate = mediaSourceWithChapters.MediaSourceInfo.Bitrate.GetValueOrDefault();
+
+                        _libraryManager.UpdateItem(workItem, parentItem, ItemUpdateType.MetadataImport);
+
+                        if (workItem is Video)
                         {
-                            _itemRepository.SaveChapters(item.InternalId, true, mediaSourceWithChapters.Chapters);
+                            _itemRepository.SaveChapters(workItem.InternalId, true, mediaSourceWithChapters.Chapters);
                         }
 
                         _logger.Info("MediaInfoPersist - Deserialization Success: " + mediaInfoJsonPath);
@@ -705,6 +712,29 @@ namespace StrmAssistant
             var directoryService = new DirectoryService(_logger, _fileSystem);
 
             return await DeserializeMediaInfo(item, directoryService, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task DeleteMediaInfoJson(BaseItem item, CancellationToken cancellationToken)
+        {
+            var directoryService = new DirectoryService(_logger, _fileSystem);
+            var mediaInfoJsonPath = GetMediaInfoJsonPath(item);
+            var file = directoryService.GetFile(mediaInfoJsonPath);
+
+            if (file?.Exists == true)
+            {
+                try
+                {
+                    await Task.Run(() => _fileSystem.DeleteFile(mediaInfoJsonPath), cancellationToken)
+                        .ConfigureAwait(false);
+                    _logger.Info("MediaInfoPersist - Delete Success: " + mediaInfoJsonPath);
+                }
+                catch (Exception e)
+                {
+                    _logger.Error("MediaInfoPersist - Delete Failed: " + mediaInfoJsonPath);
+                    _logger.Error(e.Message);
+                    _logger.Debug(e.StackTrace);
+                }
+            }
         }
 
         public async Task ProbeMediaInfo(BaseItem item, CancellationToken cancellationToken)

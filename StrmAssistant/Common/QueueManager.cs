@@ -113,8 +113,6 @@ namespace StrmAssistant
                             var taskItem = item;
                             _taskQueue.Enqueue(async () =>
                             {
-                                var isExtractAllowed = false;
-
                                 try
                                 {
                                     if (cancellationToken.IsCancellationRequested)
@@ -126,7 +124,6 @@ namespace StrmAssistant
                                     if (exclusiveExtract)
                                     {
                                         ExclusiveExtract.AllowExtractInstance(taskItem);
-                                        isExtractAllowed = true;
                                     }
 
                                     var imageCapture = false;
@@ -203,10 +200,6 @@ namespace StrmAssistant
                                     _logger.Error("MediaInfoExtract - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
                                     _logger.Error(e.Message);
                                     _logger.Debug(e.StackTrace);
-                                }
-                                finally
-                                {
-                                    if (isExtractAllowed) ExclusiveExtract.DisallowExtractInstance(taskItem);
                                 }
                             });
                         }
