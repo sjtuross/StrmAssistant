@@ -196,7 +196,8 @@ namespace StrmAssistant
                                         taskItem.Overview = Plugin.MetadataApi.ProcessPersonInfo(newOverview, false);
                                     }
 
-                                    _libraryManager.UpdateItem(taskItem, null, ItemUpdateType.MetadataEdit);
+                                    _libraryManager.UpdateItems(new List<BaseItem> { taskItem }, null,
+                                        ItemUpdateType.MetadataEdit, true, false, null, CancellationToken.None);
                                 }
                             }
 

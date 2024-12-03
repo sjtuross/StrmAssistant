@@ -675,14 +675,14 @@ namespace StrmAssistant
                             mediaSourceWithChapters.MediaSourceInfo.MediaStreams, cancellationToken);
 
                         var workItem = _libraryManager.GetItemById(item.InternalId);
-                        var parentItem = _libraryManager.GetItemById(workItem.ParentId);
 
                         workItem.Size = mediaSourceWithChapters.MediaSourceInfo.Size.GetValueOrDefault();
                         workItem.RunTimeTicks = mediaSourceWithChapters.MediaSourceInfo.RunTimeTicks;
                         workItem.Container = mediaSourceWithChapters.MediaSourceInfo.Container;
                         workItem.TotalBitrate = mediaSourceWithChapters.MediaSourceInfo.Bitrate.GetValueOrDefault();
 
-                        _libraryManager.UpdateItem(workItem, parentItem, ItemUpdateType.MetadataImport);
+                        _libraryManager.UpdateItems(new List<BaseItem> { workItem }, null,
+                            ItemUpdateType.MetadataImport, false, false, null, CancellationToken.None);
 
                         if (workItem is Video)
                         {
