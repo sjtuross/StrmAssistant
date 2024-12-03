@@ -1,6 +1,7 @@
 ﻿using MediaBrowser.Controller.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -62,13 +63,18 @@ namespace StrmAssistant
             _logger.Info("IntroSkip - Clear Task Complete");
         }
 
-        public string Category => Plugin.Instance.Name;
+        public string Category => Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",
+            Plugin.Instance.DefaultUICulture);
 
         public string Key => "IntroSkipClearTask";
 
-        public string Description => "Clears behavior-based intro and credits markers";
+        public string Description => Resources.ResourceManager.GetString(
+            "ClearChapterMarkersTask_Description_Clears_behavior_based_intro_and_credits_markers",
+            Plugin.Instance.DefaultUICulture);
 
         public string Name => "Clear Episode Intros";
+        //public string Name => Resources.ResourceManager.GetString("ClearChapterMarkersTask_Name_Clear_Episode_Intros",
+        //    Plugin.Instance.DefaultUICulture);
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

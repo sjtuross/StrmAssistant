@@ -2,6 +2,7 @@
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -111,13 +112,19 @@ namespace StrmAssistant
             _logger.Info("IntroFingerprintExtract - Task Complete");
         }
 
-        public string Category => Plugin.Instance.Name;
+        public string Category => Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",
+            Plugin.Instance.DefaultUICulture);
 
         public string Key => "IntroFingerprintExtractTask";
 
-        public string Description => "Extracts intro fingerprint from episodes";
+        public string Description => Resources.ResourceManager.GetString(
+            "ExtractIntroFingerprintTask_Description_Extracts_intro_fingerprint_from_episodes",
+            Plugin.Instance.DefaultUICulture);
 
         public string Name => "Extract Intro Fingerprint";
+        //public string Name =>
+        //    Resources.ResourceManager.GetString("ExtractIntroFingerprintTask_Name_Extract_Intro_Fingerprint",
+        //        Plugin.Instance.DefaultUICulture);
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

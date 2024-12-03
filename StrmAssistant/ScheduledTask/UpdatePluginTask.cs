@@ -5,6 +5,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -43,10 +44,15 @@ namespace StrmAssistant
         public string Key => "UpdatePluginTask";
 
         public string Name => "Update Plugin";
+        //public string Name =>
+        //    Resources.ResourceManager.GetString("UpdatePluginTask_Name_Update_Plugin",
+        //        Plugin.Instance.DefaultUICulture);
 
-        public string Description => $"Updates {Plugin.Instance.Name} plugin to the latest version";
+        public string Description => Resources.ResourceManager.GetString(
+            "UpdatePluginTask_Description_Updates_plugin_to_the_latest_version", Plugin.Instance.DefaultUICulture);
 
-        public string Category => Plugin.Instance.Name;
+        public string Category => Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",
+            Plugin.Instance.DefaultUICulture);
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

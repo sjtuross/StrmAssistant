@@ -28,9 +28,11 @@ using StrmAssistant.Properties;
 using StrmAssistant.Web;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Resources;
 using static StrmAssistant.ModOptions;
 
 namespace StrmAssistant
@@ -237,6 +239,8 @@ namespace StrmAssistant
         public string CurrentVersion => Assembly.GetExecutingAssembly().GetName().Version?.ToString();
 
         public string UserAgent => $"{Name}/{CurrentVersion}";
+
+        public CultureInfo DefaultUICulture => new CultureInfo("zh-CN");
 
         public Stream GetThumbImage()
         {
@@ -821,7 +825,9 @@ namespace StrmAssistant
 
         protected override void OnCreatePageInfo(PluginPageInfo pageInfo)
         {
-            pageInfo.Name = Resources.PluginOptions_EditorTitle_Strm_Assistant;
+            pageInfo.Name = Name;
+            pageInfo.DisplayName =
+                Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant", DefaultUICulture);
             pageInfo.EnableInMainMenu = true;
             pageInfo.MenuIcon = "video_settings";
 

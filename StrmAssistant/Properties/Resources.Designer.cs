@@ -70,6 +70,61 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Clears behavior-based intro and credits markers.
+        /// </summary>
+        public static string ClearChapterMarkersTask_Description_Clears_behavior_based_intro_and_credits_markers {
+            get {
+                return ResourceManager.GetString("ClearChapterMarkersTask_Description_Clears_behavior_based_intro_and_credits_marke" +
+                        "rs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clear Episode Intros.
+        /// </summary>
+        public static string ClearChapterMarkersTask_Name_Clear_Episode_Intros {
+            get {
+                return ResourceManager.GetString("ClearChapterMarkersTask_Name_Clear_Episode_Intros", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Extracts intro fingerprint from episodes.
+        /// </summary>
+        public static string ExtractIntroFingerprintTask_Description_Extracts_intro_fingerprint_from_episodes {
+            get {
+                return ResourceManager.GetString("ExtractIntroFingerprintTask_Description_Extracts_intro_fingerprint_from_episodes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Extract Intro Fingerprint.
+        /// </summary>
+        public static string ExtractIntroFingerprintTask_Name_Extract_Intro_Fingerprint {
+            get {
+                return ResourceManager.GetString("ExtractIntroFingerprintTask_Name_Extract_Intro_Fingerprint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Extracts media info from videos and audios.
+        /// </summary>
+        public static string ExtractMediaInfoTask_Description_Extracts_media_info_from_videos_and_audios {
+            get {
+                return ResourceManager.GetString("ExtractMediaInfoTask_Description_Extracts_media_info_from_videos_and_audios", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Extract MediaInfo.
+        /// </summary>
+        public static string ExtractMediaInfoTask_Name_Extract_MediaInfo {
+            get {
+                return ResourceManager.GetString("ExtractMediaInfoTask_Name_Extract_MediaInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ❤️Favorites.
         /// </summary>
         public static string Favorites {
@@ -760,6 +815,24 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Persists media info to json file.
+        /// </summary>
+        public static string PersistMediaInfoTask_Description_Persists_media_info_to_json_file {
+            get {
+                return ResourceManager.GetString("PersistMediaInfoTask_Description_Persists_media_info_to_json_file", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Persist MediaInfo.
+        /// </summary>
+        public static string PersistMediaInfoTask_Name_Persist_MediaInfo {
+            get {
+                return ResourceManager.GetString("PersistMediaInfoTask_Name_Persist_MediaInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Catch-up Mode.
         /// </summary>
         public static string PluginOptions_CatchupMode_Catch_up_Mode__Experimental_ {
@@ -945,11 +1018,47 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Refreshes and repairs Chinese actors.
+        /// </summary>
+        public static string RefreshPersonTask_Description_Refreshes_and_repairs_Chinese_actors {
+            get {
+                return ResourceManager.GetString("RefreshPersonTask_Description_Refreshes_and_repairs_Chinese_actors", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Refresh Chinese Actor.
+        /// </summary>
+        public static string RefreshPersonTask_Name_Refresh_Chinese_Actor {
+            get {
+                return ResourceManager.GetString("RefreshPersonTask_Name_Refresh_Chinese_Actor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Repo Link.
         /// </summary>
         public static string Repo_Link {
             get {
                 return ResourceManager.GetString("Repo_Link", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scans external subtitles for videos.
+        /// </summary>
+        public static string ScanExternalSubtitleTask_Description_Scans_external_subtitles_for_videos {
+            get {
+                return ResourceManager.GetString("ScanExternalSubtitleTask_Description_Scans_external_subtitles_for_videos", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scan External Subtitles.
+        /// </summary>
+        public static string ScanExternalSubtitleTask_Name_Scan_External_Subtitles {
+            get {
+                return ResourceManager.GetString("ScanExternalSubtitleTask_Name_Scan_External_Subtitles", resourceCulture);
             }
         }
         
@@ -1016,6 +1125,24 @@ namespace StrmAssistant.Properties {
         public static string UIFunctionOptions_EnhanceMissingEpisodes_Missing_Episodes_Enhanced {
             get {
                 return ResourceManager.GetString("UIFunctionOptions_EnhanceMissingEpisodes_Missing_Episodes_Enhanced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updates plugin to the latest version.
+        /// </summary>
+        public static string UpdatePluginTask_Description_Updates_plugin_to_the_latest_version {
+            get {
+                return ResourceManager.GetString("UpdatePluginTask_Description_Updates_plugin_to_the_latest_version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update Plugin.
+        /// </summary>
+        public static string UpdatePluginTask_Name_Update_Plugin {
+            get {
+                return ResourceManager.GetString("UpdatePluginTask_Name_Update_Plugin", resourceCulture);
             }
         }
         

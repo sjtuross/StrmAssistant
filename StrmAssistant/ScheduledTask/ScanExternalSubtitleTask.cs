@@ -1,5 +1,6 @@
 ﻿using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -99,13 +100,19 @@ namespace StrmAssistant
             _logger.Info("ExternalSubtitle - Scan Task Complete");
         }
 
-        public string Category => Plugin.Instance.Name;
+        public string Category => Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",
+            Plugin.Instance.DefaultUICulture);
 
         public string Key => "ScanExternalSubtitleTask";
 
-        public string Description => "Scans external subtitles for videos";
+        public string Description => Resources.ResourceManager.GetString(
+            "ScanExternalSubtitleTask_Description_Scans_external_subtitles_for_videos",
+            Plugin.Instance.DefaultUICulture);
 
         public string Name => "Scan External Subtitles";
+        //public string Name =>
+        //    Resources.ResourceManager.GetString("ScanExternalSubtitleTask_Name_Scan_External_Subtitles",
+        //        Plugin.Instance.DefaultUICulture);
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

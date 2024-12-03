@@ -413,4 +413,46 @@
   <data name="MediaInfoExtractOptions_MediaInfoJsonRootFolder_Store_or_load_media_info_JSON_files_under_this_root_folder__Default_is_EMPTY_" xml:space="preserve">
     <value>Store or load media info JSON files under this root folder. Default is EMPTY.</value>
   </data>
+  <data name="ClearChapterMarkersTask_Name_Clear_Episode_Intros" xml:space="preserve">
+    <value>Clear Episode Intros</value>
+  </data>
+  <data name="ClearChapterMarkersTask_Description_Clears_behavior_based_intro_and_credits_markers" xml:space="preserve">
+    <value>Clears behavior-based intro and credits markers</value>
+  </data>
+  <data name="ExtractIntroFingerprintTask_Name_Extract_Intro_Fingerprint" xml:space="preserve">
+    <value>Extract Intro Fingerprint</value>
+  </data>
+  <data name="ExtractIntroFingerprintTask_Description_Extracts_intro_fingerprint_from_episodes" xml:space="preserve">
+    <value>Extracts intro fingerprint from episodes</value>
+  </data>
+  <data name="ExtractMediaInfoTask_Name_Extract_MediaInfo" xml:space="preserve">
+    <value>Extract MediaInfo</value>
+  </data>
+  <data name="ExtractMediaInfoTask_Description_Extracts_media_info_from_videos_and_audios" xml:space="preserve">
+    <value>Extracts media info from videos and audios</value>
+  </data>
+  <data name="PersistMediaInfoTask_Name_Persist_MediaInfo" xml:space="preserve">
+    <value>Persist MediaInfo</value>
+  </data>
+  <data name="PersistMediaInfoTask_Description_Persists_media_info_to_json_file" xml:space="preserve">
+    <value>Persists media info and chapter markers to json file</value>
+  </data>
+  <data name="RefreshPersonTask_Name_Refresh_Chinese_Actor" xml:space="preserve">
+    <value>Refresh Chinese Actor</value>
+  </data>
+  <data name="RefreshPersonTask_Description_Refreshes_and_repairs_Chinese_actors" xml:space="preserve">
+    <value>Refreshes and repairs Chinese actors</value>
+  </data>
+  <data name="ScanExternalSubtitleTask_Name_Scan_External_Subtitles" xml:space="preserve">
+    <value>Scan External Subtitles</value>
+  </data>
+  <data name="ScanExternalSubtitleTask_Description_Scans_external_subtitles_for_videos" xml:space="preserve">
+    <value>Scans external subtitles for videos</value>
+  </data>
+  <data name="UpdatePluginTask_Name_Update_Plugin" xml:space="preserve">
+    <value>Update Plugin</value>
+  </data>
+  <data name="UpdatePluginTask_Description_Updates_plugin_to_the_latest_version" xml:space="preserve">
+    <value>Updates plugin to the latest version</value>
+  </data>
 </root>
