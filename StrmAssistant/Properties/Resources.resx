@@ -246,7 +246,7 @@
     <value>Customize intro detection fingerprint length, unlock Strm support. Default is OFF.</value>
   </data>
   <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
-    <value>Enhance Chinese Search</value>
+    <value>Chinese Search Enhanced</value>
   </data>
   <data name="ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_" xml:space="preserve">
     <value>Support Chinese fuzzy search and Pinyin search. Default is OFF.</value>
@@ -454,5 +454,8 @@
   </data>
   <data name="UpdatePluginTask_Description_Updates_plugin_to_the_latest_version" xml:space="preserve">
     <value>Updates plugin to the latest version</value>
+  </data>
+  <data name="Uninstall_Warning" xml:space="preserve">
+    <value>Warning: Emby won't work without turning off Chinese Search Enhanced properly.</value>
   </data>
 </root>

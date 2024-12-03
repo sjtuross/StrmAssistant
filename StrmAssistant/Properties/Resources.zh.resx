@@ -368,4 +368,7 @@
   <data name="UpdatePluginTask_Description_Updates_plugin_to_the_latest_version" xml:space="preserve">
     <value>更新本插件至最新版</value>
   </data>
+  <data name="Uninstall_Warning" xml:space="preserve">
+    <value>警告：中文搜索增强未正常关闭，Emby 将无法工作。</value>
+  </data>
 </root>

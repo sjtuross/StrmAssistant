@@ -834,6 +834,13 @@ namespace StrmAssistant
             base.OnCreatePageInfo(pageInfo);
         }
 
+        public override void OnUninstalling()
+        {
+            NotificationApi.SendPluginUninstallWarning();
+
+            base.OnUninstalling();
+        }
+
         private static string GetVersionHash()
         {
             var assembly = Assembly.GetExecutingAssembly();
