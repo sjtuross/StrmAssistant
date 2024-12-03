@@ -1,4 +1,4 @@
-# STRM 助手
+# Emby神医助手
 
 ![logo](StrmAssistant/Properties/thumb.png "logo")
 
@@ -49,6 +49,7 @@
 24. 剧集集标题自动补全
 25. 复制媒体库，快速创建一个同配置的媒体库
 26. 保存或加载媒体信息和章节片头信息至/自 JSON 文件，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/媒体信息持久化-(MediaInfo-Persist))
+27. 查看缺少的集支持`TMDB`
 
 ## 安装
 
