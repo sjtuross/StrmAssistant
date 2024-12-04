@@ -2,7 +2,6 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
-using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Reflection;
@@ -15,14 +14,15 @@ namespace StrmAssistant.Mod
     {
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
 
-        private static MethodInfo _afterMetadataRefresh;
+        private static MethodInfo _sortNameGetter;
 
         public static void Initialize()
         {
             try
             {
-                _afterMetadataRefresh =
-                    typeof(BaseItem).GetMethod("AfterMetadataRefresh", BindingFlags.Instance | BindingFlags.Public);
+                var sortNameProperty =
+                    typeof(BaseItem).GetProperty("SortName", BindingFlags.Instance | BindingFlags.Public);
+                _sortNameGetter = sortNameProperty?.GetGetMethod();
             }
             catch (Exception e)
             {
@@ -47,12 +47,12 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (!IsPatched(_afterMetadataRefresh, typeof(PinyinSortName)))
+                    if (!IsPatched(_sortNameGetter, typeof(PinyinSortName)))
                     {
-                        HarmonyMod.Patch(_afterMetadataRefresh,
-                            prefix: new HarmonyMethod(typeof(PinyinSortName).GetMethod("AfterMetadataRefreshPrefix",
+                        HarmonyMod.Patch(_sortNameGetter,
+                            prefix: new HarmonyMethod(typeof(PinyinSortName).GetMethod("SortNameGetterPrefix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.logger.Debug("Patch AfterMetadataRefresh Success by Harmony");
+                        Plugin.Instance.logger.Debug("Patch SortNameGetter Success by Harmony");
                     }
                 }
                 catch (Exception he)
@@ -71,11 +71,11 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (IsPatched(_afterMetadataRefresh, typeof(PinyinSortName)))
+                    if (IsPatched(_sortNameGetter, typeof(PinyinSortName)))
                     {
-                        HarmonyMod.Unpatch(_afterMetadataRefresh,
-                            AccessTools.Method(typeof(PinyinSortName), "AfterMetadataRefreshPrefix"));
-                        Plugin.Instance.logger.Debug("Unpatch AfterMetadataRefresh Success by Harmony");
+                        HarmonyMod.Unpatch(_sortNameGetter,
+                            AccessTools.Method(typeof(PinyinSortName), "SortNameGetterPrefix"));
+                        Plugin.Instance.logger.Debug("Unpatch SortNameGetter Success by Harmony");
                     }
                 }
                 catch (Exception he)
@@ -88,27 +88,18 @@ namespace StrmAssistant.Mod
         }
 
         [HarmonyPrefix]
-        private static bool AfterMetadataRefreshPrefix(BaseItem __instance)
+        private static bool SortNameGetterPrefix(BaseItem __instance, ref string __result)
         {
-            if (!__instance.IsFieldLocked(MetadataFields.SortName) && IsChinese(__instance.Name) &&
-                !IsJapanese(__instance.Name))
-            {
-                if (__instance is Movie || __instance is Series)
-                {
-                    __instance.SetSortNameDirect(ConvertToPinyinInitials(__instance.Name));
-                    __instance.UpdateToRepository(ItemUpdateType.MetadataEdit);
-                }
+            if (!(__instance is Movie || __instance is Series || __instance is BoxSet)) return true;
 
-                if (__instance is BoxSet)
-                {
-                    __instance.SetSortNameDirect(ConvertToPinyinInitials(RemoveDefaultCollectionName(__instance.Name)));
-                    __instance.UpdateToRepository(ItemUpdateType.MetadataEdit);
-                }
+            if (__instance.IsFieldLocked(MetadataFields.SortName) || !IsChinese(__instance.Name) ||
+                IsJapanese(__instance.Name)) return true;
 
-                return false;
-            }
+            var nameToProcess = __instance is BoxSet ? RemoveDefaultCollectionName(__instance.Name) : __instance.Name;
 
-            return true;
+            __result = ConvertToPinyinInitials(nameToProcess);
+
+            return false;
         }
     }
 }
