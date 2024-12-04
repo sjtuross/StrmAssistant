@@ -200,7 +200,7 @@ namespace StrmAssistant
             var mediaStreamCount = item.GetMediaStreams()
                 .FindAll(i => i.Type == MediaStreamType.Video || i.Type == MediaStreamType.Audio).Count;
 
-            return mediaStreamCount > 0;
+            return mediaStreamCount > 0 && item.RunTimeTicks.HasValue;
         }
 
         public List<BaseItem> FetchExtractQueueItems(List<BaseItem> items)
@@ -400,7 +400,7 @@ namespace StrmAssistant
                 favoritesWithExtra = expanded.Concat(includeExtra
                         ? expanded.SelectMany(f => f.GetExtras(IncludeExtraTypes))
                         : Enumerable.Empty<BaseItem>())
-                    .Where(Plugin.LibraryApi.HasMediaStream)
+                    .Where(HasMediaStream)
                     .ToList();
             }
 
@@ -608,7 +608,7 @@ namespace StrmAssistant
 
             if (overwrite || file?.Exists != true || HasFileChanged(workItem))
             {
-                if (HasMediaStream(workItem) && workItem.RunTimeTicks.HasValue)
+                if (HasMediaStream(workItem))
                 {
                     try
                     {
