@@ -269,6 +269,11 @@ namespace StrmAssistant
                     ? metadataEnhanceOptions.AltMovieDbImageUrl.Trim().TrimEnd('/')
                     : metadataEnhanceOptions.AltMovieDbImageUrl?.Trim();
 
+            var isSimpleTokenizer = string.Equals(EnhanceChineseSearch.CurrentTokenizerName, "simple",
+                StringComparison.Ordinal);
+            options.ModOptions.EnhanceChineseSearchRestore =
+                !options.ModOptions.EnhanceChineseSearch && isSimpleTokenizer;
+
             return base.OnOptionsSaving(options);
         }
 
@@ -458,10 +463,6 @@ namespace StrmAssistant
 
                 var isSimpleTokenizer = string.Equals(EnhanceChineseSearch.CurrentTokenizerName, "simple",
                     StringComparison.Ordinal);
-
-                GetOptions().ModOptions.EnhanceChineseSearchRestore =
-                    !_currentEnhanceChineseSearch && isSimpleTokenizer;
-                SavePluginOptionsSuppress();
 
                 if ((!_currentEnhanceChineseSearch && isSimpleTokenizer) ||
                     (_currentEnhanceChineseSearch && !isSimpleTokenizer))

@@ -79,8 +79,15 @@ namespace StrmAssistant.Mod
                 (Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearch ||
                  Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearchRestore))
             {
-                UpdateSearchScope();
-                PatchPhase1();
+                if (Plugin.Instance.ApplicationHost.ApplicationVersion >= new Version("4.8.3.0"))
+                {
+                    UpdateSearchScope();
+                    PatchPhase1();
+                }
+                else
+                {
+                    ResetOptions();
+                }
             }
         }
 
@@ -350,7 +357,6 @@ namespace StrmAssistant.Mod
         private static void ResetOptions()
         {
             Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearch = false;
-            Plugin.Instance.GetPluginOptions().ModOptions.EnhanceChineseSearchRestore = false;
             Plugin.Instance.SavePluginOptionsSuppress();
         }
 
