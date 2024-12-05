@@ -2,6 +2,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -100,13 +101,17 @@ namespace StrmAssistant
             _logger.Info("MediaInfoPersist - Scheduled Task Complete");
         }
 
-        public string Category => Plugin.Instance.Name;
+        public string Category => Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",
+            Plugin.Instance.DefaultUICulture);
 
         public string Key => "MediaInfoPersistTask";
 
-        public string Description => "Persists media info to json file";
+        public string Description => Resources.ResourceManager.GetString(
+            "PersistMediaInfoTask_Description_Persists_media_info_to_json_file", Plugin.Instance.DefaultUICulture);
 
         public string Name => "Persist MediaInfo";
+        //public string Name => Resources.ResourceManager.GetString("PersistMediaInfoTask_Name_Persist_MediaInfo",
+        //    Plugin.Instance.DefaultUICulture);
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

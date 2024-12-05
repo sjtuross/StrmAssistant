@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-    <AssemblyVersion>1.0.0.44</AssemblyVersion>
-    <FileVersion>1.0.0.44</FileVersion>
+    <TargetFrameworks>netstandard2.1</TargetFrameworks>
+    <AssemblyVersion>1.0.0.45</AssemblyVersion>
+    <FileVersion>1.0.0.45</FileVersion>
     <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
     <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
     <AssemblyName>$(MSBuildProjectName)Lite</AssemblyName>
@@ -30,9 +30,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Resource.Embedder" Version="2.2.0" />
-    <PackageReference Include="System.Memory" Version="4.6.0">
-      <Aliases>SystemMemory</Aliases>
-    </PackageReference>
+    <PackageReference Include="System.Memory" Version="4.6.0" />
     <PackageReference Include="System.Text.Json" Version="4.7.2" />
   </ItemGroup>
   <ItemGroup>

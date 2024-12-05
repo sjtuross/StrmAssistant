@@ -72,7 +72,7 @@
     <value>剧集媒体库范围，留空包含所有剧集媒体库。</value>
   </data>
   <data name="PluginOptions_EditorTitle_Strm_Assistant" xml:space="preserve">
-    <value>STRM 助手</value>
+    <value>神医助手</value>
   </data>
   <data name="PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract" xml:space="preserve">
     <value>请卸载冲突插件 StrmExtract.dll，然后重启 Emby。</value>
@@ -313,5 +313,65 @@
   </data>
   <data name="MediaInfoExtractOptions_PersistMediaInfo_Persist_media_info_in_JSON_file__Default_is_OFF_" xml:space="preserve">
     <value>保存或加载媒体信息和章节片头片尾标记至/自 JSON 文件，默认关闭。</value>
+  </data>
+  <data name="UIFunctionOptions_EnhanceMissingEpisodes_Missing_Episodes_Enhanced" xml:space="preserve">
+    <value>查看缺少的集增强</value>
+  </data>
+  <data name="UIFunctionOptions_EnhanceMissingEpisodes_Add_MovieDb_support_for_the_missing_episodes_function__Default_is_OFF_" xml:space="preserve">
+    <value>查看缺少的集支持 TMDB，默认关闭。</value>
+  </data>
+  <data name="MediaInfoExtractOptions_MediaInfoJsonRootFolder_MediaInfo_Json_Root_Folder" xml:space="preserve">
+    <value>可选媒体信息 JSON 根目录</value>
+  </data>
+  <data name="MediaInfoExtractOptions_MediaInfoJsonRootFolder_Store_or_load_media_info_JSON_files_under_this_root_folder__Default_is_EMPTY_" xml:space="preserve">
+    <value>在此根文件夹下存储或加载媒体信息 JSON 文件，默认为空。</value>
+  </data>
+  <data name="ClearChapterMarkersTask_Name_Clear_Episode_Intros" xml:space="preserve">
+    <value>清除片头片尾标记</value>
+  </data>
+  <data name="ClearChapterMarkersTask_Description_Clears_behavior_based_intro_and_credits_markers" xml:space="preserve">
+    <value>清除由基于行为片头片尾探测产生的标记</value>
+  </data>
+  <data name="ExtractIntroFingerprintTask_Name_Extract_Intro_Fingerprint" xml:space="preserve">
+    <value>提取片头声纹</value>
+  </data>
+  <data name="ExtractIntroFingerprintTask_Description_Extracts_intro_fingerprint_from_episodes" xml:space="preserve">
+    <value>预提取剧集片头声纹供片头探测后处理</value>
+  </data>
+  <data name="ExtractMediaInfoTask_Name_Extract_MediaInfo" xml:space="preserve">
+    <value>提取媒体信息</value>
+  </data>
+  <data name="ExtractMediaInfoTask_Description_Extracts_media_info_from_videos_and_audios" xml:space="preserve">
+    <value>提取视频和音频的媒体信息</value>
+  </data>
+  <data name="PersistMediaInfoTask_Name_Persist_MediaInfo" xml:space="preserve">
+    <value>持久化媒体信息</value>
+  </data>
+  <data name="PersistMediaInfoTask_Description_Persists_media_info_to_json_file" xml:space="preserve">
+    <value>保存媒体信息，章节片头片尾标记至 JSON 文件</value>
+  </data>
+  <data name="RefreshPersonTask_Name_Refresh_Chinese_Actor" xml:space="preserve">
+    <value>刷新演员信息</value>
+  </data>
+  <data name="RefreshPersonTask_Description_Refreshes_and_repairs_Chinese_actors" xml:space="preserve">
+    <value>刷新和修复演员信息，尽可能获取中文及头像</value>
+  </data>
+  <data name="ScanExternalSubtitleTask_Name_Scan_External_Subtitles" xml:space="preserve">
+    <value>扫描外挂字幕</value>
+  </data>
+  <data name="ScanExternalSubtitleTask_Description_Scans_external_subtitles_for_videos" xml:space="preserve">
+    <value>单独扫描视频的外挂字幕更新至媒体信息</value>
+  </data>
+  <data name="UpdatePluginTask_Name_Update_Plugin" xml:space="preserve">
+    <value>更新本插件</value>
+  </data>
+  <data name="UpdatePluginTask_Description_Updates_plugin_to_the_latest_version" xml:space="preserve">
+    <value>更新本插件至最新版</value>
+  </data>
+  <data name="Uninstall_Warning" xml:space="preserve">
+    <value>警告：中文搜索增强未正常关闭，Emby 将无法工作。</value>
+  </data>
+  <data name="No_Update_Message" xml:space="preserve">
+    <value>无更新</value>
   </data>
 </root>

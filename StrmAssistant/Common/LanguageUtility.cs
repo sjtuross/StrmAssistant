@@ -1,4 +1,4 @@
-﻿using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
+using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
 using System.Text.RegularExpressions;
 
 namespace StrmAssistant

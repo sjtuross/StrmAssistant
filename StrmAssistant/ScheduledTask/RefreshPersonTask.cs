@@ -1,10 +1,11 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -186,7 +187,8 @@ namespace StrmAssistant
                                         taskItem.Overview = Plugin.MetadataApi.ProcessPersonInfo(newOverview, false);
                                     }
 
-                                    _libraryManager.UpdateItem(taskItem, null, ItemUpdateType.MetadataEdit);
+                                    _libraryManager.UpdateItems(new List<BaseItem> { taskItem }, null,
+                                        ItemUpdateType.MetadataEdit, true, false, null, CancellationToken.None);
                                 }
                             }
 
@@ -228,13 +230,17 @@ namespace StrmAssistant
             _logger.Info("RefreshPerson - Task Complete");
         }
 
-        public string Category => Plugin.Instance.Name;
+        public string Category => Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",
+            Plugin.Instance.DefaultUICulture);
 
         public string Key => "RefreshPersonTask";
 
-        public string Description => "Refreshes and repairs Chinese actors";
+        public string Description => Resources.ResourceManager.GetString(
+            "RefreshPersonTask_Description_Refreshes_and_repairs_Chinese_actors", Plugin.Instance.DefaultUICulture);
 
         public string Name => "Refresh Chinese Actor";
+        //public string Name => Resources.ResourceManager.GetString("RefreshPersonTask_Name_Refresh_Chinese_Actor",
+        //    Plugin.Instance.DefaultUICulture);
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

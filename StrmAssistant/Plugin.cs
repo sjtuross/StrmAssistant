@@ -3,6 +3,7 @@ using Emby.Web.GenericEdit.Elements;
 using Emby.Web.GenericEdit.Elements.List;
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -25,6 +26,7 @@ using StrmAssistant.Properties;
 using StrmAssistant.Web;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -73,6 +75,7 @@ namespace StrmAssistant
             IFfmpegManager ffmpegManager,
             IMediaEncoder mediaEncoder,
             IJsonSerializer jsonSerializer,
+            IHttpClient httpClient,
             IServerApplicationHost serverApplicationHost,
             IServerConfigurationManager configurationManager) : base(applicationHost)
         {
@@ -98,7 +101,8 @@ namespace StrmAssistant
             NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
             SubtitleApi = new SubtitleApi(libraryManager, fileSystem, mediaProbeManager, localizationManager,
                 itemRepository);
-            MetadataApi = new MetadataApi(libraryManager, fileSystem, configurationManager, localizationManager);
+            MetadataApi = new MetadataApi(libraryManager, fileSystem, configurationManager, localizationManager,
+                jsonSerializer, httpClient);
             ShortcutMenuHelper.Initialize(configurationManager);
 
             if (_currentCatchupMode) InitializeCatchupMode();
@@ -175,6 +179,12 @@ namespace StrmAssistant
 
         public sealed override string Name => "Strm Assistant";
 
+        public string CurrentVersion => Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+
+        public string UserAgent => $"{Name}/{CurrentVersion}";
+
+        public CultureInfo DefaultUICulture => new CultureInfo("zh-CN");
+
         public Stream GetThumbImage()
         {
             var type = GetType();
@@ -192,6 +202,29 @@ namespace StrmAssistant
             SaveOptions(GetOptions());
         }
 
+        protected override bool OnOptionsSaving(PluginOptions options)
+        {
+            options.MediaInfoExtractOptions.LibraryScope = string.Join(",",
+                options.MediaInfoExtractOptions.LibraryScope
+                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(v => options.MediaInfoExtractOptions.LibraryList.Any(option => option.Value == v)) ??
+                Enumerable.Empty<string>());
+
+            options.IntroSkipOptions.LibraryScope = string.Join(",",
+                options.IntroSkipOptions.LibraryScope
+                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(v => options.IntroSkipOptions.LibraryList.Any(option => option.Value == v)) ??
+                Enumerable.Empty<string>());
+
+            options.IntroSkipOptions.UserScope = string.Join(",",
+                options.IntroSkipOptions.UserScope
+                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(v => options.IntroSkipOptions.UserList.Any(option => option.Value == v)) ??
+                Enumerable.Empty<string>());
+
+            return base.OnOptionsSaving(options);
+        }
+
         protected override void OnOptionsSaved(PluginOptions options)
         {
             var suppressLogger = _currentSuppressOnOptionsSaved;
@@ -199,6 +232,10 @@ namespace StrmAssistant
             if (!suppressLogger)
             {
                 logger.Info("PersistMediaInfo is set to {0}", options.MediaInfoExtractOptions.PersistMediaInfo);
+                logger.Info("MediaInfoJsonRootFolder is set to {0}",
+                    !string.IsNullOrEmpty(options.MediaInfoExtractOptions.MediaInfoJsonRootFolder)
+                        ? options.MediaInfoExtractOptions.MediaInfoJsonRootFolder
+                        : "EMPTY");
                 logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
                 logger.Info("MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
                 var libraryScope = string.Join(", ",
@@ -377,7 +414,9 @@ namespace StrmAssistant
 
         protected override void OnCreatePageInfo(PluginPageInfo pageInfo)
         {
-            pageInfo.Name = Resources.PluginOptions_EditorTitle_Strm_Assistant;
+            pageInfo.Name = Name;
+            pageInfo.DisplayName =
+                Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant", DefaultUICulture);
             pageInfo.EnableInMainMenu = true;
             pageInfo.MenuIcon = "video_settings";
 

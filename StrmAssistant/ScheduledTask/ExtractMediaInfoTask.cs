@@ -1,10 +1,9 @@
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -137,13 +136,19 @@ namespace StrmAssistant
             _logger.Info("MediaInfoExtract - Scheduled Task Complete");
         }
 
-        public string Category => Plugin.Instance.Name;
+        public string Category =>
+            Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",
+                Plugin.Instance.DefaultUICulture);
 
         public string Key => "MediaInfoExtractTask";
 
-        public string Description => "Extracts media info from videos";
+        public string Description => Resources.ResourceManager.GetString(
+            "ExtractMediaInfoTask_Description_Extracts_media_info_from_videos_and_audios",
+            Plugin.Instance.DefaultUICulture);
 
         public string Name => "Extract MediaInfo";
+        //public string Name => Resources.ResourceManager.GetString("ExtractMediaInfoTask_Name_Extract_MediaInfo",
+        //    Plugin.Instance.DefaultUICulture);
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

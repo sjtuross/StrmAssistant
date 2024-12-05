@@ -116,6 +116,25 @@ namespace StrmAssistant
             _notificationManager.SendNotification(request);
         }
 
+        public async void SendPluginNoUpdateMessage()
+        {
+            var message = new MessageCommand
+            {
+                Header = Resources.PluginOptions_EditorTitle_Strm_Assistant,
+                Text = Resources.PluginOptions_EditorTitle_Strm_Assistant + " " + Resources.No_Update_Message,
+                TimeoutMs = 500
+            };
+
+            var admins = LibraryApi.AllUsers.Where(kvp => kvp.Value).Select(kvp => kvp.Key);
+            var sessions = _sessionManager.Sessions.Where(CanDisplayMessage)
+                .Where(s => admins.Any(u => s.ContainsUser(u.InternalId)));
+
+            foreach (var session in sessions)
+            {
+                await _sessionManager.SendMessageCommand(session.Id, session.Id, message, CancellationToken.None);
+            }
+        }
+
         private bool CanDisplayMessage(SessionInfo session)
         {
             return session.SupportedCommands.Contains("DisplayMessage");
