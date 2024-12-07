@@ -206,7 +206,7 @@ namespace StrmAssistant
             var priorEpisodesWithoutMarkers = episodesInSeason.Where(e => e.IndexNumber < item.IndexNumber)
                 .Where(e =>
                 {
-                    if (!Plugin.LibraryApi.HasMediaStream(e))
+                    if (!Plugin.LibraryApi.HasMediaInfo(e))
                     {
                         QueueManager.MediaInfoExtractItemQueue.Enqueue(e);
                         return false;
@@ -232,7 +232,7 @@ namespace StrmAssistant
             var followingEpisodes = episodesInSeason.Where(e => e.IndexNumber > item.IndexNumber)
                 .Where(e =>
                 {
-                    if (!Plugin.LibraryApi.HasMediaStream(e))
+                    if (!Plugin.LibraryApi.HasMediaInfo(e))
                     {
                         QueueManager.MediaInfoExtractItemQueue.Enqueue(e);
                         return false;

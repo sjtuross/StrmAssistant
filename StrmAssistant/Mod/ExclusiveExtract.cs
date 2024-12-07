@@ -1,7 +1,6 @@
 ﻿using HarmonyLib;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
-using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
@@ -309,8 +308,11 @@ namespace StrmAssistant.Mod
 
             if (CurrentRefreshContext.Value != null &&
                 CurrentRefreshContext.Value.InternalId == item.InternalId &&
-                CurrentRefreshContext.Value.MetadataRefreshOptions.MetadataRefreshMode <= MetadataRefreshMode.Default &&
-                CurrentRefreshContext.Value.MetadataRefreshOptions.ImageRefreshMode <= MetadataRefreshMode.Default)
+                (CurrentRefreshContext.Value.MetadataRefreshOptions.MetadataRefreshMode <=
+                 MetadataRefreshMode.Default &&
+                 CurrentRefreshContext.Value.MetadataRefreshOptions.ImageRefreshMode <=
+                 MetadataRefreshMode.Default ||
+                 CurrentRefreshContext.Value.MetadataRefreshOptions.SearchResult != null))
             {
                 if (item is Video && Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
                     QueueManager.ExternalSubtitleItemQueue.Enqueue(item);
@@ -320,13 +322,14 @@ namespace StrmAssistant.Mod
             }
 
             if (!item.IsShortcut && CurrentRefreshContext.Value != null &&
-                CurrentRefreshContext.Value.MetadataRefreshOptions.ReplaceAllImages)
+                CurrentRefreshContext.Value.MetadataRefreshOptions.ReplaceAllImages &&
+                Plugin.LibraryApi.ImageCaptureEnabled(item))
             {
                 CurrentRefreshContext.Value.MediaInfoNeedsUpdate = true;
                 return true;
             }
 
-            if (Plugin.LibraryApi.HasMediaStream(item))
+            if (Plugin.LibraryApi.HasMediaInfo(item))
             {
                 if (item is Video && Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
                     QueueManager.ExternalSubtitleItemQueue.Enqueue(item);
@@ -366,15 +369,14 @@ namespace StrmAssistant.Mod
 
             if (!item.IsShortcut && provider is IDynamicImageProvider &&
                 provider.GetType().Name == "VideoImageProvider" && refreshOptions is MetadataRefreshOptions &&
-                !refreshOptions.ReplaceAllImages &&
-                item is Episode && item.HasImage(ImageType.Primary))
+                !refreshOptions.ReplaceAllImages && item.HasImage(ImageType.Primary))
             {
                 __result = false;
                 return false;
             }
 
             if (item.IsShortcut && (provider is ILocalImageProvider || provider is IRemoteImageProvider) &&
-                refreshOptions is MetadataRefreshOptions && !refreshOptions.ReplaceAllImages && item is Episode &&
+                refreshOptions is MetadataRefreshOptions && !refreshOptions.ReplaceAllImages &&
                 item.HasImage(ImageType.Primary))
             {
                 __result = false;
@@ -402,7 +404,7 @@ namespace StrmAssistant.Mod
                         Task.Run(() => Plugin.LibraryApi.SerializeMediaInfo(__instance, true, CancellationToken.None));
                     }
                 }
-                else if (!Plugin.LibraryApi.HasMediaStream(__instance))
+                else if (!Plugin.LibraryApi.HasMediaInfo(__instance))
                 {
                     Task.Run(() => Plugin.LibraryApi.DeserializeMediaInfo(__instance, CancellationToken.None));
                 }

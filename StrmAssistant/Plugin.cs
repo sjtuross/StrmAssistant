@@ -191,7 +191,7 @@ namespace StrmAssistant
 
             if (_currentEnableIntroSkip && PlaySessionMonitor.IsLibraryInScope(e.Item))
             {
-                if (!LibraryApi.HasMediaStream(e.Item))
+                if (!LibraryApi.HasMediaInfo(e.Item))
                 {
                     QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
                 }
