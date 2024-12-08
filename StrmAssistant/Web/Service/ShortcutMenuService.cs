@@ -1,4 +1,4 @@
-﻿extern alias SystemMemory;
+﻿using System;
 using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Services;
 using StrmAssistant.Web.Api;
@@ -20,13 +20,13 @@ namespace StrmAssistant.Web.Service
 
         public object Get(GetStrmAssistantJs request)
         {
-            return _resultFactory.GetResult(Request, (SystemMemory::System.ReadOnlyMemory<byte>) ShortcutMenuHelper.StrmAssistantJs.GetBuffer(), "application/x-javascript");
+            return _resultFactory.GetResult(Request,
+                (ReadOnlyMemory<byte>)ShortcutMenuHelper.StrmAssistantJs.GetBuffer(), "application/x-javascript");
         }
 
         public object Get(GetShortcutMenu request)
         {
-            return _resultFactory.GetResult(
-                SystemMemory::System.MemoryExtensions.AsSpan(ShortcutMenuHelper.ModifiedShortcutsString),
+            return _resultFactory.GetResult(ShortcutMenuHelper.ModifiedShortcutsString.AsSpan(),
                 "application/x-javascript");
         }
     }

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
@@ -126,77 +126,6 @@ namespace StrmAssistant.Common
                 currentStreams.AddRange(externalSubtitleStreams);
                 _itemRepository.SaveMediaStreams(item.InternalId, currentStreams, cancellationToken);
             }
-        }
-
-        public List<BaseItem> FetchScanTaskItems()
-        {
-            var libraryIds = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.LibraryScope
-                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
-            var libraries = _libraryManager.GetVirtualFolders()
-                .Where(f => !libraryIds.Any() || libraryIds.Contains(f.Id)).ToList();
-            _logger.Info("MediaInfoExtract - LibraryScope: " +
-                         (libraryIds.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
-            var includeExtra = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.IncludeExtra;
-            _logger.Info("Include Extra: " + includeExtra);
-            var strmOnly = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.StrmOnly;
-            _logger.Info("Strm Only: " + strmOnly);
-
-            var favoritesWithExtra = new List<BaseItem>();
-            if (libraryIds.Contains("-1"))
-            {
-                var favorites = LibraryApi.AllUsers.Select(e => e.Key)
-                    .SelectMany(user => _libraryManager.GetItemList(new InternalItemsQuery
-                    {
-                        User = user,
-                        IsFavorite = true
-                    })).GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
-
-                var expanded = Plugin.LibraryApi.ExpandFavorites(favorites, false);
-
-                favoritesWithExtra = expanded
-                    .Concat(includeExtra
-                        ? expanded.SelectMany(f => f.GetExtras(LibraryApi.IncludeExtraTypes))
-                        : Enumerable.Empty<BaseItem>())
-                    .Where(Plugin.LibraryApi.HasMediaStream)
-                    .ToList();
-            }
-
-            var itemsWithExtras = new List<BaseItem>();
-            if (!libraryIds.Any() || libraryIds.Any(id => id != "-1"))
-            {
-                var itemsQuery = new InternalItemsQuery
-                {
-                    HasPath = true,
-                    HasAudioStream = true,
-                    MediaTypes = new[] { MediaType.Video }
-                };
-
-                if (libraryIds.Any(id => id != "-1") && libraries.Any())
-                {
-                    itemsQuery.PathStartsWithAny = libraries.SelectMany(l => l.Locations).Select(ls =>
-                        ls.EndsWith(Path.DirectorySeparatorChar.ToString())
-                            ? ls
-                            : ls + Path.DirectorySeparatorChar).ToArray();
-                }
-
-                itemsWithExtras = _libraryManager.GetItemList(itemsQuery).ToList();
-
-                if (includeExtra)
-                {
-                    itemsQuery.ExtraTypes = LibraryApi.IncludeExtraTypes;
-                    itemsWithExtras = _libraryManager.GetItemList(itemsQuery).Concat(itemsWithExtras).ToList();
-                }
-            }
-
-            var combined = favoritesWithExtra.Concat(itemsWithExtras)
-                .Where(i => !strmOnly || i.IsShortcut)
-                .GroupBy(i => i.InternalId)
-                .Select(g => g.First())
-                .ToList();
-
-            var results = Plugin.LibraryApi.OrderUnprocessed(combined);
-
-            return results;
         }
 
         private List<BaseItem> FilterUnprocessed(List<BaseItem> items)

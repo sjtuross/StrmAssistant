@@ -38,6 +38,7 @@ namespace StrmAssistant.Options.Store
             _currentSearchScope = PluginOptions.ModOptions.SearchScope;
 
             FileSaved += OnFileSaved;
+            FileSaving += OnFileSaving;
         }
 
         public PluginOptions PluginOptions => GetOptions();
@@ -46,6 +47,20 @@ namespace StrmAssistant.Options.Store
         {
             _currentSuppressOnOptionsSaved = true;
             SetOptions(PluginOptions);
+        }
+        
+        private void OnFileSaving(object sender, FileSavingEventArgs e)
+        {
+            PluginOptions.MediaInfoExtractOptions.LibraryScope = string.Join(",",
+                PluginOptions.MediaInfoExtractOptions.LibraryScope
+                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(v => PluginOptions.MediaInfoExtractOptions.LibraryList.Any(option => option.Value == v)) ??
+                Enumerable.Empty<string>());
+
+            var isSimpleTokenizer = string.Equals(EnhanceChineseSearch.CurrentTokenizerName, "simple",
+                StringComparison.Ordinal);
+            PluginOptions.ModOptions.EnhanceChineseSearchRestore =
+                !PluginOptions.ModOptions.EnhanceChineseSearch && isSimpleTokenizer;
         }
 
         private void OnFileSaved(object sender, FileSavedEventArgs e)
@@ -131,9 +146,6 @@ namespace StrmAssistant.Options.Store
                 var isSimpleTokenizer = string.Equals(EnhanceChineseSearch.CurrentTokenizerName, "simple",
                     StringComparison.Ordinal);
 
-                PluginOptions.ModOptions.EnhanceChineseSearchRestore = !_currentEnhanceChineseSearch && isSimpleTokenizer;
-                SavePluginOptionsSuppress();
-
                 if ((!_currentEnhanceChineseSearch && isSimpleTokenizer) ||
                     (_currentEnhanceChineseSearch && !isSimpleTokenizer))
                 {
@@ -160,7 +172,11 @@ namespace StrmAssistant.Options.Store
 
             if (!suppressLogger)
             {
-                _logger.Info("StrmOnly is set to {0}", PluginOptions.GeneralOptions.StrmOnly);
+                _logger.Info("PersistMediaInfo is set to {0}", PluginOptions.MediaInfoExtractOptions.PersistMediaInfo);
+                _logger.Info("MediaInfoJsonRootFolder is set to {0}",
+                    !string.IsNullOrEmpty(PluginOptions.MediaInfoExtractOptions.MediaInfoJsonRootFolder)
+                        ? PluginOptions.MediaInfoExtractOptions.MediaInfoJsonRootFolder
+                        : "EMPTY");
                 _logger.Info("IncludeExtra is set to {0}", PluginOptions.MediaInfoExtractOptions.IncludeExtra);
                 _logger.Info("MaxConcurrentCount is set to {0}", PluginOptions.GeneralOptions.MaxConcurrentCount);
                 _logger.Info("CatchupMode is set to {0}", PluginOptions.GeneralOptions.CatchupMode);

@@ -16,6 +16,7 @@ namespace StrmAssistant.Mod
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
         private static MethodInfo _isIntroDetectionSupported;
         private static MethodInfo _createQueryForEpisodeIntroDetection;
+        private static MethodInfo _logIntroDetectionFailureFailure;
 
         private static readonly AsyncLocal<bool> IsIntroDetectionSupportedInstancePatched = new AsyncLocal<bool>();
 
@@ -31,6 +32,12 @@ namespace StrmAssistant.Mod
                 _createQueryForEpisodeIntroDetection = markerScheduledTask.GetMethod(
                     "CreateQueryForEpisodeIntroDetection",
                     BindingFlags.Public | BindingFlags.Static);
+
+                var embyServerImplementationsAssembly = Assembly.Load("Emby.Server.Implementations");
+                var sqliteItemRepository =
+                    embyServerImplementationsAssembly.GetType("Emby.Server.Implementations.Data.SqliteItemRepository");
+                _logIntroDetectionFailureFailure = sqliteItemRepository.GetMethod("LogIntroDetectionFailureFailure",
+                    BindingFlags.Public | BindingFlags.Instance);
             }
             catch (Exception e)
             {
@@ -75,6 +82,15 @@ namespace StrmAssistant.Mod
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.Logger.Debug("Patch CreateQueryForEpisodeIntroDetection Success by Harmony");
                     }
+
+                    if (!IsPatched(_logIntroDetectionFailureFailure, typeof(UnlockIntroSkip)))
+                    {
+                        HarmonyMod.Patch(_logIntroDetectionFailureFailure,
+                            prefix: new HarmonyMethod(typeof(UnlockIntroSkip).GetMethod(
+                                "LogIntroDetectionFailureFailurePrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.Logger.Debug("Patch LogIntroDetectionFailureFailure Success by Harmony");
+                    }
                 }
                 catch (Exception he)
                 {
@@ -108,6 +124,13 @@ namespace StrmAssistant.Mod
                         HarmonyMod.Unpatch(_createQueryForEpisodeIntroDetection,
                             AccessTools.Method(typeof(UnlockIntroSkip), "CreateQueryForEpisodeIntroDetectionPostfix"));
                         Plugin.Instance.Logger.Debug("Unpatch CreateQueryForEpisodeIntroDetection Success by Harmony");
+                    }
+
+                    if (IsPatched(_logIntroDetectionFailureFailure, typeof(UnlockIntroSkip)))
+                    {
+                        HarmonyMod.Unpatch(_logIntroDetectionFailureFailure,
+                            AccessTools.Method(typeof(UnlockIntroSkip), "LogIntroDetectionFailureFailurePrefix"));
+                        Plugin.Instance.Logger.Debug("Unpatch LogIntroDetectionFailureFailure Success by Harmony");
                     }
                 }
                 catch (Exception he)
@@ -155,6 +178,14 @@ namespace StrmAssistant.Mod
                         ls.EndsWith(Path.DirectorySeparatorChar.ToString()) ? ls : ls + Path.DirectorySeparatorChar)
                     .ToArray();
             }
+
+            __result.HasIntroDetectionFailure = null;
+        }
+
+        [HarmonyPrefix]
+        private static bool LogIntroDetectionFailureFailurePrefix(long itemId, long dateModifiedUnixTimeSeconds)
+        {
+            return false;
         }
     }
 }

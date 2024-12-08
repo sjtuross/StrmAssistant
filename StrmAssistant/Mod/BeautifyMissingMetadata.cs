@@ -146,7 +146,8 @@ namespace StrmAssistant.Mod
 
             foreach (var (currentItem, index) in episodes.Select((currentItem, index) => (currentItem, index)))
             {
-                if (string.Equals(currentItem.Name, currentItem.FileNameWithoutExtension, StringComparison.Ordinal))
+                if (currentItem.IndexNumber.HasValue && string.Equals(currentItem.Name,
+                        currentItem.FileNameWithoutExtension, StringComparison.Ordinal))
                 {
                     var matchItem = __result[index];
                     matchItem.Name = $"第 {currentItem.IndexNumber} 集";
@@ -158,7 +159,7 @@ namespace StrmAssistant.Mod
         private static void GetBaseItemDtoPostfix(BaseItem item, DtoOptions options, User user,
             ref BaseItemDto __result)
         {
-            if (item is Episode &&
+            if (item is Episode && item.IndexNumber.HasValue &&
                 item.GetPreferredMetadataLanguage().Equals("zh-CN", StringComparison.OrdinalIgnoreCase) &&
                 string.Equals(item.Name, item.FileNameWithoutExtension, StringComparison.Ordinal))
             {

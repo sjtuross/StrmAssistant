@@ -1,12 +1,13 @@
-﻿using Emby.Web.GenericEdit;
+using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Common;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
+using MediaBrowser.Model.MediaInfo;
+using StrmAssistant.Properties;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using StrmAssistant.Properties;
 
 namespace StrmAssistant.Options
 {
@@ -26,11 +27,27 @@ namespace StrmAssistant.Options
         [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool EnableImageCapture { get; set; } = false;
 
+        [Browsable(false)]
+        [Required]
+        public string ImageCaptureExcludeMediaContainers { get; set; } =
+            string.Join(",", new[] { MediaContainers.MpegTs, MediaContainers.Ts, MediaContainers.M2Ts });
+
         [DisplayNameL("ModOptions_ExclusiveExtract_Exclusive_Extract", typeof(Resources))]
         [DescriptionL("ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_", typeof(Resources))]
         [Required]
         [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool ExclusiveExtract { get; set; } = false;
+
+        [DisplayNameL("MediaInfoExtractOptions_PersistMediaInfo_Persist_MediaInfo", typeof(Resources))]
+        [DescriptionL("MediaInfoExtractOptions_PersistMediaInfo_Persist_media_info_in_JSON_file__Default_is_OFF_", typeof(Resources))]
+        [Required]
+        public bool PersistMediaInfo { get; set; } = false;
+
+        [DisplayNameL("MediaInfoExtractOptions_MediaInfoJsonRootFolder_MediaInfo_Json_Root_Folder", typeof(Resources))]
+        [DescriptionL("MediaInfoExtractOptions_MediaInfoJsonRootFolder_Store_or_load_media_info_JSON_files_under_this_root_folder__Default_is_EMPTY_", typeof(Resources))]
+        [EditFolderPicker]
+        [VisibleCondition(nameof(PersistMediaInfo), SimpleCondition.IsTrue)]
+        public string MediaInfoJsonRootFolder { get; set; } = string.Empty;
 
         [Browsable(false)]
         public List<EditorSelectOption> LibraryList { get; set; } = new List<EditorSelectOption>();
@@ -39,7 +56,7 @@ namespace StrmAssistant.Options
         [DescriptionL("PluginOptions_LibraryScope_Library_scope_to_extract__Blank_includes_all_", typeof(Resources))]
         [EditMultilSelect]
         [SelectItemsSource(nameof(LibraryList))]
-        public string LibraryScope { get; set; }
+        public string LibraryScope { get; set; } = string.Empty;
 
         [Browsable(false)]
         public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;

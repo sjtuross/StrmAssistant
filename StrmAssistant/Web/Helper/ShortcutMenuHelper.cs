@@ -1,8 +1,8 @@
-﻿using System;
+﻿using MediaBrowser.Controller.Configuration;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using MediaBrowser.Controller.Configuration;
 
 namespace StrmAssistant.Web.Helper
 {
@@ -14,8 +14,17 @@ namespace StrmAssistant.Web.Helper
 
         public static void Initialize(IServerConfigurationManager configurationManager)
         {
-            StrmAssistantJs = GetResourceStream("strmassistant.js");
-            ModifyShortcutMenu(configurationManager);
+            try
+            {
+                StrmAssistantJs = GetResourceStream("strmassistant.js");
+                ModifyShortcutMenu(configurationManager);
+            }
+            catch (Exception e)
+            {
+                Plugin.Instance.Logger.Debug("ShortcutMenuHelper - Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
+            }
         }
 
         private static MemoryStream GetResourceStream(string resourceName)

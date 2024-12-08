@@ -20,9 +20,31 @@ namespace StrmAssistant.Options.Store
             _logger = logger;
             _currentEnableIntroSkip = IntroSkipOptions.EnableIntroSkip;
             FileSaved += OnFileSaved;
+            FileSaving += OnFileSaving;
         }
 
         public IntroSkipOptions IntroSkipOptions => GetOptions();
+        
+        private void OnFileSaving(object sender, FileSavingEventArgs e)
+        {
+            IntroSkipOptions.LibraryScope = string.Join(",",
+                IntroSkipOptions.LibraryScope
+                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(v => IntroSkipOptions.LibraryList.Any(option => option.Value == v)) ??
+                Enumerable.Empty<string>());
+
+            IntroSkipOptions.UserScope = string.Join(",",
+                IntroSkipOptions.UserScope
+                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(v => IntroSkipOptions.UserList.Any(option => option.Value == v)) ??
+                Enumerable.Empty<string>());
+
+            IntroSkipOptions.MarkerEnabledLibraryScope = string.Join(",",
+                IntroSkipOptions.MarkerEnabledLibraryScope
+                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(v => IntroSkipOptions.MarkerEnabledLibraryList.Any(option => option.Value == v)) ??
+                Enumerable.Empty<string>());
+        }
 
         private void OnFileSaved(object sender, UIBaseClasses.Store.FileSavedEventArgs e)
         {

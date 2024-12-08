@@ -1,12 +1,17 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
+using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using StrmAssistant.Common;
 using StrmAssistant.Mod;
+using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,29 +20,35 @@ namespace StrmAssistant.ScheduledTask
     public class ExtractMediaInfoTask : IScheduledTask
     {
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
 
-        public ExtractMediaInfoTask()
+        public ExtractMediaInfoTask(IFileSystem fileSystem)
         {
             _logger = Plugin.Instance.Logger;
+            _fileSystem = fileSystem;
         }
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             _logger.Info("MediaInfoExtract - Scheduled Task Execute");
             _logger.Info("Max Concurrent Count: " + Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
+            var persistMediaInfo = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.PersistMediaInfo;
+            _logger.Info("Persist Media Info: " + persistMediaInfo);
             var enableImageCapture = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.EnableImageCapture;
             _logger.Info("Enable Image Capture: " + enableImageCapture);
             var enableIntroSkip = Plugin.Instance.IntroSkipStore.GetOptions().EnableIntroSkip;
             _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
             var exclusiveExtract = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
 
-            var items = Plugin.LibraryApi.FetchExtractTaskItems();
+            var items = Plugin.LibraryApi.FetchPreExtractTaskItems();
 
             if (items.Count > 0)
             {
                 ExclusiveExtract.PatchFFProbeTimeout();
                 IsRunning = true;
             }
+
+            var directoryService = new DirectoryService(_logger, _fileSystem);
 
             double total = items.Count;
             var index = 0;
@@ -66,7 +77,6 @@ namespace StrmAssistant.ScheduledTask
                 var taskItem = item;
                 var task = Task.Run(async () =>
                 {
-                    var isExtractAllowed = false;
                     try
                     {
                         if (cancellationToken.IsCancellationRequested)
@@ -78,21 +88,48 @@ namespace StrmAssistant.ScheduledTask
                         if (exclusiveExtract)
                         {
                             ExclusiveExtract.AllowExtractInstance(taskItem);
-                            isExtractAllowed = true;
                         }
+
+                        var imageCapture = false;
 
                         if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
                         {
+                            var filePath = taskItem.Path;
                             if (taskItem.IsShortcut)
                             {
-                                EnableImageCapture.AllowImageCaptureInstance(taskItem);
+                                filePath = await Plugin.LibraryApi.GetStrmMountPath(filePath).ConfigureAwait(false);
                             }
-                            var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
-                            await taskItem.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+
+                            var fileExtension = Path.GetExtension(filePath).TrimStart('.');
+                            if (!LibraryApi.ExcludeMediaExtensions.Contains(fileExtension))
+                            {
+                                if (taskItem.IsShortcut)
+                                {
+                                    EnableImageCapture.AllowImageCaptureInstance(taskItem);
+                                }
+
+                                imageCapture = true;
+                                var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
+                                await taskItem.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+                            }
                         }
-                        else
+
+                        var deserializeResult = false;
+
+                        if (!imageCapture)
                         {
-                            await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken).ConfigureAwait(false);
+                            if (persistMediaInfo)
+                            {
+                                deserializeResult = await Plugin.LibraryApi
+                                    .DeserializeMediaInfo(taskItem, directoryService, cancellationToken)
+                                    .ConfigureAwait(false);
+                            }
+
+                            if (!deserializeResult)
+                            {
+                                await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken)
+                                    .ConfigureAwait(false);
+                            }
                         }
 
                         if (enableIntroSkip && Plugin.PlaySessionMonitor.IsLibraryInScope(taskItem))
@@ -100,6 +137,21 @@ namespace StrmAssistant.ScheduledTask
                             if (taskItem is Episode episode && Plugin.ChapterApi.SeasonHasIntroCredits(episode))
                             {
                                 QueueManager.IntroSkipItemQueue.Enqueue(episode);
+                            }
+                        }
+
+                        if (persistMediaInfo)
+                        {
+                            if (!deserializeResult)
+                            {
+                                await Plugin.LibraryApi
+                                    .SerializeMediaInfo(taskItem, directoryService, true, cancellationToken)
+                                    .ConfigureAwait(false);
+                            }
+                            else if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))
+                            {
+                                await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
+                                    .ConfigureAwait(false);
                             }
                         }
                     }
@@ -122,8 +174,6 @@ namespace StrmAssistant.ScheduledTask
                         _logger.Info("MediaInfoExtract - Progress " + currentCount + "/" + total + " - " +
                                      "Task " + taskIndex + ": " +
                                      taskItem.Path);
-
-                        if (isExtractAllowed) ExclusiveExtract.DisallowExtractInstance(taskItem);
                     }
                 }, cancellationToken);
                 tasks.Add(task);
@@ -140,13 +190,19 @@ namespace StrmAssistant.ScheduledTask
             _logger.Info("MediaInfoExtract - Scheduled Task Complete");
         }
 
-        public string Category => Plugin.Instance.Name;
+        public string Category =>
+            Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",
+                Plugin.Instance.DefaultUICulture);
 
         public string Key => "MediaInfoExtractTask";
 
-        public string Description => "Extracts media info from videos";
+        public string Description => Resources.ResourceManager.GetString(
+            "ExtractMediaInfoTask_Description_Extracts_media_info_from_videos_and_audios",
+            Plugin.Instance.DefaultUICulture);
 
         public string Name => "Extract MediaInfo";
+        //public string Name => Resources.ResourceManager.GetString("ExtractMediaInfoTask_Name_Extract_MediaInfo",
+        //    Plugin.Instance.DefaultUICulture);
 
         public IEnumerable<TaskTriggerInfo> GetDefaultTriggers()
         {

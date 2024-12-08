@@ -1,5 +1,6 @@
 using MediaBrowser.Common;
 using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Net;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
@@ -26,7 +27,9 @@ using StrmAssistant.Options.View;
 using StrmAssistant.Web.Helper;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Reflection;
 
 namespace StrmAssistant
 {
@@ -73,6 +76,7 @@ namespace StrmAssistant
             IFfmpegManager ffmpegManager,
             IMediaEncoder mediaEncoder,
             IJsonSerializer jsonSerializer,
+            IHttpClient httpClient,
             IServerApplicationHost serverApplicationHost,
             IServerConfigurationManager configurationManager)
         {
@@ -91,14 +95,16 @@ namespace StrmAssistant
             MetadataEnhanceStore = new MetadataEnhanceOptionsStore(applicationHost, Logger, Name + "_" + nameof(MetadataEnhanceOptions));
             UIFunctionStore = new UIFunctionOptionsStore(applicationHost, Logger, Name + "_" + nameof(UIFunctionOptions));
 
-            LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, mediaMountManager, userManager);
+            LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, mediaMountManager,
+                itemRepository, jsonSerializer, userManager);
             ChapterApi = new ChapterApi(libraryManager, itemRepository, fileSystem, applicationPaths, ffmpegManager,
                 mediaEncoder, mediaMountManager, jsonSerializer, serverApplicationHost);
             PlaySessionMonitor = new PlaySessionMonitor(libraryManager, userManager, sessionManager);
             NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
             SubtitleApi = new SubtitleApi(libraryManager, fileSystem, mediaProbeManager, localizationManager,
                 itemRepository);
-            MetadataApi = new MetadataApi(libraryManager, fileSystem, configurationManager, localizationManager);
+            MetadataApi = new MetadataApi(libraryManager, fileSystem, configurationManager, localizationManager,
+                jsonSerializer, httpClient);
             ShortcutMenuHelper.Initialize(configurationManager);
 
             PatchManager.Initialize();
@@ -149,7 +155,7 @@ namespace StrmAssistant
 
             if (IntroSkipStore.GetOptions().EnableIntroSkip && PlaySessionMonitor.IsLibraryInScope(e.Item))
             {
-                if (!LibraryApi.HasMediaStream(e.Item))
+                if (!LibraryApi.HasMediaInfo(e.Item))
                 {
                     QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
                 }
@@ -193,6 +199,12 @@ namespace StrmAssistant
         public override Guid Id => _id;
 
         public sealed override string Name => "Strm Assistant";
+
+        public string CurrentVersion => Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+
+        public string UserAgent => $"{Name}/{CurrentVersion}";
+
+        public CultureInfo DefaultUICulture => new CultureInfo("zh-CN");
 
         public Stream GetThumbImage()
         {

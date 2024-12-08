@@ -81,6 +81,13 @@ namespace StrmAssistant.Common
                 .Any(c => c.MarkerType == MarkerType.IntroStart || c.MarkerType == MarkerType.IntroEnd);
         }
 
+        public long? GetIntroStart(BaseItem item)
+        {
+            var introStart = _itemRepository.GetChapters(item)
+                .FirstOrDefault(c => c.MarkerType == MarkerType.IntroStart);
+            return introStart?.StartPositionTicks;
+        }
+
         public long? GetIntroEnd(BaseItem item)
         {
             var introEnd = _itemRepository.GetChapters(item)
@@ -104,6 +111,8 @@ namespace StrmAssistant.Common
         public void UpdateIntro(Episode item, SessionInfo session, long introStartPositionTicks,
             long introEndPositionTicks)
         {
+            if (introStartPositionTicks > introEndPositionTicks) return;
+
             var resultEpisodes = FetchEpisodes(item, MarkerType.IntroEnd);
 
             foreach (var episode in resultEpisodes)
@@ -197,7 +206,7 @@ namespace StrmAssistant.Common
             var priorEpisodesWithoutMarkers = episodesInSeason.Where(e => e.IndexNumber < item.IndexNumber)
                 .Where(e =>
                 {
-                    if (!Plugin.LibraryApi.HasMediaStream(e))
+                    if (!Plugin.LibraryApi.HasMediaInfo(e))
                     {
                         QueueManager.MediaInfoExtractItemQueue.Enqueue(e);
                         return false;
@@ -223,7 +232,7 @@ namespace StrmAssistant.Common
             var followingEpisodes = episodesInSeason.Where(e => e.IndexNumber > item.IndexNumber)
                 .Where(e =>
                 {
-                    if (!Plugin.LibraryApi.HasMediaStream(e))
+                    if (!Plugin.LibraryApi.HasMediaInfo(e))
                     {
                         QueueManager.MediaInfoExtractItemQueue.Enqueue(e);
                         return false;
@@ -557,8 +566,6 @@ namespace StrmAssistant.Common
                 GroupByPresentationUniqueKey = false,
                 WithoutChapterMarkers = new[] { MarkerType.IntroStart },
                 MinRunTimeTicks = TimeSpan.FromMinutes(introDetectionFingerprintMinutes).Ticks,
-                IsInSeasonWithMultipleEpisodes = true,
-                HasIntroDetectionFailure = false,
                 HasAudioStream = true,
                 PathStartsWithAny = libraries.SelectMany(l => l.Locations)
                     .Select(ls =>

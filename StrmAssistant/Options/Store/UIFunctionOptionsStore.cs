@@ -12,6 +12,7 @@ namespace StrmAssistant.Options.Store
         private bool _currentHidePersonNoImage;
         private bool _currentEnforceLibraryOrder;
         private bool _currentBeautifyMissingMetadata;
+        private bool _currentEnhanceMissingEpisodes;
 
         public UIFunctionOptionsStore(IApplicationHost applicationHost, ILogger logger, string pluginFullName)
             : base(applicationHost, logger, pluginFullName)
@@ -21,7 +22,8 @@ namespace StrmAssistant.Options.Store
             _currentHidePersonNoImage = UIFunctionOptions.HidePersonNoImage;
             _currentEnforceLibraryOrder = UIFunctionOptions.EnforceLibraryOrder;
             _currentBeautifyMissingMetadata = UIFunctionOptions.BeautifyMissingMetadata;
-            
+            _currentEnhanceMissingEpisodes = UIFunctionOptions.EnhanceMissingEpisodes;
+
             FileSaved += OnFileSaved;
         }
 
@@ -73,7 +75,21 @@ namespace StrmAssistant.Options.Store
                     BeautifyMissingMetadata.Unpatch();
                 }
             }
-        }
 
+            _logger.Info("EnhanceMissingEpisodes is set to {0}", UIFunctionOptions.EnhanceMissingEpisodes);
+            if (_currentEnhanceMissingEpisodes != UIFunctionOptions.EnhanceMissingEpisodes)
+            {
+                _currentEnhanceMissingEpisodes = UIFunctionOptions.EnhanceMissingEpisodes;
+
+                if (_currentEnhanceMissingEpisodes)
+                {
+                    EnhanceMissingEpisodes.Patch();
+                }
+                else
+                {
+                    EnhanceMissingEpisodes.Unpatch();
+                }
+            }
+        }
     }
 }

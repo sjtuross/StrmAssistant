@@ -246,7 +246,7 @@
     <value>Customize intro detection fingerprint length, unlock Strm support. Default is OFF.</value>
   </data>
   <data name="ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search" xml:space="preserve">
-    <value>Enhance Chinese Search</value>
+    <value>Chinese Search Enhanced</value>
   </data>
   <data name="ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_" xml:space="preserve">
     <value>Support Chinese fuzzy search and Pinyin search. Default is OFF.</value>
@@ -394,5 +394,71 @@
   </data>
   <data name="InvalidAltMovieDbApiKey" xml:space="preserve">
     <value>Alternative MovieDb Api Key is invalid</value>
+  </data>
+  <data name="MediaInfoExtractOptions_PersistMediaInfo_Persist_MediaInfo" xml:space="preserve">
+    <value>MediaInfo Persist</value>
+  </data>
+  <data name="MediaInfoExtractOptions_PersistMediaInfo_Persist_media_info_in_JSON_file__Default_is_OFF_" xml:space="preserve">
+    <value>Store or load media info and chapters to/from JSON file. Default is OFF.</value>
+  </data>
+  <data name="UIFunctionOptions_EnhanceMissingEpisodes_Missing_Episodes_Enhanced" xml:space="preserve">
+    <value>View Missing Episodes Enhanced</value>
+  </data>
+  <data name="UIFunctionOptions_EnhanceMissingEpisodes_Add_MovieDb_support_for_the_missing_episodes_function__Default_is_OFF_" xml:space="preserve">
+    <value>Add MovieDb support for the view missing episodes function. Default is OFF.</value>
+  </data>
+  <data name="MediaInfoExtractOptions_MediaInfoJsonRootFolder_MediaInfo_Json_Root_Folder" xml:space="preserve">
+    <value>Optional MediaInfo JSON Root Folder</value>
+  </data>
+  <data name="MediaInfoExtractOptions_MediaInfoJsonRootFolder_Store_or_load_media_info_JSON_files_under_this_root_folder__Default_is_EMPTY_" xml:space="preserve">
+    <value>Store or load media info JSON files under this root folder. Default is EMPTY.</value>
+  </data>
+  <data name="ClearChapterMarkersTask_Name_Clear_Episode_Intros" xml:space="preserve">
+    <value>Clear Episode Intros</value>
+  </data>
+  <data name="ClearChapterMarkersTask_Description_Clears_behavior_based_intro_and_credits_markers" xml:space="preserve">
+    <value>Clears behavior-based intro and credits markers</value>
+  </data>
+  <data name="ExtractIntroFingerprintTask_Name_Extract_Intro_Fingerprint" xml:space="preserve">
+    <value>Extract Intro Fingerprint</value>
+  </data>
+  <data name="ExtractIntroFingerprintTask_Description_Extracts_intro_fingerprint_from_episodes" xml:space="preserve">
+    <value>Extracts intro fingerprint from episodes</value>
+  </data>
+  <data name="ExtractMediaInfoTask_Name_Extract_MediaInfo" xml:space="preserve">
+    <value>Extract MediaInfo</value>
+  </data>
+  <data name="ExtractMediaInfoTask_Description_Extracts_media_info_from_videos_and_audios" xml:space="preserve">
+    <value>Extracts media info from videos and audios</value>
+  </data>
+  <data name="PersistMediaInfoTask_Name_Persist_MediaInfo" xml:space="preserve">
+    <value>Persist MediaInfo</value>
+  </data>
+  <data name="PersistMediaInfoTask_Description_Persists_media_info_to_json_file" xml:space="preserve">
+    <value>Persists media info and chapter markers to json file</value>
+  </data>
+  <data name="RefreshPersonTask_Name_Refresh_Chinese_Actor" xml:space="preserve">
+    <value>Refresh Chinese Actor</value>
+  </data>
+  <data name="RefreshPersonTask_Description_Refreshes_and_repairs_Chinese_actors" xml:space="preserve">
+    <value>Refreshes and repairs Chinese actors</value>
+  </data>
+  <data name="ScanExternalSubtitleTask_Name_Scan_External_Subtitles" xml:space="preserve">
+    <value>Scan External Subtitles</value>
+  </data>
+  <data name="ScanExternalSubtitleTask_Description_Scans_external_subtitles_for_videos" xml:space="preserve">
+    <value>Scans external subtitles for videos</value>
+  </data>
+  <data name="UpdatePluginTask_Name_Update_Plugin" xml:space="preserve">
+    <value>Update Plugin</value>
+  </data>
+  <data name="UpdatePluginTask_Description_Updates_plugin_to_the_latest_version" xml:space="preserve">
+    <value>Updates plugin to the latest version</value>
+  </data>
+  <data name="Uninstall_Warning" xml:space="preserve">
+    <value>Warning: Emby won't work without turning off Chinese Search Enhanced properly.</value>
+  </data>
+  <data name="No_Update_Message" xml:space="preserve">
+    <value>No Update</value>
   </data>
 </root>

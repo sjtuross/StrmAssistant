@@ -37,6 +37,7 @@ namespace StrmAssistant.Mod
             HidePersonNoImage.Initialize();
             EnforceLibraryOrder.Initialize();
             BeautifyMissingMetadata.Initialize();
+            EnhanceMissingEpisodes.Initialize();
         }
 
         public static bool IsPatched(MethodBase methodInfo, Type type)
