@@ -85,11 +85,12 @@ namespace StrmAssistant.Mod
         }
 
         [HarmonyPrefix]
-        private static bool IsEligibleForMultiVersionPrefix(ref string testFilename)
+        private static bool IsEligibleForMultiVersionPrefix(string folderName, string testFilename, ref bool __result)
         {
-            testFilename = Path.GetFileName(Path.GetDirectoryName(testFilename));
+            __result = string.Equals(folderName, Path.GetFileName(Path.GetDirectoryName(testFilename)),
+                StringComparison.OrdinalIgnoreCase);
 
-            return true;
+            return false;
         }
     }
 }
