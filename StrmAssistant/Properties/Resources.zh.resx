@@ -276,7 +276,7 @@
     <value>演职人员增强 TMDB</value>
   </data>
   <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_" xml:space="preserve">
-    <value>刷新演员提取别名，导入季的演职人员，更新节目系列的演职人员为各季合并，默认关闭。</value>
+    <value>计划任务刷新演员时提取别名，导入季的演职人员，更新节目系列的演职人员为各季合并，默认关闭。</value>
   </data>
   <data name="IntroSkipOptions_MinOpeningPlotDurationSeconds" xml:space="preserve">
     <value>最小开头剧情时长 (秒)，默认为 60</value>
