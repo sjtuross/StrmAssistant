@@ -281,11 +281,16 @@ namespace StrmAssistant
                     .Where(v => options.IntroSkipOptions.UserList.Any(option => option.Value == v)) ??
                 Enumerable.Empty<string>());
 
-            options.IntroSkipOptions.MarkerEnabledLibraryScope = string.Join(",",
+            options.IntroSkipOptions.MarkerEnabledLibraryScope =
                 options.IntroSkipOptions.MarkerEnabledLibraryScope
                     ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(v => options.IntroSkipOptions.MarkerEnabledLibraryList.Any(option => option.Value == v)) ??
-                Enumerable.Empty<string>());
+                    .Contains("-1") == true
+                    ? "-1"
+                    : string.Join(",",
+                        options.IntroSkipOptions.MarkerEnabledLibraryScope
+                            ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Where(v => options.IntroSkipOptions.MarkerEnabledLibraryList.Any(option =>
+                                option.Value == v)) ?? Enumerable.Empty<string>());
 
             var metadataEnhanceOptions = options.MetadataEnhanceOptions;
 
@@ -722,12 +727,14 @@ namespace StrmAssistant
             if (!suppressLogger)
             {
                 var markerEnabledLibraryScope = string.Join(", ",
-                    options.IntroSkipOptions.MarkerEnabledLibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(v => options.IntroSkipOptions.MarkerEnabledLibraryList
-                            .FirstOrDefault(option => option.Value == v)
-                            ?.Name) ?? Enumerable.Empty<string>());
-                logger.Info("Fingerprint - MarkerEnabledLibraryScope is set to {0}",
-                    string.IsNullOrEmpty(markerEnabledLibraryScope) ? "ALL" : markerEnabledLibraryScope);
+                    options.IntroSkipOptions.MarkerEnabledLibraryScope
+                        ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v =>
+                            options.IntroSkipOptions.MarkerEnabledLibraryList
+                                .FirstOrDefault(option => option.Value == v)?.Name) ?? Enumerable.Empty<string>());
+                logger.Info("MarkerEnabledLibraryScope is set to {0}",
+                    string.IsNullOrEmpty(markerEnabledLibraryScope)
+                        ? options.IntroSkipOptions.MarkerEnabledLibraryList.Any(o => o.Value != "-1") ? "ALL" : "EMPTY"
+                        : markerEnabledLibraryScope);
                 logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
                     options.IntroSkipOptions.IntroDetectionFingerprintMinutes);
             }
@@ -767,6 +774,13 @@ namespace StrmAssistant
             var listMarkerEnabled = new List<EditorSelectOption>();
 
             list.Add(new EditorSelectOption
+            {
+                Value = "-1",
+                Name = Resources.Favorites,
+                IsEnabled = true
+            });
+
+            listMarkerEnabled.Add(new EditorSelectOption
             {
                 Value = "-1",
                 Name = Resources.Favorites,

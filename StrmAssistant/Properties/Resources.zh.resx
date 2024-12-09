@@ -267,7 +267,7 @@
     <value>媒体库范围</value>
   </data>
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
-    <value>提取声纹的媒体库范围，留空包含所有启用原生片头探测的媒体库。</value>
+    <value>提取声纹的媒体库范围，留空包含所有启用原生片头探测的媒体库，最爱只可单选。</value>
   </data>
   <data name="MetadataEnhanceOptions_EnableAltMovieDbUrl" xml:space="preserve">
     <value>使用替代 TMDB 配置</value>
@@ -388,5 +388,8 @@
   </data>
   <data name="ProxyServer_Unavailable" xml:space="preserve">
     <value>不可用</value>
+  </data>
+  <data name="InvalidMarkerEnabledLibraryScope" xml:space="preserve">
+    <value>没有任何剧集媒体库开启了生成片头标记，最爱无效</value>
   </data>
 </root>

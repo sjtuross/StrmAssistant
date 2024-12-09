@@ -191,7 +191,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Library scope to extract fingerprint. Blank includes all libraries with intro detection enabled..
+        ///   Looks up a localized string similar to Library scope to extract fingerprint. Blank includes all libraries with intro detection enabled. Favorites is single selection only.
         /// </summary>
         public static string IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_ {
             get {
@@ -301,7 +301,16 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Proxy Server is invalid.
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string InvalidMarkerEnabledLibraryScope {
+            get {
+                return ResourceManager.GetString("InvalidMarkerEnabledLibraryScope", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Proxy Server is invalid. Format is http[s]://&lt;host&gt;:&lt;port&gt;.
         /// </summary>
         public static string InvalidProxyServer {
             get {
@@ -1063,7 +1072,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Unavailable.
         /// </summary>
         public static string ProxyServer_Unavailable {
             get {

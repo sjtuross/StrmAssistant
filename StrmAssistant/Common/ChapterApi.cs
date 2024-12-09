@@ -537,7 +537,7 @@ namespace StrmAssistant
                 .ToArray();
 
             var libraries = _libraryManager.GetVirtualFolders()
-                .Where(f => libraryIds != null && libraryIds.Any()
+                .Where(f => libraryIds != null && libraryIds.Any(id => id != "-1")
                     ? libraryIds.Contains(f.Id)
                     : f.LibraryOptions.EnableMarkerDetection &&
                       (f.CollectionType == CollectionType.TvShows.ToString() || f.CollectionType is null))
@@ -545,12 +545,38 @@ namespace StrmAssistant
 
             if (!suppressLogging)
             {
-                _logger.Info("MarkerEnabledLibraryScope: " + (libraryIds != null && libraryIds.Any()
+                _logger.Info("MarkerEnabledLibraryScope: " + (libraries.Any()
                     ? string.Join(", ", libraries.Select(l => l.Name))
-                    : "ALL"));
+                    : "EMPTY"));
             }
 
             return libraries;
+        }
+
+        public long[] GetAllFavoriteSeasons()
+        {
+            var favorites = LibraryApi.AllUsers.Select(e => e.Key)
+                .SelectMany(u => _libraryManager.GetItemList(new InternalItemsQuery
+                {
+                    User = u,
+                    IsFavorite = true,
+                    IncludeItemTypes = new[] { nameof(Series), nameof(Episode) },
+                    PathStartsWithAny =
+                        GetMarkerEnabledLibraries(true)
+                            .SelectMany(l => l.Locations)
+                            .Select(ls =>
+                                ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                                    ? ls
+                                    : ls + Path.DirectorySeparatorChar)
+                            .ToArray()
+                }))
+                .GroupBy(i => i.InternalId)
+                .Select(g => g.First())
+                .ToList();
+
+            var expanded = Plugin.LibraryApi.ExpandFavorites(favorites, false, false).OfType<Episode>();
+
+            return expanded.GroupBy(e => e.ParentId).Select(g => g.Key).ToArray();
         }
 
         public List<Episode> FetchIntroFingerprintTaskItems()
@@ -566,12 +592,22 @@ namespace StrmAssistant
                 GroupByPresentationUniqueKey = false,
                 WithoutChapterMarkers = new[] { MarkerType.IntroStart },
                 MinRunTimeTicks = TimeSpan.FromMinutes(introDetectionFingerprintMinutes).Ticks,
-                HasAudioStream = true,
-                PathStartsWithAny = libraries.SelectMany(l => l.Locations)
+                HasAudioStream = true
+            };
+
+            var markerEnabledLibraryScope = Plugin.Instance.GetPluginOptions().IntroSkipOptions.MarkerEnabledLibraryScope;
+
+            if (!string.IsNullOrEmpty(markerEnabledLibraryScope) && markerEnabledLibraryScope.Contains("-1"))
+            {
+                itemsFingerprintQuery.ParentIds = Plugin.ChapterApi.GetAllFavoriteSeasons();
+            }
+            else
+            {
+                itemsFingerprintQuery.PathStartsWithAny = libraries.SelectMany(l => l.Locations)
                     .Select(ls =>
                         ls.EndsWith(Path.DirectorySeparatorChar.ToString()) ? ls : ls + Path.DirectorySeparatorChar)
-                    .ToArray()
-            };
+                    .ToArray();
+            }
 
             var items = _libraryManager.GetItemList(itemsFingerprintQuery).OfType<Episode>().ToList();
             

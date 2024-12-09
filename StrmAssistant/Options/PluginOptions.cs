@@ -1,4 +1,4 @@
-using Emby.Web.GenericEdit;
+﻿using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Validation;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
@@ -84,6 +84,12 @@ namespace StrmAssistant
             if (!string.IsNullOrWhiteSpace(ModOptions.ProxyServerUrl) && !IsValidProxyUrl(ModOptions.ProxyServerUrl))
             {
                 context.AddValidationError(nameof(ModOptions), Resources.InvalidProxyServer);
+            }
+
+            if (IntroSkipOptions.MarkerEnabledLibraryList.All(o => o.Value == "-1") &&
+                IntroSkipOptions.MarkerEnabledLibraryScope.Contains("-1"))
+            {
+                context.AddValidationError(nameof(IntroSkipOptions), Resources.InvalidMarkerEnabledLibraryScope);
             }
         }
     }

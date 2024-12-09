@@ -267,7 +267,7 @@
     <value>媒體庫範圍</value>
   </data>
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
-    <value>擷取聲紋的媒體庫範圍，留空包含所有啟用原生片頭探測的媒體庫。</value>
+    <value>擷取聲紋的媒體庫範圍，留白包含所有啟用原生片頭探測的媒體庫，最愛只可單選。</value>
   </data>
   <data name="MetadataEnhanceOptions_EnableAltMovieDbUrl" xml:space="preserve">
     <value>使用替代 TMDB 配置</value>
@@ -388,5 +388,8 @@
   </data>
   <data name="ProxyServer_Unavailable" xml:space="preserve">
     <value>不可用</value>
+  </data>
+  <data name="InvalidMarkerEnabledLibraryScope" xml:space="preserve">
+    <value>沒有任何劇集媒體庫開啟了生成片頭標記，最愛無效</value>
   </data>
 </root>

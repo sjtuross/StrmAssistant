@@ -354,7 +354,7 @@
     <value>Library Scope</value>
   </data>
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
-    <value>Library scope to extract fingerprint. Blank includes all libraries with intro detection enabled.</value>
+    <value>Library scope to extract fingerprint. Blank includes all libraries with intro detection enabled. Favorites is single selection only</value>
   </data>
   <data name="MetadataEnhanceOptions_EnableAltMovieDbUrl" xml:space="preserve">
     <value>Use Alternative MovieDb Config</value>
@@ -475,5 +475,8 @@
   </data>
   <data name="ProxyServer_Unavailable" xml:space="preserve">
     <value>Unavailable</value>
+  </data>
+  <data name="InvalidMarkerEnabledLibraryScope" xml:space="preserve">
+    <value>None of TV show libraries has intro detection enabled. Favorites is invalid.</value>
   </data>
 </root>
