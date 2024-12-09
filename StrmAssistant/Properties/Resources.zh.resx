@@ -33,7 +33,7 @@
     <value>最大线程数</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
-    <value>最大并发提取媒体信息的线程数。必须在 1 至 10 之间，默认为 1。</value>
+    <value>最大并发的线程数，所有任务共享。必须在 1 至 20 之间，默认为 1。</value>
   </data>
   <data name="PluginOptions_EditorTitle_Strm_Extract" xml:space="preserve">
     <value>媒体信息提取</value>

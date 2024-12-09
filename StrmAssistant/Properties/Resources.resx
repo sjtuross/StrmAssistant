@@ -120,7 +120,7 @@
     <value>Max Concurrent Count</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
-    <value>Max concurrent count of threads to extract media info. It must be between 1 to 10. Default is 1.</value>
+    <value>Max concurrent count of threads shared by all the tasks. It must be between 1 to 20. Default is 1.</value>
   </data>
   <data name="PluginOptions_EditorTitle_Strm_Extract" xml:space="preserve">
     <value>MediaInfo Extract</value>
