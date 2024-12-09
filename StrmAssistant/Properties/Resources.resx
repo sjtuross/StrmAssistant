@@ -461,4 +461,19 @@
   <data name="No_Update_Message" xml:space="preserve">
     <value>No Update</value>
   </data>
+  <data name="InvalidProxyServer" xml:space="preserve">
+    <value>Proxy Server is invalid. Format is http[s]://&lt;host&gt;:&lt;port&gt;</value>
+  </data>
+  <data name="ModOptions_ProxyServer_Proxy_Server" xml:space="preserve">
+    <value>Proxy Server</value>
+  </data>
+  <data name="ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_" xml:space="preserve">
+    <value>Enable http proxy server. Blank is OFF.</value>
+  </data>
+  <data name="ProxyServer_Available" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="ProxyServer_Unavailable" xml:space="preserve">
+    <value>Unavailable</value>
+  </data>
 </root>

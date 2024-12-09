@@ -374,4 +374,19 @@
   <data name="No_Update_Message" xml:space="preserve">
     <value>无更新</value>
   </data>
+  <data name="InvalidProxyServer" xml:space="preserve">
+    <value>代理服务器无效，格式为 http[s]://&lt;host&gt;:&lt;port&gt;</value>
+  </data>
+  <data name="ModOptions_ProxyServer_Proxy_Server" xml:space="preserve">
+    <value>代理服务器</value>
+  </data>
+  <data name="ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_" xml:space="preserve">
+    <value>启用 HTTP 代理服务器，留空则禁用。</value>
+  </data>
+  <data name="ProxyServer_Available" xml:space="preserve">
+    <value>可用</value>
+  </data>
+  <data name="ProxyServer_Unavailable" xml:space="preserve">
+    <value>不可用</value>
+  </data>
 </root>

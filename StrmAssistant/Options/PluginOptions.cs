@@ -1,4 +1,4 @@
-﻿using Emby.Web.GenericEdit;
+using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Validation;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
@@ -58,7 +58,7 @@ namespace StrmAssistant
 
         protected override void Validate(ValidationContext context)
         {
-            string errors = null;
+            string metadataOptionsErrors = null;
 
             foreach (var (value, isValid, errorResource) in new (string, Func<string, bool>, string)[]
                      {
@@ -72,13 +72,18 @@ namespace StrmAssistant
             {
                 if (!string.IsNullOrWhiteSpace(value) && !isValid(value))
                 {
-                    errors = errors == null ? errorResource : $"{errors}; {errorResource}";
+                    metadataOptionsErrors = metadataOptionsErrors == null ? errorResource : $"{metadataOptionsErrors}; {errorResource}";
                 }
             }
 
-            if (!string.IsNullOrEmpty(errors))
+            if (!string.IsNullOrEmpty(metadataOptionsErrors))
             {
-                context.AddValidationError(nameof(MetadataEnhanceOptions), errors);
+                context.AddValidationError(nameof(MetadataEnhanceOptions), metadataOptionsErrors);
+            }
+
+            if (!string.IsNullOrWhiteSpace(ModOptions.ProxyServerUrl) && !IsValidProxyUrl(ModOptions.ProxyServerUrl))
+            {
+                context.AddValidationError(nameof(ModOptions), Resources.InvalidProxyServer);
             }
         }
     }

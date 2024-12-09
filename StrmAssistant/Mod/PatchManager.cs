@@ -30,6 +30,7 @@ namespace StrmAssistant.Mod
             ChineseMovieDb.Initialize();
             EnhanceMovieDbPerson.Initialize();
             AltMovieDbConfig.Initialize();
+            EnableProxyServer.Initialize();
             PreferOriginalPoster.Initialize();
             UnlockIntroSkip.Initialize();
             PinyinSortName.Initialize();
