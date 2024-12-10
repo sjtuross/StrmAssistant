@@ -41,11 +41,7 @@ namespace StrmAssistant
 
             var items = Plugin.LibraryApi.FetchPreExtractTaskItems();
 
-            if (items.Count > 0)
-            {
-                ExclusiveExtract.PatchFFProbeTimeout();
-                IsRunning = true;
-            }
+            if (items.Count > 0) IsRunning = true;
 
             var directoryService = new DirectoryService(_logger, _fileSystem);
 
@@ -179,11 +175,7 @@ namespace StrmAssistant
             }
             await Task.WhenAll(tasks);
 
-            if (items.Count > 0)
-            {
-                ExclusiveExtract.UnpatchFFProbeTimeout();
-                IsRunning = false;
-            }
+            if (items.Count > 0) IsRunning = false;
 
             progress.Report(100.0);
             _logger.Info("MediaInfoExtract - Scheduled Task Complete");

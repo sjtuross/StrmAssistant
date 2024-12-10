@@ -92,14 +92,18 @@ namespace StrmAssistant.Mod
 
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
-            if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.ExclusiveExtract)
+            if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None)
             {
-                Patch();
+                PatchFFProbeTimeout();
+
+                if (Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.ExclusiveExtract)
+                {
+                    Patch();
+                }
             }
         }
 
-        public static void PatchFFProbeTimeout()
+        private static void PatchFFProbeTimeout()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
@@ -123,7 +127,7 @@ namespace StrmAssistant.Mod
             }
         }
 
-        public static void UnpatchFFProbeTimeout()
+        private static void UnpatchFFProbeTimeout()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony)
             {
@@ -282,7 +286,10 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static void RunFfProcessPrefix(ref int timeoutMs)
         {
-            timeoutMs = 60000 * Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
+            if (ExtractMediaInfoTask.IsRunning || QueueManager.IsProcessTaskRunning)
+            {
+                timeoutMs = 60000 * Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;   
+            }
         }
 
         [HarmonyPrefix]
