@@ -49,6 +49,11 @@ namespace StrmAssistant
         [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         public ModOptions ModOptions { get; set; } = new ModOptions();
 
+        [DisplayNameL("NetworkOptions_EditorTitle_Network", typeof(Resources))]
+        [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
+        [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
+        public NetworkOptions NetworkOptions { get; set; } = new NetworkOptions();
+
         [DisplayNameL("AboutOptions_EditorTitle_About", typeof(Resources))]
         public AboutOptions AboutOptions { get; set; } = new AboutOptions();
 
@@ -81,9 +86,9 @@ namespace StrmAssistant
                 context.AddValidationError(nameof(MetadataEnhanceOptions), metadataOptionsErrors);
             }
 
-            if (!string.IsNullOrWhiteSpace(ModOptions.ProxyServerUrl) && !IsValidProxyUrl(ModOptions.ProxyServerUrl))
+            if (!string.IsNullOrWhiteSpace(NetworkOptions.ProxyServerUrl) && !IsValidProxyUrl(NetworkOptions.ProxyServerUrl))
             {
-                context.AddValidationError(nameof(ModOptions), Resources.InvalidProxyServer);
+                context.AddValidationError(nameof(NetworkOptions), Resources.InvalidProxyServer);
             }
 
             if (IntroSkipOptions.MarkerEnabledLibraryList.All(o => o.Value == "-1") &&

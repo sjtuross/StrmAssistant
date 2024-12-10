@@ -1,6 +1,5 @@
 using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Common;
-using Emby.Web.GenericEdit.Elements;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
 using StrmAssistant.Properties;
@@ -63,18 +62,6 @@ namespace StrmAssistant
         [VisibleCondition(nameof(EnhanceChineseSearch), SimpleCondition.IsTrue)]
         public string SearchScope { get; set; } =
             string.Join(",", new[] { SearchItemType.Movie, SearchItemType.Collection, SearchItemType.Series });
-
-        
-        [DisplayNameL("ModOptions_ProxyServer_Proxy_Server", typeof(Resources))]
-        [DescriptionL("ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_", typeof(Resources))]
-        [EnabledCondition(nameof(IsChineseSearchSupported), SimpleCondition.IsTrue)]
-        public string ProxyServerUrl { get; set; } = string.Empty;
-
-        [VisibleCondition(nameof(ShowProxyServerStatus), SimpleCondition.IsTrue)]
-        public StatusItem ProxyServerStatus { get; set; } = new StatusItem();
-
-        [Browsable(false)]
-        public bool ShowProxyServerStatus { get; set; } = false;
 
         [Browsable(false)]
         public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;

@@ -122,7 +122,7 @@ namespace StrmAssistant
             _currentAltMovieDbConfig = GetOptions().MetadataEnhanceOptions.AltMovieDbConfig;
             _currentAltMovieDbImageUrlEnabled =
                 !string.IsNullOrEmpty(GetOptions().MetadataEnhanceOptions.AltMovieDbImageUrl);
-            _currentProxyServerEnabled = !string.IsNullOrEmpty(GetOptions().ModOptions.ProxyServerUrl);
+            _currentProxyServerEnabled = GetOptions().NetworkOptions.EnableProxyServer;
             _currentExclusiveExtract = GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
             _currentPreferOriginalPoster = GetOptions().MetadataEnhanceOptions.PreferOriginalPoster;
             _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
@@ -309,32 +309,33 @@ namespace StrmAssistant
             options.ModOptions.EnhanceChineseSearchRestore =
                 !options.ModOptions.EnhanceChineseSearch && isSimpleTokenizer;
 
-            options.ModOptions.ProxyServerUrl = !string.IsNullOrWhiteSpace(options.ModOptions.ProxyServerUrl)
-                ? options.ModOptions.ProxyServerUrl.Trim().TrimEnd('/')
-                : options.ModOptions.ProxyServerUrl?.Trim();
+            options.NetworkOptions.ProxyServerUrl = !string.IsNullOrWhiteSpace(options.NetworkOptions.ProxyServerUrl)
+                ? options.NetworkOptions.ProxyServerUrl.Trim().TrimEnd('/')
+                : options.NetworkOptions.ProxyServerUrl?.Trim();
 
-            if (!string.IsNullOrWhiteSpace(options.ModOptions.ProxyServerUrl))
+            if (options.NetworkOptions.EnableProxyServer &&
+                !string.IsNullOrWhiteSpace(options.NetworkOptions.ProxyServerUrl))
             {
-                if (TryParseProxyUrl(options.ModOptions.ProxyServerUrl, out var host, out var port) &&
+                if (TryParseProxyUrl(options.NetworkOptions.ProxyServerUrl, out var host, out var port) &&
                     CheckProxyReachability(host, port) is (true, var tcpPing))
                 {
-                    options.ModOptions.ProxyServerStatus.Status = ItemStatus.Succeeded;
-                    options.ModOptions.ProxyServerStatus.Caption = Resources.ProxyServer_Available;
-                    options.ModOptions.ProxyServerStatus.StatusText = $"{tcpPing} ms";
+                    options.NetworkOptions.ProxyServerStatus.Status = ItemStatus.Succeeded;
+                    options.NetworkOptions.ProxyServerStatus.Caption = Resources.ProxyServer_Available;
+                    options.NetworkOptions.ProxyServerStatus.StatusText = $"{tcpPing} ms";
                 }
                 else
                 {
-                    options.ModOptions.ProxyServerStatus.Status = ItemStatus.Unavailable;
-                    options.ModOptions.ProxyServerStatus.Caption = Resources.ProxyServer_Unavailable;
-                    options.ModOptions.ProxyServerStatus.StatusText = "N/A";
+                    options.NetworkOptions.ProxyServerStatus.Status = ItemStatus.Unavailable;
+                    options.NetworkOptions.ProxyServerStatus.Caption = Resources.ProxyServer_Unavailable;
+                    options.NetworkOptions.ProxyServerStatus.StatusText = "N/A";
                 }
 
-                options.ModOptions.ShowProxyServerStatus = true;
+                options.NetworkOptions.ShowProxyServerStatus = true;
             }
             else
             {
-                options.ModOptions.ProxyServerStatus.StatusText = string.Empty;
-                options.ModOptions.ShowProxyServerStatus = false;
+                options.NetworkOptions.ProxyServerStatus.StatusText = string.Empty;
+                options.NetworkOptions.ShowProxyServerStatus = false;
             }
 
             return base.OnOptionsSaving(options);
@@ -503,13 +504,16 @@ namespace StrmAssistant
             }
 
             if (!suppressLogger)
-                logger.Info("ProxyServerUrl is set to {0}",
-                    !string.IsNullOrEmpty(options.ModOptions.ProxyServerUrl)
-                        ? options.ModOptions.ProxyServerUrl
-                        : "EMPTY");
-            if (_currentProxyServerEnabled != !string.IsNullOrEmpty(GetOptions().ModOptions.ProxyServerUrl))
             {
-                _currentProxyServerEnabled = !string.IsNullOrEmpty(GetOptions().ModOptions.ProxyServerUrl);
+                logger.Info("EnableProxyServer is set to {0}", options.NetworkOptions.EnableProxyServer);
+                logger.Info("ProxyServerUrl is set to {0}",
+                    !string.IsNullOrEmpty(options.NetworkOptions.ProxyServerUrl)
+                        ? options.NetworkOptions.ProxyServerUrl
+                        : "EMPTY");
+            }
+            if (_currentProxyServerEnabled != GetOptions().NetworkOptions.EnableProxyServer)
+            {
+                _currentProxyServerEnabled = GetOptions().NetworkOptions.EnableProxyServer;
 
                 if (_currentProxyServerEnabled)
                 {
@@ -907,8 +911,8 @@ namespace StrmAssistant
 
             options.ModOptions.SearchItemTypeList = searchItemTypeList;
 
-            options.ModOptions.ProxyServerStatus.StatusText = string.Empty;
-            options.ModOptions.ShowProxyServerStatus = false;
+            options.NetworkOptions.ProxyServerStatus.StatusText = string.Empty;
+            options.NetworkOptions.ShowProxyServerStatus = false;
 
             return base.OnBeforeShowUI(options);
         }

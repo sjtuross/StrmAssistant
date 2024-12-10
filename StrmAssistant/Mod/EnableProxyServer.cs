@@ -35,7 +35,7 @@ namespace StrmAssistant.Mod
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                !string.IsNullOrEmpty(Plugin.Instance.GetPluginOptions().ModOptions.ProxyServerUrl))
+                Plugin.Instance.GetPluginOptions().NetworkOptions.EnableProxyServer)
             {
                 Patch();
             }
@@ -91,13 +91,21 @@ namespace StrmAssistant.Mod
         [HarmonyPostfix]
         private static void CreateHttpClientHandlerPostfix(ref HttpClientHandler __result)
         {
-            var proxyServer = Plugin.Instance.GetPluginOptions().ModOptions.ProxyServerUrl;
-            var proxyStatus = Plugin.Instance.GetPluginOptions().ModOptions.ProxyServerStatus.Status;
+            var proxyServer = Plugin.Instance.GetPluginOptions().NetworkOptions.ProxyServerUrl;
+            var proxyStatus = Plugin.Instance.GetPluginOptions().NetworkOptions.ProxyServerStatus.Status;
+            var ignoreCertificateValidation =
+                Plugin.Instance.GetPluginOptions().NetworkOptions.IgnoreCertificateValidation;
 
             if (IsValidProxyUrl(proxyServer) && proxyStatus == ItemStatus.Succeeded)
             {
                 __result.Proxy = new WebProxy(proxyServer);
                 __result.UseProxy = true;
+
+                if (ignoreCertificateValidation)
+                {
+                    __result.ServerCertificateCustomValidationCallback =
+                        (httpRequestMessage, cert, chain, sslErrors) => true;
+                }
             }
         }
     }

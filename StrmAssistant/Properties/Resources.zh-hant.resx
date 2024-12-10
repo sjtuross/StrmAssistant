@@ -381,7 +381,7 @@
     <value>代理伺服器</value>
   </data>
   <data name="ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_" xml:space="preserve">
-    <value>啟用 HTTP 代理伺服器，留空則停用。</value>
+    <value>支援 HTTP(S) 代理伺服器，至代理伺服器的延遲必須小於500毫秒，測試失敗或留空則停用。</value>
   </data>
   <data name="ProxyServer_Available" xml:space="preserve">
     <value>可用</value>
@@ -391,5 +391,14 @@
   </data>
   <data name="InvalidMarkerEnabledLibraryScope" xml:space="preserve">
     <value>沒有任何劇集媒體庫開啟了生成片頭標記，最愛無效</value>
+  </data>
+  <data name="NetworkOptions_EditorTitle_Network" xml:space="preserve">
+    <value>網路</value>
+  </data>
+  <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server" xml:space="preserve">
+    <value>啟用代理伺服器</value>
+  </data>
+  <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_" xml:space="preserve">
+    <value>對外 HTTP 請求使用代理伺服器，預設為關閉。</value>
   </data>
 </root>

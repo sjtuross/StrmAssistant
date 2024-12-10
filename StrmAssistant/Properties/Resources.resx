@@ -468,7 +468,7 @@
     <value>Proxy Server</value>
   </data>
   <data name="ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_" xml:space="preserve">
-    <value>Enable http proxy server. Blank is OFF.</value>
+    <value>Support http(s) proxy server. Latency to proxy server must be less than 500 milliseconds. Disabled if unavailabe or leave blank.</value>
   </data>
   <data name="ProxyServer_Available" xml:space="preserve">
     <value>Available</value>
@@ -478,5 +478,14 @@
   </data>
   <data name="InvalidMarkerEnabledLibraryScope" xml:space="preserve">
     <value>None of TV show libraries has intro detection enabled. Favorites is invalid.</value>
+  </data>
+  <data name="NetworkOptions_EditorTitle_Network" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server" xml:space="preserve">
+    <value>Enable Proxy Server</value>
+  </data>
+  <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_" xml:space="preserve">
+    <value>Enable proxy server for outgoing http requests. Default is OFF.</value>
   </data>
 </root>

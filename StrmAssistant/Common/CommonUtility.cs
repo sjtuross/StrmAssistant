@@ -72,7 +72,7 @@ namespace StrmAssistant
                 using var tcpClient = new TcpClient();
                 var stopwatch = Stopwatch.StartNew();
                 var connectTask = tcpClient.ConnectAsync(host, port);
-                if (!connectTask.Wait(1000))
+                if (!connectTask.Wait(500))
                 {
                     return (false, null);
                 }

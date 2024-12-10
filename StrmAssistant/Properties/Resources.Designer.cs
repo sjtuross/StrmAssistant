@@ -301,7 +301,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to None of TV show libraries has intro detection enabled. Favorites is invalid..
         /// </summary>
         public static string InvalidMarkerEnabledLibraryScope {
             get {
@@ -784,6 +784,33 @@ namespace StrmAssistant.Properties {
         public static string ModOptions_SearchScope_Search_Scope {
             get {
                 return ResourceManager.GetString("ModOptions_SearchScope_Search_Scope", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Network.
+        /// </summary>
+        public static string NetworkOptions_EditorTitle_Network {
+            get {
+                return ResourceManager.GetString("NetworkOptions_EditorTitle_Network", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable Proxy Server.
+        /// </summary>
+        public static string NetworkOptions_EnableProxyServer_Enable_Proxy_Server {
+            get {
+                return ResourceManager.GetString("NetworkOptions_EnableProxyServer_Enable_Proxy_Server", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable Proxy Server. Default is OFF..
+        /// </summary>
+        public static string NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_", resourceCulture);
             }
         }
         

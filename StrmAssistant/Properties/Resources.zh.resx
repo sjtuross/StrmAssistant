@@ -381,7 +381,7 @@
     <value>代理服务器</value>
   </data>
   <data name="ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_" xml:space="preserve">
-    <value>启用 HTTP 代理服务器，留空则禁用。</value>
+    <value>支持 HTTP(S) 代理服务器，至代理服务器的延迟必须小于500毫秒，测试失败或留空则禁用。</value>
   </data>
   <data name="ProxyServer_Available" xml:space="preserve">
     <value>可用</value>
@@ -391,5 +391,14 @@
   </data>
   <data name="InvalidMarkerEnabledLibraryScope" xml:space="preserve">
     <value>没有任何剧集媒体库开启了生成片头标记，最爱无效</value>
+  </data>
+  <data name="NetworkOptions_EditorTitle_Network" xml:space="preserve">
+    <value>网络</value>
+  </data>
+  <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server" xml:space="preserve">
+    <value>启用代理服务器</value>
+  </data>
+  <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_" xml:space="preserve">
+    <value>对外 HTTP 请求使用代理服务器，默认关闭。</value>
   </data>
 </root>
