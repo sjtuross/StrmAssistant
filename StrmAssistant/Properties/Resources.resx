@@ -120,7 +120,7 @@
     <value>Max Concurrent Count</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
-    <value>Max concurrent count of threads to extract media info. It must be between 1 to 10. Default is 1.</value>
+    <value>Max concurrent count of threads shared by all the tasks. It must be between 1 to 20. Default is 1.</value>
   </data>
   <data name="PluginOptions_EditorTitle_Strm_Extract" xml:space="preserve">
     <value>MediaInfo Extract</value>
@@ -354,7 +354,7 @@
     <value>Library Scope</value>
   </data>
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
-    <value>Library scope to extract fingerprint. Blank includes all libraries with intro detection enabled.</value>
+    <value>Library scope to extract fingerprint. Blank includes all libraries with intro detection enabled. Favorites is single selection only</value>
   </data>
   <data name="MetadataEnhanceOptions_EnableAltMovieDbUrl" xml:space="preserve">
     <value>Use Alternative MovieDb Config</value>
@@ -363,7 +363,7 @@
     <value>Enhance MovieDb Person</value>
   </data>
   <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_" xml:space="preserve">
-    <value>Extract also_known_as when refresh person, import season cast, update series cast. Default is OFF.</value>
+    <value>Extract also_known_as while running refresh person scheduled task, import season cast, update series cast. Default is OFF.</value>
   </data>
   <data name="IntroSkipOptions_MinOpeningPlotDurationSeconds" xml:space="preserve">
     <value>Min Opening Plot Duration (Seconds), Default is 60</value>
@@ -460,5 +460,32 @@
   </data>
   <data name="No_Update_Message" xml:space="preserve">
     <value>No Update</value>
+  </data>
+  <data name="InvalidProxyServer" xml:space="preserve">
+    <value>Proxy Server is invalid. Format is http[s]://&lt;host&gt;:&lt;port&gt;</value>
+  </data>
+  <data name="ModOptions_ProxyServer_Proxy_Server" xml:space="preserve">
+    <value>Proxy Server</value>
+  </data>
+  <data name="ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_" xml:space="preserve">
+    <value>Support http(s) proxy server. Latency to proxy server must be less than 500 milliseconds. Disabled if unavailabe or leave blank.</value>
+  </data>
+  <data name="ProxyServer_Available" xml:space="preserve">
+    <value>Available</value>
+  </data>
+  <data name="ProxyServer_Unavailable" xml:space="preserve">
+    <value>Unavailable</value>
+  </data>
+  <data name="InvalidMarkerEnabledLibraryScope" xml:space="preserve">
+    <value>None of TV show libraries has intro detection enabled. Favorites is invalid.</value>
+  </data>
+  <data name="NetworkOptions_EditorTitle_Network" xml:space="preserve">
+    <value>Network</value>
+  </data>
+  <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server" xml:space="preserve">
+    <value>Enable Proxy Server</value>
+  </data>
+  <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_" xml:space="preserve">
+    <value>Enable proxy server for outgoing http requests. Default is OFF.</value>
   </data>
 </root>

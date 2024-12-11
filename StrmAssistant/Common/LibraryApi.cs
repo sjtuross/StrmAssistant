@@ -160,12 +160,20 @@ namespace StrmAssistant
             AdminOrderedViews = firstAdmin?.Configuration.OrderedViews ?? AdminOrderedViews;
         }
 
-        public bool HasMediaStream(BaseItem item)
+        public bool HasMediaInfo(BaseItem item)
         {
             var mediaStreamCount = item.GetMediaStreams()
                 .FindAll(i => i.Type == MediaStreamType.Video || i.Type == MediaStreamType.Audio).Count;
 
             return mediaStreamCount > 0 && item.RunTimeTicks.HasValue;
+        }
+
+        public bool ImageCaptureEnabled(BaseItem item)
+        {
+            var libraryOptions = _libraryManager.GetLibraryOptions(item);
+            var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
+
+            return typeOptions.ImageFetchers.Contains("Image Capture");
         }
 
         public List<BaseItem> FetchExtractQueueItems(List<BaseItem> items)
@@ -365,7 +373,7 @@ namespace StrmAssistant
                 favoritesWithExtra = expanded.Concat(includeExtra
                         ? expanded.SelectMany(f => f.GetExtras(IncludeExtraTypes))
                         : Enumerable.Empty<BaseItem>())
-                    .Where(HasMediaStream)
+                    .Where(HasMediaInfo)
                     .ToList();
             }
 
@@ -421,8 +429,8 @@ namespace StrmAssistant
 
             foreach (var item in items)
             {
-                if (!HasMediaStream(item) || !item.HasImage(ImageType.Primary) &&
-                    !(HasMediaStream(item) && item.MediaContainer.HasValue &&
+                if (!HasMediaInfo(item) || !item.HasImage(ImageType.Primary) &&
+                    !(HasMediaInfo(item) && item.MediaContainer.HasValue &&
                       ExcludeMediaContainers.Contains(item.MediaContainer.Value)))
                 {
                     results.Add(item);
@@ -573,7 +581,7 @@ namespace StrmAssistant
 
             if (overwrite || file?.Exists != true || HasFileChanged(workItem))
             {
-                if (HasMediaStream(workItem))
+                if (HasMediaInfo(workItem))
                 {
                     try
                     {
@@ -625,7 +633,7 @@ namespace StrmAssistant
             var mediaInfoJsonPath = GetMediaInfoJsonPath(item);
             var file = directoryService.GetFile(mediaInfoJsonPath);
 
-            if (file?.Exists == true && !HasMediaStream(item))
+            if (file?.Exists == true && !HasMediaInfo(item))
             {
                 try
                 {

@@ -52,13 +52,27 @@ const strmAssistantCommandSource = {
     getCommands: function(options) {
         const locale = this.globalize.getCurrentLocale().toLowerCase();
         const commandName = (locale === 'zh-cn') ? '\u590D\u5236' : (['zh-hk', 'zh-tw'].includes(locale) ? '\u8907\u8F38' : 'Copy');
-        if (options.items?.length === 1 && options.items[0].LibraryOptions && options.items[0].Type === 'VirtualFolder') {
-            return [{ name: commandName, id: 'strmassistant', icon: 'content_copy' }];
+        if (options.items?.length === 1 && options.items[0].LibraryOptions && options.items[0].Type === 'VirtualFolder' &&
+            options.items[0].CollectionType !== 'boxsets' && options.items[0].CollectionType !== 'playlists') {
+            return [{ name: commandName, id: 'copy', icon: 'content_copy' }];
+        }
+        if (options.items?.length === 1 && options.items[0].LibraryOptions && options.items[0].Type === 'VirtualFolder' &&
+            options.items[0].CollectionType === 'boxsets') {
+            return [{ name: this.globalize.translate('Remove'), id: 'remove', icon: 'remove_circle_outline' }];
         }
         return [];
     },
     executeCommand: function(command, items) {
-        return require(['components/strmassistant/strmassistant']).then(responses => responses[0].copy(items[0].Id));
+        if (!command || !items?.length) return;
+        const actions = {
+            copy: 'copy',
+            remove: 'remove'
+        };
+        if (actions[command]) {
+            return require(['components/strmassistant/strmassistant']).then(responses => {
+                return responses[0][actions[command]](items[0].Id, items[0].Name);
+            });
+        }
     }
 };
 

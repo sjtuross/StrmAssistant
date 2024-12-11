@@ -36,7 +36,7 @@
     <value>最大線程數</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
-    <value>最大並發提取媒體訊息的線程數。必須在 1 至 10 之間，預設為 1。</value>
+    <value>最大並發的執行緒數，所有任務共享。必須在 1 至 20 之間，預設為 1。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
     <value>僅支援 STRM，關閉後支援所有，預設開啟。</value>
@@ -267,7 +267,7 @@
     <value>媒體庫範圍</value>
   </data>
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
-    <value>擷取聲紋的媒體庫範圍，留空包含所有啟用原生片頭探測的媒體庫。</value>
+    <value>擷取聲紋的媒體庫範圍，留白包含所有啟用原生片頭探測的媒體庫，最愛只可單選。</value>
   </data>
   <data name="MetadataEnhanceOptions_EnableAltMovieDbUrl" xml:space="preserve">
     <value>使用替代 TMDB 配置</value>
@@ -276,7 +276,7 @@
     <value>演職人員增強 TMDB</value>
   </data>
   <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_" xml:space="preserve">
-    <value>刷新演員提取別名，導入季的演職人員，更新節目系列的演職人員為各季合併，預設為關閉。</value>
+    <value>規劃任務刷新演員時提取別名，導入季的演職人員，更新節目系列的演職人員為各季合併，預設為關閉。</value>
   </data>
   <data name="IntroSkipOptions_MinOpeningPlotDurationSeconds" xml:space="preserve">
     <value>最小開頭劇情時長 (秒)，預設為 60</value>
@@ -373,5 +373,32 @@
   </data>
   <data name="No_Update_Message" xml:space="preserve">
     <value>無更新</value>
+  </data>
+  <data name="InvalidProxyServer" xml:space="preserve">
+    <value>代理伺服器無效，格式為 http[s]://&lt;host&gt;:&lt;port&gt;</value>
+  </data>
+  <data name="ModOptions_ProxyServer_Proxy_Server" xml:space="preserve">
+    <value>代理伺服器</value>
+  </data>
+  <data name="ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_" xml:space="preserve">
+    <value>支援 HTTP(S) 代理伺服器，至代理伺服器的延遲必須小於500毫秒，測試失敗或留空則停用。</value>
+  </data>
+  <data name="ProxyServer_Available" xml:space="preserve">
+    <value>可用</value>
+  </data>
+  <data name="ProxyServer_Unavailable" xml:space="preserve">
+    <value>不可用</value>
+  </data>
+  <data name="InvalidMarkerEnabledLibraryScope" xml:space="preserve">
+    <value>沒有任何劇集媒體庫開啟了生成片頭標記，最愛無效</value>
+  </data>
+  <data name="NetworkOptions_EditorTitle_Network" xml:space="preserve">
+    <value>網路</value>
+  </data>
+  <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server" xml:space="preserve">
+    <value>啟用代理伺服器</value>
+  </data>
+  <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_" xml:space="preserve">
+    <value>對外 HTTP 請求使用代理伺服器，預設為關閉。</value>
   </data>
 </root>

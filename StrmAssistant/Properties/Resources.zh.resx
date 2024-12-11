@@ -33,7 +33,7 @@
     <value>最大线程数</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
-    <value>最大并发提取媒体信息的线程数。必须在 1 至 10 之间，默认为 1。</value>
+    <value>最大并发的线程数，所有任务共享。必须在 1 至 20 之间，默认为 1。</value>
   </data>
   <data name="PluginOptions_EditorTitle_Strm_Extract" xml:space="preserve">
     <value>媒体信息提取</value>
@@ -267,7 +267,7 @@
     <value>媒体库范围</value>
   </data>
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_" xml:space="preserve">
-    <value>提取声纹的媒体库范围，留空包含所有启用原生片头探测的媒体库。</value>
+    <value>提取声纹的媒体库范围，留空包含所有启用原生片头探测的媒体库，最爱只可单选。</value>
   </data>
   <data name="MetadataEnhanceOptions_EnableAltMovieDbUrl" xml:space="preserve">
     <value>使用替代 TMDB 配置</value>
@@ -276,7 +276,7 @@
     <value>演职人员增强 TMDB</value>
   </data>
   <data name="MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_" xml:space="preserve">
-    <value>刷新演员提取别名，导入季的演职人员，更新节目系列的演职人员为各季合并，默认关闭。</value>
+    <value>计划任务刷新演员时提取别名，导入季的演职人员，更新节目系列的演职人员为各季合并，默认关闭。</value>
   </data>
   <data name="IntroSkipOptions_MinOpeningPlotDurationSeconds" xml:space="preserve">
     <value>最小开头剧情时长 (秒)，默认为 60</value>
@@ -373,5 +373,32 @@
   </data>
   <data name="No_Update_Message" xml:space="preserve">
     <value>无更新</value>
+  </data>
+  <data name="InvalidProxyServer" xml:space="preserve">
+    <value>代理服务器无效，格式为 http[s]://&lt;host&gt;:&lt;port&gt;</value>
+  </data>
+  <data name="ModOptions_ProxyServer_Proxy_Server" xml:space="preserve">
+    <value>代理服务器</value>
+  </data>
+  <data name="ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_" xml:space="preserve">
+    <value>支持 HTTP(S) 代理服务器，至代理服务器的延迟必须小于500毫秒，测试失败或留空则禁用。</value>
+  </data>
+  <data name="ProxyServer_Available" xml:space="preserve">
+    <value>可用</value>
+  </data>
+  <data name="ProxyServer_Unavailable" xml:space="preserve">
+    <value>不可用</value>
+  </data>
+  <data name="InvalidMarkerEnabledLibraryScope" xml:space="preserve">
+    <value>没有任何剧集媒体库开启了生成片头标记，最爱无效</value>
+  </data>
+  <data name="NetworkOptions_EditorTitle_Network" xml:space="preserve">
+    <value>网络</value>
+  </data>
+  <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server" xml:space="preserve">
+    <value>启用代理服务器</value>
+  </data>
+  <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_" xml:space="preserve">
+    <value>对外 HTTP 请求使用代理服务器，默认关闭。</value>
   </data>
 </root>

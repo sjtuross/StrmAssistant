@@ -15,7 +15,6 @@ namespace StrmAssistant
     {
         private static ILogger _logger;
         private static readonly ConcurrentQueue<Func<Task>> _taskQueue = new ConcurrentQueue<Func<Task>>();
-        private static bool _isProcessing = false;
         private static readonly object _lock = new object();
         private static DateTime _masterProcessLastRunTime = DateTime.MinValue;
         private static DateTime _introSkipProcessLastRunTime = DateTime.MinValue;
@@ -30,6 +29,8 @@ namespace StrmAssistant
         public static ConcurrentQueue<BaseItem> ExternalSubtitleItemQueue = new ConcurrentQueue<BaseItem>();
         public static ConcurrentQueue<Episode> IntroSkipItemQueue = new ConcurrentQueue<Episode>();
         public static Task MasterProcessTask;
+
+        public static bool IsProcessTaskRunning { get; private set; }
 
         public static void Initialize()
         {
@@ -217,9 +218,9 @@ namespace StrmAssistant
 
                     lock (_lock)
                     {
-                        if (!_isProcessing && (dequeueMediaInfoItems.Count > 0 || dequeueSubtitleItems.Count > 0))
+                        if (!IsProcessTaskRunning && (dequeueMediaInfoItems.Count > 0 || dequeueSubtitleItems.Count > 0))
                         {
-                            _isProcessing = true;
+                            IsProcessTaskRunning = true;
                             var task = Task.Run(() => Master_ProcessTaskQueueAsync(cancellationToken));
                         }
                     }
@@ -275,7 +276,7 @@ namespace StrmAssistant
 
             lock (_lock)
             {
-                _isProcessing = false;
+                IsProcessTaskRunning = false;
                 if (_taskQueue.IsEmpty)
                 {
                     _logger.Info("Master - ProcessTaskQueueAsync Stopped");

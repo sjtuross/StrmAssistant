@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1</TargetFrameworks>
-    <AssemblyVersion>1.0.0.45</AssemblyVersion>
-    <FileVersion>1.0.0.45</FileVersion>
+    <AssemblyVersion>1.0.0.46</AssemblyVersion>
+    <FileVersion>1.0.0.46</FileVersion>
     <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
     <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
     <AssemblyName>$(MSBuildProjectName)Lite</AssemblyName>
