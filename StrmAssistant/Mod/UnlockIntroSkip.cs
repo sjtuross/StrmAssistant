@@ -173,7 +173,7 @@ namespace StrmAssistant.Mod
 
             if (!string.IsNullOrEmpty(markerEnabledLibraryScope) && markerEnabledLibraryScope.Contains("-1"))
             {
-                __result.ParentIds = Plugin.ChapterApi.GetAllFavoriteSeasons();
+                __result.ParentIds = Plugin.ChapterApi.GetAllFavoriteSeasons().DefaultIfEmpty(-1).ToArray();
             }
             else
             {
