@@ -32,6 +32,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using static StrmAssistant.CommonUtility;
 using static StrmAssistant.ModOptions;
 
@@ -153,6 +155,7 @@ namespace StrmAssistant
 
             _libraryManager.ItemAdded += OnItemAdded;
             _libraryManager.ItemUpdated += OnItemUpdated;
+            _libraryManager.ItemRemoved += OnItemRemoved;
             _userManager.UserCreated += OnUserCreated;
             _userManager.UserDeleted += OnUserDeleted;
             _userManager.UserConfigurationUpdated += OnUserConfigurationUpdated;
@@ -219,6 +222,14 @@ namespace StrmAssistant
                 {
                     LibraryApi.UpdateSeriesPeople(series);
                 }
+            }
+        }
+        
+        private void OnItemRemoved(object sender, ItemChangeEventArgs e)
+        {
+            if (_currentPersistMediaInfo)
+            {
+                Task.Run(() => LibraryApi.DeleteMediaInfoJson(e.Item, CancellationToken.None));   
             }
         }
 
