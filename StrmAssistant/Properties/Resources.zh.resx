@@ -401,4 +401,7 @@
   <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_" xml:space="preserve">
     <value>对外 HTTP 请求使用代理服务器，默认关闭。</value>
   </data>
+  <data name="ItemType_Season_Season" xml:space="preserve">
+    <value>季</value>
+  </data>
 </root>

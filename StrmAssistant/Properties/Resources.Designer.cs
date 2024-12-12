@@ -445,6 +445,15 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string ItemType_Season_Season {
+            get {
+                return ResourceManager.GetString("ItemType_Season_Season", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Series.
         /// </summary>
         public static string ItemType_Series_Series {
@@ -594,7 +603,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extract also_known_as when refresh person, import season cast, update series cast. Default is OFF..
+        ///   Looks up a localized string similar to Extract also_known_as while running refresh person scheduled task, import season cast, update series cast. Default is OFF..
         /// </summary>
         public static string MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_ {
             get {
@@ -752,7 +761,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable http proxy server. Blank is OFF..
+        ///   Looks up a localized string similar to Support http(s) proxy server. Latency to proxy server must be less than 500 milliseconds. Disabled if unavailabe or leave blank..
         /// </summary>
         public static string ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_ {
             get {
@@ -806,7 +815,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable Proxy Server. Default is OFF..
+        ///   Looks up a localized string similar to Enable proxy server for outgoing http requests. Default is OFF..
         /// </summary>
         public static string NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_ {
             get {
@@ -1044,7 +1053,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Max concurrent count of threads to extract media info. It must be between 1 to 10. Default is 1..
+        ///   Looks up a localized string similar to Max concurrent count of threads shared by all the tasks. It must be between 1 to 20. Default is 1..
         /// </summary>
         public static string PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_ {
             get {

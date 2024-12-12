@@ -35,6 +35,7 @@ namespace StrmAssistant
             [DescriptionL("ItemType_Movie_Movie", typeof(Resources))] Movie,
             [DescriptionL("ItemType_Collection_Collection", typeof(Resources))] Collection,
             [DescriptionL("ItemType_Series_Series", typeof(Resources))] Series,
+            [DescriptionL("ItemType_Season_Season", typeof(Resources))] Season,
             [DescriptionL("ItemType_Episode_Episode", typeof(Resources))] Episode,
             [DescriptionL("ItemType_Person_Person", typeof(Resources))] Person,
             [DescriptionL("ItemType_LiveTv_LiveTv", typeof(Resources))] LiveTv,

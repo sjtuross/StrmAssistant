@@ -488,4 +488,7 @@
   <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_" xml:space="preserve">
     <value>Enable proxy server for outgoing http requests. Default is OFF.</value>
   </data>
+  <data name="ItemType_Season_Season" xml:space="preserve">
+    <value>Season</value>
+  </data>
 </root>
