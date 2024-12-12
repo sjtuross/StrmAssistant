@@ -13,6 +13,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
+using StrmAssistant.Mod;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -197,10 +198,12 @@ namespace StrmAssistant
 
         public bool HasMediaInfo(BaseItem item)
         {
+            if (!item.RunTimeTicks.HasValue) return false;
+
             var mediaStreamCount = item.GetMediaStreams()
                 .FindAll(i => i.Type == MediaStreamType.Video || i.Type == MediaStreamType.Audio).Count;
 
-            return mediaStreamCount > 0 && item.RunTimeTicks.HasValue;
+            return mediaStreamCount > 0;
         }
 
         public bool ImageCaptureEnabled(BaseItem item)
@@ -662,6 +665,17 @@ namespace StrmAssistant
             await SerializeMediaInfo(item, directoryService, overwrite, cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task SerializeMediaInfo(long itemId, bool overwrite, CancellationToken cancellationToken)
+        {
+            var item = _libraryManager.GetItemById(itemId);
+
+            if (!HasMediaInfo(item)) return;
+
+            var directoryService = new DirectoryService(_logger, _fileSystem);
+
+            await SerializeMediaInfo(item, directoryService, overwrite, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<bool> DeserializeMediaInfo(BaseItem item, IDirectoryService directoryService,
             CancellationToken cancellationToken)
         {
@@ -694,6 +708,7 @@ namespace StrmAssistant
 
                         if (workItem is Video)
                         {
+                            ChapterChangeTracker.BypassDeserializeInstance(workItem);
                             _itemRepository.SaveChapters(workItem.InternalId, true, mediaSourceWithChapters.Chapters);
                         }
 

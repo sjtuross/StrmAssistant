@@ -61,6 +61,7 @@ namespace StrmAssistant
 
         private bool _currentSuppressOnOptionsSaved;
         private int _currentMaxConcurrentCount;
+        private bool _currentPersistMediaInfo;
         private bool _currentEnableImageCapture;
         private bool _currentCatchupMode;
         private bool _currentEnableIntroSkip;
@@ -114,6 +115,7 @@ namespace StrmAssistant
             _userDataManager = userDataManager;
 
             _currentMaxConcurrentCount = GetOptions().GeneralOptions.MaxConcurrentCount;
+            _currentPersistMediaInfo = GetOptions().MediaInfoExtractOptions.PersistMediaInfo;
             _currentEnableImageCapture = GetOptions().MediaInfoExtractOptions.EnableImageCapture;
             _currentCatchupMode = GetOptions().GeneralOptions.CatchupMode;
             _currentEnableIntroSkip = GetOptions().IntroSkipOptions.EnableIntroSkip;
@@ -358,11 +360,6 @@ namespace StrmAssistant
 
             if (!suppressLogger)
             {
-                logger.Info("PersistMediaInfo is set to {0}", options.MediaInfoExtractOptions.PersistMediaInfo);
-                logger.Info("MediaInfoJsonRootFolder is set to {0}",
-                    !string.IsNullOrEmpty(options.MediaInfoExtractOptions.MediaInfoJsonRootFolder)
-                        ? options.MediaInfoExtractOptions.MediaInfoJsonRootFolder
-                        : "EMPTY");
                 logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
                 logger.Info("MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
                 var libraryScope = string.Join(", ",
@@ -382,6 +379,28 @@ namespace StrmAssistant
 
                 if (options.MediaInfoExtractOptions.EnableImageCapture)
                     EnableImageCapture.UpdateResourcePool(_currentMaxConcurrentCount);
+            }
+
+            if (!suppressLogger)
+            {
+                logger.Info("PersistMediaInfo is set to {0}", options.MediaInfoExtractOptions.PersistMediaInfo);
+                logger.Info("MediaInfoJsonRootFolder is set to {0}",
+                    !string.IsNullOrEmpty(options.MediaInfoExtractOptions.MediaInfoJsonRootFolder)
+                        ? options.MediaInfoExtractOptions.MediaInfoJsonRootFolder
+                        : "EMPTY");
+            }
+            if (_currentPersistMediaInfo != options.MediaInfoExtractOptions.PersistMediaInfo)
+            {
+                _currentPersistMediaInfo = options.MediaInfoExtractOptions.PersistMediaInfo;
+
+                if (_currentPersistMediaInfo)
+                {
+                    ChapterChangeTracker.Patch();
+                }
+                else
+                {
+                    ChapterChangeTracker.Unpatch();
+                }
             }
 
             if (!suppressLogger)

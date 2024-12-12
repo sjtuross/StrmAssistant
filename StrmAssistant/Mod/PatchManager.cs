@@ -39,6 +39,7 @@ namespace StrmAssistant.Mod
             EnforceLibraryOrder.Initialize();
             BeautifyMissingMetadata.Initialize();
             EnhanceMissingEpisodes.Initialize();
+            ChapterChangeTracker.Initialize();
         }
 
         public static bool IsPatched(MethodBase methodInfo, Type type)
