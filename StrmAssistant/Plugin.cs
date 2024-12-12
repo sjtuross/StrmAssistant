@@ -72,6 +72,7 @@ namespace StrmAssistant
         private bool _currentAltMovieDbConfig;
         private bool _currentAltMovieDbImageUrlEnabled;
         private bool _currentProxyServerEnabled;
+        private string _currentProxyServerUrl;
         private bool _currentExclusiveExtract;
         private bool _currentPreferOriginalPoster;
         private bool _currentEnhanceChineseSearch;
@@ -127,6 +128,7 @@ namespace StrmAssistant
             _currentAltMovieDbImageUrlEnabled =
                 !string.IsNullOrEmpty(GetOptions().MetadataEnhanceOptions.AltMovieDbImageUrl);
             _currentProxyServerEnabled = GetOptions().NetworkOptions.EnableProxyServer;
+            _currentProxyServerUrl = GetOptions().NetworkOptions.ProxyServerUrl;
             _currentExclusiveExtract = GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
             _currentPreferOriginalPoster = GetOptions().MetadataEnhanceOptions.PreferOriginalPoster;
             _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
@@ -552,6 +554,18 @@ namespace StrmAssistant
                 else
                 {
                     EnableProxyServer.Unpatch();
+                }
+
+                ApplicationHost.NotifyPendingRestart();
+            }
+            if (_currentProxyServerUrl != GetOptions().NetworkOptions.ProxyServerUrl)
+            {
+                _currentProxyServerUrl = GetOptions().NetworkOptions.ProxyServerUrl;
+
+                if (_currentProxyServerEnabled &&
+                    GetOptions().NetworkOptions.ProxyServerStatus.Status == ItemStatus.Succeeded)
+                {
+                    ApplicationHost.NotifyPendingRestart();
                 }
             }
 
