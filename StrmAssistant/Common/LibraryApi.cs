@@ -209,9 +209,10 @@ namespace StrmAssistant
         public bool ImageCaptureEnabled(BaseItem item)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
-            var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
+            var typeName = item.ExtraType == null ? item.GetType().Name : item.DisplayParent.GetType().Name;
+            var typeOptions = libraryOptions.GetTypeOptions(typeName);
 
-            return typeOptions.ImageFetchers.Contains("Image Capture");
+            return typeOptions?.ImageFetchers?.Contains("Image Capture") == true;
         }
 
         public List<BaseItem> FetchExtractQueueItems(List<BaseItem> items)
