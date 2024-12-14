@@ -15,7 +15,7 @@
     <value>追更模式</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>电影洗版或剧集有更新后实时提取媒体信息以及同步片头片尾标记，默认关闭。</value>
+    <value>电影洗版或剧集有更新后实时提取媒体信息以及同步基于行为的片头片尾标记，默认关闭。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>包含分集和附加内容</value>
@@ -75,7 +75,7 @@
     <value>神医助手</value>
   </data>
   <data name="PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract" xml:space="preserve">
-    <value>请卸载冲突插件 StrmExtract.dll，然后重启 Emby。</value>
+    <value>请卸载功能重复的插件 StrmExtract.dll 以及存在线程安全问题的插件 InfuseSync.dll，然后重启 Emby。</value>
   </data>
   <data name="Notification_CatchupUpdate_EventName" xml:space="preserve">
     <value>最爱有更新</value>

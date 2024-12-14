@@ -102,7 +102,7 @@
     <value>Catch-up Mode</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>Extract media info for newly added items and sync intro and credits markers. Default is OFF.</value>
+    <value>Extract media info for newly added items and sync behaviour-based intro and credits markers. Default is OFF.</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>Include Additional Part and Extra</value>
@@ -162,7 +162,7 @@
     <value>Strm Assistant</value>
   </data>
   <data name="PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract" xml:space="preserve">
-    <value>Please uninstall the conflict plugin StrmExtract.dll and then restart Emby.</value>
+    <value>Please uninstall the StrmExtract.dll plugin that duplicates functionality and/or the InfuseSync.dll plugin that has thread-safe issues, and then restart Emby.</value>
   </data>
   <data name="Notification_CatchupUpdate_EventName" xml:space="preserve">
     <value>Favorites Updated</value>
