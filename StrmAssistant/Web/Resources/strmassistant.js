@@ -19,7 +19,7 @@
                 const confirmMessage = (locale === 'zh-cn') ? '\u590d\u5236\u5a92\u4f53\u5e93\u6210\u529f' : 
                     (['zh-hk', 'zh-tw'].includes(locale) ? '\u8907\u88fd\u5a92\u9ad4\u5eab\u6210\u529f' : 'Copy Library Success');
                 toast(confirmMessage);
-                const itemsContainer = document.querySelector('.view .itemsContainer');
+                const itemsContainer = document.querySelector('.view-librarysetup-library .itemsContainer, .view-librarysetup-librarysetup .itemsContainer');
                 if (itemsContainer) {
                     itemsContainer.notifyRefreshNeeded(true);
                 }
@@ -50,7 +50,7 @@
                     const confirmMessage = (locale === 'zh-cn') ? '\u5408\u96c6\u5220\u9664\u6210\u529f' : 
                         (['zh-hk', 'zh-tw'].includes(locale) ? '\u5408\u96C6\u5236\u9662\u6210\u529F' : 'Delete Collections Success');
                     toast(confirmMessage);
-                    const itemsContainer = document.querySelector('.view .itemsContainer');
+                    const itemsContainer = document.querySelector('.view-librarysetup-library .itemsContainer, .view-librarysetup-librarysetup .itemsContainer');
                     if (itemsContainer) {
                         itemsContainer.notifyRefreshNeeded(true);
                     }
