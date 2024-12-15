@@ -35,6 +35,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using static StrmAssistant.CommonUtility;
+using static StrmAssistant.MediaInfoExtractOptions;
 using static StrmAssistant.ModOptions;
 
 namespace StrmAssistant
@@ -75,6 +76,7 @@ namespace StrmAssistant
         private bool _currentProxyServerEnabled;
         private string _currentProxyServerUrl;
         private bool _currentExclusiveExtract;
+        private string _currentExclusiveControlFeatures;
         private bool _currentPreferOriginalPoster;
         private bool _currentEnhanceChineseSearch;
         private string _currentSearchScope;
@@ -132,6 +134,8 @@ namespace StrmAssistant
             _currentProxyServerEnabled = GetOptions().NetworkOptions.EnableProxyServer;
             _currentProxyServerUrl = GetOptions().NetworkOptions.ProxyServerUrl;
             _currentExclusiveExtract = GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
+            _currentExclusiveControlFeatures =
+                GetOptions().MediaInfoExtractOptions.ExclusiveControlFeatures;
             _currentPreferOriginalPoster = GetOptions().MetadataEnhanceOptions.PreferOriginalPoster;
             _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
             _currentSearchScope = GetOptions().ModOptions.SearchScope;
@@ -285,6 +289,13 @@ namespace StrmAssistant
                     ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Where(v => options.MediaInfoExtractOptions.LibraryList.Any(option => option.Value == v)) ??
                 Enumerable.Empty<string>());
+
+            var controlFeatures = options.MediaInfoExtractOptions.ExclusiveControlFeatures;
+            var selectedFeatures = controlFeatures.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                .Where(f => !(f == ExclusiveControl.CatchAllAllow.ToString() && 
+                              controlFeatures.Contains(ExclusiveControl.CatchAllBlock.ToString())))
+                .ToList();
+            options.MediaInfoExtractOptions.ExclusiveControlFeatures = string.Join(",", selectedFeatures);
 
             options.IntroSkipOptions.LibraryScope = string.Join(",",
                 options.IntroSkipOptions.LibraryScope
@@ -454,6 +465,28 @@ namespace StrmAssistant
                 {
                     ExclusiveExtract.Unpatch();
                 }
+            }
+
+            if (!suppressLogger)
+            {
+                var controlFeatures = string.Join(", ",
+                    options.MediaInfoExtractOptions.ExclusiveControlFeatures
+                        ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s =>
+                            Enum.TryParse(s.Trim(), true, out ExclusiveControl type)
+                                ? EnumExtensions.GetDescription(type)
+                                : null)
+                        .Where(d => d != null) ?? Array.Empty<string>());
+                logger.Info("ExclusiveExtract - ControlFeatures is set to {0}",
+                    string.IsNullOrEmpty(controlFeatures) ? "EMPTY" : controlFeatures);
+            }
+
+            if (_currentExclusiveControlFeatures !=
+                options.MediaInfoExtractOptions.ExclusiveControlFeatures)
+            {
+                _currentExclusiveControlFeatures = options.MediaInfoExtractOptions.ExclusiveControlFeatures;
+
+                if (_currentExclusiveExtract) ExclusiveExtract.UpdateControlFeatures();
             }
 
             if (!suppressLogger)
@@ -814,7 +847,7 @@ namespace StrmAssistant
                             Enum.TryParse(s.Trim(), true, out SearchItemType type)
                                 ? EnumExtensions.GetDescription(type)
                                 : null)
-                        .Where(d => d != null));
+                        .Where(d => d != null) ?? Array.Empty<string>());
                 logger.Info("EnhanceChineseSearch - SearchScope is set to {0}",
                         string.IsNullOrEmpty(searchScope) ? "ALL" : searchScope);
             }
@@ -822,8 +855,7 @@ namespace StrmAssistant
             {
                 _currentSearchScope = options.ModOptions.SearchScope;
 
-                if (options.ModOptions.EnhanceChineseSearch)
-                    EnhanceChineseSearch.UpdateSearchScope();
+                if (options.ModOptions.EnhanceChineseSearch) EnhanceChineseSearch.UpdateSearchScope();
             }
 
             if (suppressLogger) _currentSuppressOnOptionsSaved = false;
@@ -879,6 +911,21 @@ namespace StrmAssistant
             options.MediaInfoExtractOptions.LibraryList = list;
             options.IntroSkipOptions.LibraryList = listShow;
             options.IntroSkipOptions.MarkerEnabledLibraryList = listMarkerEnabled;
+
+            var exclusiveControlList = new List<EditorSelectOption>();
+            foreach (Enum item in Enum.GetValues(typeof(ExclusiveControl)))
+            {
+                var selectOption = new EditorSelectOption
+                {
+                    Value = item.ToString(),
+                    Name = EnumExtensions.GetDescription(item),
+                    IsEnabled = true,
+                };
+
+                exclusiveControlList.Add(selectOption);
+            }
+
+            options.MediaInfoExtractOptions.ExclusiveControlList = exclusiveControlList;
 
             var languageList = new List<EditorSelectOption>
             {

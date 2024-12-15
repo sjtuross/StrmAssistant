@@ -129,7 +129,7 @@
     <value>独占媒体信息提取</value>
   </data>
   <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
-    <value>仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg)，全媒体库生效，默认关闭。</value>
+    <value>接管媒体信息提取 (ffprobe) 以及视频截图 (ffmpeg)，全媒体库生效，默认关闭。</value>
   </data>
   <data name="Repo_Link" xml:space="preserve">
     <value>项目链接</value>
@@ -409,5 +409,17 @@
   </data>
   <data name="MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_episode_group_scrapping_for_TV_shows__Default_is_OFF_" xml:space="preserve">
     <value>用指定的剧集组刮削剧集，默认关闭。</value>
+  </data>
+  <data name="ExclusiveControl_IgnoreFileChange_IgnoreFileChange" xml:space="preserve">
+    <value>忽略文件变更</value>
+  </data>
+  <data name="ExclusiveControl_CatchAllBlock_CatchAllBlock" xml:space="preserve">
+    <value>尽可能全阻止</value>
+  </data>
+  <data name="ExclusiveControl_CatchAllAllow_CatchAllAllow" xml:space="preserve">
+    <value>尽可能全放行</value>
+  </data>
+  <data name="MediaInfoExtractOptions_ExclusiveExtractFeatureControl_Exclusive_Extract_Feature_Control" xml:space="preserve">
+    <value>可选独占模式功能控制</value>
   </data>
 </root>

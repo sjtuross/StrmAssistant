@@ -89,6 +89,33 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DefaultAllow.
+        /// </summary>
+        public static string ExclusiveControl_CatchAllAllow_CatchAllAllow {
+            get {
+                return ResourceManager.GetString("ExclusiveControl_CatchAllAllow_CatchAllAllow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DefaultBlock.
+        /// </summary>
+        public static string ExclusiveControl_CatchAllBlock_CatchAllBlock {
+            get {
+                return ResourceManager.GetString("ExclusiveControl_CatchAllBlock_CatchAllBlock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IgnoreFileChange.
+        /// </summary>
+        public static string ExclusiveControl_IgnoreFileChange_IgnoreFileChange {
+            get {
+                return ResourceManager.GetString("ExclusiveControl_IgnoreFileChange_IgnoreFileChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Extracts intro fingerprint from episodes.
         /// </summary>
         public static string ExtractIntroFingerprintTask_Description_Extracts_intro_fingerprint_from_episodes {
@@ -490,6 +517,16 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Optional Exclusive Extract Feature Control.
+        /// </summary>
+        public static string MediaInfoExtractOptions_ExclusiveExtractFeatureControl_Exclusive_Extract_Feature_Control {
+            get {
+                return ResourceManager.GetString("MediaInfoExtractOptions_ExclusiveExtractFeatureControl_Exclusive_Extract_Feature_" +
+                        "Control", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Optional MediaInfo JSON Root Folder.
         /// </summary>
         public static string MediaInfoExtractOptions_MediaInfoJsonRootFolder_MediaInfo_Json_Root_Folder {
@@ -641,7 +678,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Support MovieDb episode group scrapping for TV shows. Default is OFF..
+        ///   Looks up a localized string similar to Scrape TV show by specified episode group. Default is OFF..
         /// </summary>
         public static string MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_episode_group_scrapping_for_TV_shows__Default_is_OFF_ {
             get {
@@ -697,7 +734,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Only allow this plugin to extract media info (ffprobe) and capture image (ffmpeg) for all libraries. Default is OFF..
+        ///   Looks up a localized string similar to Take over media info extract (ffprobe) and image capture (ffmpeg) for all libraries. Default is OFF..
         /// </summary>
         public static string ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_ {
             get {
@@ -942,7 +979,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extract media info for newly added items and sync intro and credits markers. Default is OFF..
+        ///   Looks up a localized string similar to Extract media info for newly added items and sync behaviour-based intro and credits markers. Default is OFF..
         /// </summary>
         public static string PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_ {
             get {
@@ -1026,7 +1063,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please uninstall the conflict plugin StrmExtract.dll or InfuseSync.dll and then restart Emby..
+        ///   Looks up a localized string similar to Please uninstall the StrmExtract.dll plugin that duplicates functionality and/or the InfuseSync.dll plugin that has thread-safe issues, and then restart Emby..
         /// </summary>
         public static string PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract {
             get {
