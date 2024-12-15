@@ -437,7 +437,7 @@ namespace StrmAssistant.Mod
         {
             __result.ContinueWith(task =>
                 {
-                    if (task.IsCompleted)
+                    if (task.IsCompletedSuccessfully)
                     {
                         if (_movieDataTmdbTaskResult == null)
                             _movieDataTmdbTaskResult = task.GetType().GetProperty("Result");
@@ -467,7 +467,7 @@ namespace StrmAssistant.Mod
 
             __result.ContinueWith(task =>
                 {
-                    if (task.IsCompleted && WasCalledByImageProvider.Value)
+                    if (task.IsCompletedSuccessfully && WasCalledByImageProvider.Value)
                     {
                         if (_seriesDataTmdbTaskResult == null)
                             _seriesDataTmdbTaskResult = task.GetType().GetProperty("Result");
@@ -498,7 +498,7 @@ namespace StrmAssistant.Mod
 
             __result.ContinueWith(task =>
                 {
-                    if (task.IsCompleted && WasCalledByImageProvider.Value)
+                    if (task.IsCompletedSuccessfully && WasCalledByImageProvider.Value)
                     {
                         if (_movieDataTvdbTaskResult == null)
                             _movieDataTvdbTaskResult = task.GetType().GetProperty("Result");
@@ -528,7 +528,7 @@ namespace StrmAssistant.Mod
 
             __result.ContinueWith(task =>
                 {
-                    if (task.IsCompleted && WasCalledByImageProvider.Value)
+                    if (task.IsCompletedSuccessfully && WasCalledByImageProvider.Value)
                     {
                         if (_seriesDataTvdbTaskResult == null)
                             _seriesDataTvdbTaskResult = task.GetType().GetProperty("Result");
@@ -572,21 +572,21 @@ namespace StrmAssistant.Mod
         {
             __result.ContinueWith(task =>
                 {
-                    if (task.IsCompleted)
+                    if (task.IsCompletedSuccessfully)
                     {
                         var originalLanguage = GetOriginalLanguage(item);
                         var libraryPreferredImageLanguage = libraryOptions.PreferredImageLanguage?.Split('-')[0];
 
                         var remoteImages = task.Result;
 
-                        var orderedImages = remoteImages.OrderBy(i =>
+                        var reorderedImages = remoteImages.OrderBy(i =>
                                 !string.IsNullOrEmpty(libraryPreferredImageLanguage) && string.Equals(i.Language,
                                     libraryPreferredImageLanguage, StringComparison.OrdinalIgnoreCase) ? 0 :
                                 !string.IsNullOrEmpty(originalLanguage) && string.Equals(i.Language, originalLanguage,
                                     StringComparison.OrdinalIgnoreCase) ? 1 : 2)
                             .ToList();
 
-                        _remoteImageTaskResult?.SetValue(__result, orderedImages);
+                        _remoteImageTaskResult?.SetValue(__result, reorderedImages);
                     }
                 }, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
                 .ConfigureAwait(false);
