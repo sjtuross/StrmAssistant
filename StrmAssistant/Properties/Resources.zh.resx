@@ -15,7 +15,7 @@
     <value>追更模式</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>电影洗版或剧集有更新后实时提取媒体信息以及同步片头片尾标记，默认关闭。</value>
+    <value>电影洗版或剧集有更新后实时提取媒体信息以及同步基于行为的片头片尾标记，默认关闭。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>包含分集和附加内容</value>
@@ -75,7 +75,7 @@
     <value>神医助手</value>
   </data>
   <data name="PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract" xml:space="preserve">
-    <value>请卸载冲突插件 StrmExtract.dll，然后重启 Emby。</value>
+    <value>请卸载功能重复的插件 StrmExtract.dll 以及存在线程安全问题的插件 InfuseSync.dll，然后重启 Emby。</value>
   </data>
   <data name="Notification_CatchupUpdate_EventName" xml:space="preserve">
     <value>最爱有更新</value>
@@ -129,7 +129,7 @@
     <value>独占媒体信息提取</value>
   </data>
   <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
-    <value>仅允许本插件提取媒体信息 (ffprobe) 以及视频截图 (ffmpeg)，全媒体库生效，默认关闭。</value>
+    <value>接管媒体信息提取 (ffprobe) 以及视频截图 (ffmpeg)，全媒体库生效，默认关闭。</value>
   </data>
   <data name="Repo_Link" xml:space="preserve">
     <value>项目链接</value>
@@ -400,5 +400,26 @@
   </data>
   <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_" xml:space="preserve">
     <value>对外 HTTP 请求使用代理服务器，默认关闭。</value>
+  </data>
+  <data name="ItemType_Season_Season" xml:space="preserve">
+    <value>季</value>
+  </data>
+  <data name="MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_Episode_Group" xml:space="preserve">
+    <value>支持剧集组刮削 TMDB</value>
+  </data>
+  <data name="MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_episode_group_scrapping_for_TV_shows__Default_is_OFF_" xml:space="preserve">
+    <value>用指定的剧集组刮削剧集，默认关闭。</value>
+  </data>
+  <data name="ExclusiveControl_IgnoreFileChange_IgnoreFileChange" xml:space="preserve">
+    <value>忽略文件变更</value>
+  </data>
+  <data name="ExclusiveControl_CatchAllBlock_CatchAllBlock" xml:space="preserve">
+    <value>尽可能全阻止</value>
+  </data>
+  <data name="ExclusiveControl_CatchAllAllow_CatchAllAllow" xml:space="preserve">
+    <value>尽可能全放行</value>
+  </data>
+  <data name="MediaInfoExtractOptions_ExclusiveExtractFeatureControl_Exclusive_Extract_Feature_Control" xml:space="preserve">
+    <value>可选独占模式功能控制</value>
   </data>
 </root>

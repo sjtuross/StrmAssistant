@@ -102,7 +102,7 @@
     <value>Catch-up Mode</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>Extract media info for newly added items and sync intro and credits markers. Default is OFF.</value>
+    <value>Extract media info for newly added items and sync behaviour-based intro and credits markers. Default is OFF.</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>Include Additional Part and Extra</value>
@@ -162,7 +162,7 @@
     <value>Strm Assistant</value>
   </data>
   <data name="PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract" xml:space="preserve">
-    <value>Please uninstall the conflict plugin StrmExtract.dll and then restart Emby.</value>
+    <value>Please uninstall the StrmExtract.dll plugin that duplicates functionality and/or the InfuseSync.dll plugin that has thread-safe issues, and then restart Emby.</value>
   </data>
   <data name="Notification_CatchupUpdate_EventName" xml:space="preserve">
     <value>Favorites Updated</value>
@@ -216,7 +216,7 @@
     <value>Exclusive MediaInfo Extract</value>
   </data>
   <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
-    <value>Only allow this plugin to extract media info (ffprobe) and capture image (ffmpeg) for all libraries. Default is OFF.</value>
+    <value>Take over media info extract (ffprobe) and image capture (ffmpeg) for all libraries. Default is OFF.</value>
   </data>
   <data name="Repo_Link" xml:space="preserve">
     <value>Repo Link</value>
@@ -487,5 +487,26 @@
   </data>
   <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_" xml:space="preserve">
     <value>Enable proxy server for outgoing http requests. Default is OFF.</value>
+  </data>
+  <data name="ItemType_Season_Season" xml:space="preserve">
+    <value>Season</value>
+  </data>
+  <data name="MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_Episode_Group" xml:space="preserve">
+    <value>Support MovieDb Episode Group</value>
+  </data>
+  <data name="MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_episode_group_scrapping_for_TV_shows__Default_is_OFF_" xml:space="preserve">
+    <value>Scrape TV show by specified episode group. Default is OFF.</value>
+  </data>
+  <data name="ExclusiveControl_IgnoreFileChange_IgnoreFileChange" xml:space="preserve">
+    <value>IgnoreFileChange</value>
+  </data>
+  <data name="ExclusiveControl_CatchAllBlock_CatchAllBlock" xml:space="preserve">
+    <value>Catch All Block</value>
+  </data>
+  <data name="ExclusiveControl_CatchAllAllow_CatchAllAllow" xml:space="preserve">
+    <value>Catch All Allow</value>
+  </data>
+  <data name="MediaInfoExtractOptions_ExclusiveExtractFeatureControl_Exclusive_Extract_Feature_Control" xml:space="preserve">
+    <value>Optional Exclusive Extract Feature Control</value>
   </data>
 </root>

@@ -18,7 +18,7 @@
     <value>追更模式</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>電影洗版或劇集有更新後即時提取媒體資訊以及同步片頭片尾標記，預設為關閉。</value>
+    <value>電影洗版或劇集有更新後即時提取媒體資訊以及同步基於行為的片頭片尾標記，預設為關閉。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>包含分集和附加內容</value>
@@ -75,7 +75,7 @@
     <value>神醫助手</value>
   </data>
   <data name="PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract" xml:space="preserve">
-    <value>請卸載衝突插件 StrmExtract.dll，然後重新啟動 Emby。</value>
+    <value>請卸載功能重複的插件 StrmExtract.dll 以及存在線程安全問題的插件 InfuseSync.dll，然後重新啟動 Emby。</value>
   </data>
   <data name="Notification_CatchupUpdate_EventName" xml:space="preserve">
     <value>最愛有更新</value>
@@ -129,7 +129,7 @@
     <value>獨佔媒體訊息擷取</value>
   </data>
   <data name="ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_" xml:space="preserve">
-    <value>僅允許本插件提取媒體資訊 (ffprobe) 以及視訊截圖 (ffmpeg)，全媒體庫生效，預設為關閉。</value>
+    <value>接管媒體資訊提取 (ffprobe) 以及視訊截圖 (ffmpeg)，全媒體庫生效，預設為關閉。</value>
   </data>
   <data name="Repo_Link" xml:space="preserve">
     <value>項目連結</value>
@@ -400,5 +400,26 @@
   </data>
   <data name="NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_" xml:space="preserve">
     <value>對外 HTTP 請求使用代理伺服器，預設為關閉。</value>
+  </data>
+  <data name="ItemType_Season_Season" xml:space="preserve">
+    <value>季</value>
+  </data>
+  <data name="MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_Episode_Group" xml:space="preserve">
+    <value>支援劇集組刮削 TMDB</value>
+  </data>
+  <data name="MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_episode_group_scrapping_for_TV_shows__Default_is_OFF_" xml:space="preserve">
+    <value>用指定的劇集組刮削劇集，預設為關閉。</value>
+  </data>
+  <data name="ExclusiveControl_IgnoreFileChange_IgnoreFileChange" xml:space="preserve">
+    <value>忽略文件變更</value>
+  </data>
+  <data name="ExclusiveControl_CatchAllBlock_CatchAllBlock" xml:space="preserve">
+    <value>盡可能全阻止</value>
+  </data>
+  <data name="ExclusiveControl_CatchAllAllow_CatchAllAllow" xml:space="preserve">
+    <value>盡可能全放行</value>
+  </data>
+  <data name="MediaInfoExtractOptions_ExclusiveExtractFeatureControl_Exclusive_Extract_Feature_Control" xml:space="preserve">
+    <value>選用獨佔模式功能控制</value>
   </data>
 </root>

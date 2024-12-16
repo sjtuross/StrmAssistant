@@ -42,7 +42,8 @@ namespace StrmAssistant
         public AboutOptions AboutOptions { get; set; } = new AboutOptions();
 
         [Browsable(false)]
-        public bool IsConflictPluginLoaded { get; } =
-            AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "StrmExtract");
+        public bool IsConflictPluginLoaded { get; } = AppDomain.CurrentDomain.GetAssemblies()
+            .Select(a => a.GetName().Name)
+            .Any(n => n == "StrmExtract" || n == "InfuseSync");
     }
 }

@@ -89,6 +89,33 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DefaultAllow.
+        /// </summary>
+        public static string ExclusiveControl_CatchAllAllow_CatchAllAllow {
+            get {
+                return ResourceManager.GetString("ExclusiveControl_CatchAllAllow_CatchAllAllow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to DefaultBlock.
+        /// </summary>
+        public static string ExclusiveControl_CatchAllBlock_CatchAllBlock {
+            get {
+                return ResourceManager.GetString("ExclusiveControl_CatchAllBlock_CatchAllBlock", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IgnoreFileChange.
+        /// </summary>
+        public static string ExclusiveControl_IgnoreFileChange_IgnoreFileChange {
+            get {
+                return ResourceManager.GetString("ExclusiveControl_IgnoreFileChange_IgnoreFileChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Extracts intro fingerprint from episodes.
         /// </summary>
         public static string ExtractIntroFingerprintTask_Description_Extracts_intro_fingerprint_from_episodes {
@@ -445,6 +472,15 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Season.
+        /// </summary>
+        public static string ItemType_Season_Season {
+            get {
+                return ResourceManager.GetString("ItemType_Season_Season", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Series.
         /// </summary>
         public static string ItemType_Series_Series {
@@ -477,6 +513,16 @@ namespace StrmAssistant.Properties {
         public static string ItemType_Trailer_Trailer {
             get {
                 return ResourceManager.GetString("ItemType_Trailer_Trailer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Optional Exclusive Extract Feature Control.
+        /// </summary>
+        public static string MediaInfoExtractOptions_ExclusiveExtractFeatureControl_Exclusive_Extract_Feature_Control {
+            get {
+                return ResourceManager.GetString("MediaInfoExtractOptions_ExclusiveExtractFeatureControl_Exclusive_Extract_Feature_" +
+                        "Control", resourceCulture);
             }
         }
         
@@ -594,7 +640,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extract also_known_as when refresh person, import season cast, update series cast. Default is OFF..
+        ///   Looks up a localized string similar to Extract also_known_as while running refresh person scheduled task, import season cast, update series cast. Default is OFF..
         /// </summary>
         public static string MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_ {
             get {
@@ -619,6 +665,25 @@ namespace StrmAssistant.Properties {
         public static string MetadataEnhanceOptions_EnhanceNfoMetadata_Nfo_Metadata_Import_Enhanced {
             get {
                 return ResourceManager.GetString("MetadataEnhanceOptions_EnhanceNfoMetadata_Nfo_Metadata_Import_Enhanced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Support MovieDb Episode Group.
+        /// </summary>
+        public static string MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_Episode_Group {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_Episode_Group", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Scrape TV show by specified episode group. Default is OFF..
+        /// </summary>
+        public static string MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_episode_group_scrapping_for_TV_shows__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_episode_group_scrappin" +
+                        "g_for_TV_shows__Default_is_OFF_", resourceCulture);
             }
         }
         
@@ -669,7 +734,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Only allow this plugin to extract media info (ffprobe) and capture image (ffmpeg) for all libraries. Default is OFF..
+        ///   Looks up a localized string similar to Take over media info extract (ffprobe) and image capture (ffmpeg) for all libraries. Default is OFF..
         /// </summary>
         public static string ModOptions_ExclusiveExtract_Only_allow_this_plugin_to_extract_media_info__ffprobe__and_capture_image__ffmpeg___Default_is_OFF_ {
             get {
@@ -752,7 +817,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable http proxy server. Blank is OFF..
+        ///   Looks up a localized string similar to Support http(s) proxy server. Latency to proxy server must be less than 500 milliseconds. Disabled if unavailabe or leave blank..
         /// </summary>
         public static string ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_ {
             get {
@@ -806,7 +871,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Enable Proxy Server. Default is OFF..
+        ///   Looks up a localized string similar to Enable proxy server for outgoing http requests. Default is OFF..
         /// </summary>
         public static string NetworkOptions_EnableProxyServer_Enable_Proxy_Server__Default_is_OFF_ {
             get {
@@ -914,7 +979,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extract media info for newly added items and sync intro and credits markers. Default is OFF..
+        ///   Looks up a localized string similar to Extract media info for newly added items and sync behaviour-based intro and credits markers. Default is OFF..
         /// </summary>
         public static string PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_ {
             get {
@@ -998,7 +1063,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please uninstall the conflict plugin StrmExtract.dll and then restart Emby..
+        ///   Looks up a localized string similar to Please uninstall the StrmExtract.dll plugin that duplicates functionality and/or the InfuseSync.dll plugin that has thread-safe issues, and then restart Emby..
         /// </summary>
         public static string PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract {
             get {
@@ -1044,7 +1109,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Max concurrent count of threads to extract media info. It must be between 1 to 10. Default is 1..
+        ///   Looks up a localized string similar to Max concurrent count of threads shared by all the tasks. It must be between 1 to 20. Default is 1..
         /// </summary>
         public static string PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_ {
             get {

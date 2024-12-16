@@ -30,6 +30,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
@@ -55,6 +57,7 @@ namespace StrmAssistant
 
         private bool _currentSuppressOnOptionsSaved;
         private int _currentMaxConcurrentCount;
+        private bool _currentPersistMediaInfo;
         private bool _currentCatchupMode;
         private bool _currentEnableIntroSkip;
 
@@ -90,6 +93,7 @@ namespace StrmAssistant
             _userDataManager = userDataManager;
 
             _currentMaxConcurrentCount = GetOptions().GeneralOptions.MaxConcurrentCount;
+            _currentPersistMediaInfo = GetOptions().MediaInfoExtractOptions.PersistMediaInfo;
             _currentCatchupMode = GetOptions().GeneralOptions.CatchupMode;
             _currentEnableIntroSkip = GetOptions().IntroSkipOptions.EnableIntroSkip;
 
@@ -110,6 +114,7 @@ namespace StrmAssistant
             QueueManager.Initialize();
 
             _libraryManager.ItemAdded += OnItemAdded;
+            _libraryManager.ItemRemoved += OnItemRemoved;
             _userManager.UserCreated += OnUserCreated;
             _userManager.UserDeleted += OnUserDeleted;
             _userManager.UserConfigurationUpdated += OnUserConfigurationUpdated;
@@ -161,6 +166,14 @@ namespace StrmAssistant
             }
 
             NotificationApi.FavoritesUpdateSendNotification(e.Item);
+        }
+
+        private void OnItemRemoved(object sender, ItemChangeEventArgs e)
+        {
+            if (_currentPersistMediaInfo)
+            {
+                Task.Run(() => LibraryApi.DeleteMediaInfoJson(e.Item, CancellationToken.None));   
+            }
         }
 
         private void OnUserDataSaved(object sender, UserDataSaveEventArgs e)
@@ -242,11 +255,6 @@ namespace StrmAssistant
 
             if (!suppressLogger)
             {
-                logger.Info("PersistMediaInfo is set to {0}", options.MediaInfoExtractOptions.PersistMediaInfo);
-                logger.Info("MediaInfoJsonRootFolder is set to {0}",
-                    !string.IsNullOrEmpty(options.MediaInfoExtractOptions.MediaInfoJsonRootFolder)
-                        ? options.MediaInfoExtractOptions.MediaInfoJsonRootFolder
-                        : "EMPTY");
                 logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
                 logger.Info("MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
                 var libraryScope = string.Join(", ",
@@ -263,6 +271,15 @@ namespace StrmAssistant
                 _currentMaxConcurrentCount = options.GeneralOptions.MaxConcurrentCount;
 
                 QueueManager.UpdateSemaphore(_currentMaxConcurrentCount);
+            }
+
+            if (!suppressLogger)
+            {
+                logger.Info("PersistMediaInfo is set to {0}", options.MediaInfoExtractOptions.PersistMediaInfo);
+                logger.Info("MediaInfoJsonRootFolder is set to {0}",
+                    !string.IsNullOrEmpty(options.MediaInfoExtractOptions.MediaInfoJsonRootFolder)
+                        ? options.MediaInfoExtractOptions.MediaInfoJsonRootFolder
+                        : "EMPTY");
             }
 
             if (!suppressLogger)

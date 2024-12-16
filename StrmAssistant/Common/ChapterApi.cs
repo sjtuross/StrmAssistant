@@ -600,7 +600,8 @@ namespace StrmAssistant
 
             if (!string.IsNullOrEmpty(markerEnabledLibraryScope) && markerEnabledLibraryScope.Contains("-1"))
             {
-                itemsFingerprintQuery.ParentIds = Plugin.ChapterApi.GetAllFavoriteSeasons();
+                itemsFingerprintQuery.ParentIds =
+                    Plugin.ChapterApi.GetAllFavoriteSeasons().DefaultIfEmpty(-1).ToArray();
             }
             else
             {

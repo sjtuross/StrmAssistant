@@ -162,18 +162,21 @@ namespace StrmAssistant
 
         public bool HasMediaInfo(BaseItem item)
         {
+            if (!item.RunTimeTicks.HasValue) return false;
+
             var mediaStreamCount = item.GetMediaStreams()
                 .FindAll(i => i.Type == MediaStreamType.Video || i.Type == MediaStreamType.Audio).Count;
 
-            return mediaStreamCount > 0 && item.RunTimeTicks.HasValue;
+            return mediaStreamCount > 0;
         }
 
         public bool ImageCaptureEnabled(BaseItem item)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
-            var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
+            var typeName = item.ExtraType == null ? item.GetType().Name : item.DisplayParent.GetType().Name;
+            var typeOptions = libraryOptions.GetTypeOptions(typeName);
 
-            return typeOptions.ImageFetchers.Contains("Image Capture");
+            return typeOptions?.ImageFetchers?.Contains("Image Capture") == true;
         }
 
         public List<BaseItem> FetchExtractQueueItems(List<BaseItem> items)
@@ -622,6 +625,17 @@ namespace StrmAssistant
 
         public async Task SerializeMediaInfo(BaseItem item, bool overwrite, CancellationToken cancellationToken)
         {
+            var directoryService = new DirectoryService(_logger, _fileSystem);
+
+            await SerializeMediaInfo(item, directoryService, overwrite, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task SerializeMediaInfo(long itemId, bool overwrite, CancellationToken cancellationToken)
+        {
+            var item = _libraryManager.GetItemById(itemId);
+
+            if (!HasMediaInfo(item)) return;
+
             var directoryService = new DirectoryService(_logger, _fileSystem);
 
             await SerializeMediaInfo(item, directoryService, overwrite, cancellationToken).ConfigureAwait(false);
