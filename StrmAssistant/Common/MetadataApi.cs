@@ -22,11 +22,17 @@ namespace StrmAssistant
         private readonly ILibraryManager _libraryManager;
         private readonly IServerConfigurationManager _configurationManager;
         private readonly ILocalizationManager _localizationManager;
+        private readonly IFileSystem _fileSystem;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IHttpClient _httpClient;
 
         public static MetadataRefreshOptions PersonRefreshOptions;
         
+        private const int RequestIntervalMs = 100;
+        private static long _lastRequestTicks;
+        private static readonly TimeSpan CacheTime = TimeSpan.FromHours(6.0);
+        private static readonly LruCache LruCache = new LruCache(20);
+
         public MetadataApi(ILibraryManager libraryManager, IFileSystem fileSystem,
             IServerConfigurationManager configurationManager, ILocalizationManager localizationManager,
             IJsonSerializer jsonSerializer, IHttpClient httpClient)
@@ -35,6 +41,7 @@ namespace StrmAssistant
             _libraryManager = libraryManager;
             _configurationManager = configurationManager;
             _localizationManager = localizationManager;
+            _fileSystem = fileSystem;
             _jsonSerializer = jsonSerializer;
             _httpClient = httpClient;
 
@@ -160,7 +167,77 @@ namespace StrmAssistant
 
         public ISeriesMetadataProvider GetMovieDbSeriesProvider()
         {
-            return new MovieDbSeriesProvider(_jsonSerializer, _httpClient);
+            return new MovieDbSeriesProvider();
+        }
+
+        public async Task<T> GetMovieDbResponse<T>(string url, string cacheKey, string cachePath,
+            CancellationToken cancellationToken) where T : class
+        {
+            T result;
+
+            if (!string.IsNullOrEmpty(cacheKey) && !string.IsNullOrEmpty(cachePath))
+            {
+                if (LruCache.TryGetFromCache(cacheKey, out result))
+                {
+                    return result;
+                }
+
+                var cacheFile = _fileSystem.GetFileSystemInfo(cachePath);
+
+                if (cacheFile.Exists && DateTimeOffset.UtcNow - _fileSystem.GetLastWriteTimeUtc(cacheFile) <= CacheTime)
+                {
+                    result = _jsonSerializer.DeserializeFromFile<T>(cachePath);
+                    LruCache.AddOrUpdateCache(cacheKey, result);
+                    return result;
+                }
+            }
+
+            var num = Math.Min((RequestIntervalMs * 10000 - (DateTimeOffset.UtcNow.Ticks - _lastRequestTicks)) / 10000L,
+                RequestIntervalMs);
+            if (num > 0L)
+            {
+                _logger.Debug("Throttling Tmdb by {0} ms", num);
+                await Task.Delay(Convert.ToInt32(num)).ConfigureAwait(false);
+            }
+
+            _lastRequestTicks = DateTimeOffset.UtcNow.Ticks;
+
+            var options = new HttpRequestOptions
+            {
+                Url = url,
+                CancellationToken = cancellationToken,
+                AcceptHeader = "application/json",
+                BufferContent = true,
+                UserAgent = Plugin.Instance.UserAgent
+            };
+
+            try
+            {
+                using var response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
+                await using var contentStream = response.Content;
+                result = _jsonSerializer.DeserializeFromStream<T>(contentStream);
+
+                if (result is null) return null;
+
+                if (!string.IsNullOrEmpty(cacheKey) && !string.IsNullOrEmpty(cachePath))
+                {
+                    _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(cachePath));
+                    _jsonSerializer.SerializeToFile(result, cachePath);
+                    LruCache.AddOrUpdateCache(cacheKey, result);
+                }
+
+                return result;
+            }
+            catch (Exception e)
+            {
+                _logger.Debug("Failed to get MovieDb response - " + e.Message);
+                return null;
+            }
+        }
+
+        public async Task<T> GetMovieDbResponse<T>(string url, CancellationToken cancellationToken) where T : class
+        {
+            return await GetMovieDbResponse<T>(url, null, null, cancellationToken);
         }
     }
 }

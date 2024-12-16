@@ -40,6 +40,7 @@ namespace StrmAssistant.Mod
             BeautifyMissingMetadata.Initialize();
             EnhanceMissingEpisodes.Initialize();
             ChapterChangeTracker.Initialize();
+            MovieDbEpisodeGroup.Initialize();
         }
 
         public static bool IsPatched(MethodBase methodInfo, Type type)

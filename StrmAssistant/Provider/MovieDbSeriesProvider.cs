@@ -1,9 +1,6 @@
-﻿using MediaBrowser.Common.Net;
-using MediaBrowser.Controller.Providers;
+﻿using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Entities;
-using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Providers;
-using MediaBrowser.Model.Serialization;
 using StrmAssistant.Mod;
 using System;
 using System.Collections.Generic;
@@ -16,20 +13,6 @@ namespace StrmAssistant.Provider
 {
     public class MovieDbSeriesProvider : ISeriesMetadataProvider
     {
-        private readonly ILogger _logger;
-        private readonly IHttpClient _httpClient;
-        private readonly IJsonSerializer _jsonSerializer;
-
-        private const int RequestIntervalMs = 100;
-        private static long _lastRequestTicks;
-
-        public MovieDbSeriesProvider(IJsonSerializer jsonSerializer, IHttpClient httpClient)
-        {
-            _logger = Plugin.Instance.logger;
-            _httpClient = httpClient;
-            _jsonSerializer = jsonSerializer;
-        }
-
         public string Name => "TheMovieDb";
 
         public async Task<RemoteSearchResult[]> GetAllEpisodes(SeriesInfo seriesInfo,
@@ -42,8 +25,8 @@ namespace StrmAssistant.Provider
                 return Array.Empty<RemoteSearchResult>();
 
             var seriesUrl = BuildApiUrl($"tv/{tmdbId}", language);
-            var seriesInfoResponse = await GetMovieDbResponse<SeriesResponseInfo>(seriesUrl, cancellationToken)
-                .ConfigureAwait(false);
+            var seriesInfoResponse = await Plugin.MetadataApi
+                .GetMovieDbResponse<SeriesResponseInfo>(seriesUrl, cancellationToken).ConfigureAwait(false);
             if (seriesInfoResponse?.seasons == null)
                 return Array.Empty<RemoteSearchResult>();
 
@@ -67,7 +50,8 @@ namespace StrmAssistant.Provider
             string tmdbId, int seasonNumber, string language, CancellationToken cancellationToken)
         {
             var seasonUrl = BuildApiUrl($"tv/{tmdbId}/season/{seasonNumber}", language);
-            var seasonInfo = await GetMovieDbResponse<SeasonResponseInfo>(seasonUrl, cancellationToken);
+            var seasonInfo = await Plugin.MetadataApi
+                .GetMovieDbResponse<SeasonResponseInfo>(seasonUrl, cancellationToken).ConfigureAwait(false);
 
             if (seasonInfo?.episodes == null)
                 return new List<RemoteSearchResult>();
@@ -88,34 +72,6 @@ namespace StrmAssistant.Provider
                 }).ToList();
         }
 
-        private async Task<T> GetMovieDbResponse<T>(string url, CancellationToken cancellationToken)
-        {
-            var num = Math.Min(
-                (RequestIntervalMs * 10000 - (DateTimeOffset.UtcNow.Ticks - _lastRequestTicks)) / 10000L,
-                RequestIntervalMs);
-            if (num > 0L)
-            {
-                _logger.Debug("Throttling Tmdb by {0} ms", num);
-                await Task.Delay(Convert.ToInt32(num)).ConfigureAwait(false);
-            }
-
-            _lastRequestTicks = DateTimeOffset.UtcNow.Ticks;
-
-            var options = new HttpRequestOptions
-            {
-                Url = url,
-                CancellationToken = cancellationToken,
-                AcceptHeader = "application/json",
-                BufferContent = true,
-                UserAgent = Plugin.Instance.UserAgent
-            };
-
-            using var response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
-            await using var contentStream = response.Content;
-
-            return _jsonSerializer.DeserializeFromStream<T>(contentStream);
-        }
-
         private static string BuildApiUrl(string endpoint, string language)
         {
             var url =
@@ -123,35 +79,6 @@ namespace StrmAssistant.Provider
             if (!string.IsNullOrEmpty(language))
                 url += $"&language={language}";
             return url;
-        }
-
-        internal class SeriesResponseInfo
-        {
-            public List<SeasonResponseInfo> seasons { get; set; }
-        }
-
-        internal class SeasonResponseInfo
-        {
-            public int id { get; set; }
-
-            public int season_number { get; set; }
-
-            public List<EpisodeResponseInfo> episodes { get; set; }
-        }
-
-        internal class EpisodeResponseInfo
-        {
-            public DateTimeOffset air_date { get; set; }
-
-            public int episode_number { get; set; }
-
-            public string name { get; set; }
-
-            public string overview { get; set; }
-
-            public int id { get; set; }
-
-            public int season_number { get; set; }
         }
     }
 }

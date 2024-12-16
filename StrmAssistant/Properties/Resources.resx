@@ -491,4 +491,10 @@
   <data name="ItemType_Season_Season" xml:space="preserve">
     <value>Season</value>
   </data>
+  <data name="MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_Episode_Group" xml:space="preserve">
+    <value>Support MovieDb Episode Group</value>
+  </data>
+  <data name="MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_episode_group_scrapping_for_TV_shows__Default_is_OFF_" xml:space="preserve">
+    <value>Scrape TV show by specified episode group. Default is OFF.</value>
+  </data>
 </root>

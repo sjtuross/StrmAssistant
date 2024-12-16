@@ -404,4 +404,10 @@
   <data name="ItemType_Season_Season" xml:space="preserve">
     <value>季</value>
   </data>
+  <data name="MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_Episode_Group" xml:space="preserve">
+    <value>支持剧集组刮削 TMDB</value>
+  </data>
+  <data name="MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_episode_group_scrapping_for_TV_shows__Default_is_OFF_" xml:space="preserve">
+    <value>用指定的剧集组刮削剧集，默认关闭。</value>
+  </data>
 </root>

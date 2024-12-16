@@ -68,6 +68,7 @@ namespace StrmAssistant
         private bool _currentUnlockIntroSkip;
         private bool _currentMergeMultiVersion;
         private bool _currentChineseMovieDb;
+        private bool _currentMovieDbEpisodeGroup;
         private bool _currentEnhanceMovieDbPerson;
         private bool _currentAltMovieDbConfig;
         private bool _currentAltMovieDbImageUrlEnabled;
@@ -123,6 +124,7 @@ namespace StrmAssistant
             _currentUnlockIntroSkip = GetOptions().IntroSkipOptions.UnlockIntroSkip;
             _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
             _currentChineseMovieDb = GetOptions().MetadataEnhanceOptions.ChineseMovieDb;
+            _currentMovieDbEpisodeGroup = GetOptions().MetadataEnhanceOptions.MovieDbEpisodeGroup;
             _currentEnhanceMovieDbPerson = GetOptions().MetadataEnhanceOptions.EnhanceMovieDbPerson;
             _currentAltMovieDbConfig = GetOptions().MetadataEnhanceOptions.AltMovieDbConfig;
             _currentAltMovieDbImageUrlEnabled =
@@ -467,6 +469,22 @@ namespace StrmAssistant
                 else
                 {
                     ChineseMovieDb.Unpatch();
+                }
+            }
+
+            if (!suppressLogger)
+                logger.Info("MovieDbEpisodeGroup is set to {0}", options.MetadataEnhanceOptions.MovieDbEpisodeGroup);
+            if (_currentMovieDbEpisodeGroup != GetOptions().MetadataEnhanceOptions.MovieDbEpisodeGroup)
+            {
+                _currentMovieDbEpisodeGroup = GetOptions().MetadataEnhanceOptions.MovieDbEpisodeGroup;
+
+                if (_currentMovieDbEpisodeGroup)
+                {
+                    MovieDbEpisodeGroup.Patch();
+                }
+                else
+                {
+                    MovieDbEpisodeGroup.Unpatch();
                 }
             }
 
