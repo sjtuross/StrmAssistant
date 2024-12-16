@@ -395,6 +395,7 @@ namespace StrmAssistant
                 if (options.MediaInfoExtractOptions.EnableImageCapture)
                     EnableImageCapture.UpdateResourcePool(_currentMaxConcurrentCount);
             }
+            LibraryApi.UpdateLibraryPathsInScope();
 
             if (!suppressLogger)
             {

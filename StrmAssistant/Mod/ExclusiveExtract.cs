@@ -437,7 +437,8 @@ namespace StrmAssistant.Mod
         private static bool AfterMetadataRefreshPrefix(BaseItem __instance)
         {
             if (Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.PersistMediaInfo &&
-                (__instance is Video || __instance is Audio) && CurrentRefreshContext.Value != null &&
+                (__instance is Video || __instance is Audio) && Plugin.LibraryApi.IsLibraryInScope(__instance) &&
+                CurrentRefreshContext.Value != null &&
                 CurrentRefreshContext.Value.InternalId == __instance.InternalId)
             {
                 if (CurrentRefreshContext.Value.MediaInfoNeedsUpdate)

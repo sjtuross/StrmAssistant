@@ -87,9 +87,10 @@ namespace StrmAssistant
             }
         }
 
+        public static List<string> LibraryPathsInScope;
         public static Dictionary<User, bool> AllUsers = new Dictionary<User, bool>();
         public static string[] AdminOrderedViews = Array.Empty<string>();
-
+        
         private readonly bool _fallbackProbeApproach;
         private readonly MethodInfo GetPlayackMediaSources;
 
@@ -116,6 +117,7 @@ namespace StrmAssistant
             _itemRepository = itemRepository;
             _jsonSerializer = jsonSerializer;
 
+            UpdateLibraryPathsInScope();
             FetchUsers();
 
             MediaInfoRefreshOptions = new MetadataRefreshOptions(_fileSystem)
@@ -171,6 +173,28 @@ namespace StrmAssistant
                     _logger.Debug(e.StackTrace);
                 }
             }
+        }
+
+        public void UpdateLibraryPathsInScope()
+        {
+            var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            LibraryPathsInScope = _libraryManager.GetVirtualFolders()
+                .Where(f => !libraryIds.Any() || libraryIds.Contains(f.Id))
+                .SelectMany(l => l.Locations)
+                .Select(ls => ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                    ? ls
+                    : ls + Path.DirectorySeparatorChar)
+                .ToList();
+        }
+
+        public bool IsLibraryInScope(BaseItem item)
+        {
+            if (!string.IsNullOrEmpty(item.ContainingFolderPath)) return false;
+
+            var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
+
+            return isLibraryInScope;
         }
 
         public void FetchUsers()
