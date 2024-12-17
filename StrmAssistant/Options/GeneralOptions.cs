@@ -17,7 +17,7 @@ namespace StrmAssistant.Options
 
         [DisplayNameL("PluginOptions_MaxConcurrentCount_Max_Concurrent_Count", typeof(Resources))]
         [DescriptionL("PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_", typeof(Resources))]
-        [Required, MinValue(1), MaxValue(10)]
+        [Required, MinValue(1), MaxValue(20)]
         public int MaxConcurrentCount { get; set; } = 1;
     }
 }

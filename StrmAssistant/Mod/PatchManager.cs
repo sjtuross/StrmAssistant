@@ -30,6 +30,7 @@ namespace StrmAssistant.Mod
             ChineseMovieDb.Initialize();
             EnhanceMovieDbPerson.Initialize();
             AltMovieDbConfig.Initialize();
+            EnableProxyServer.Initialize();
             PreferOriginalPoster.Initialize();
             UnlockIntroSkip.Initialize();
             PinyinSortName.Initialize();
@@ -38,6 +39,8 @@ namespace StrmAssistant.Mod
             EnforceLibraryOrder.Initialize();
             BeautifyMissingMetadata.Initialize();
             EnhanceMissingEpisodes.Initialize();
+            ChapterChangeTracker.Initialize();
+            MovieDbEpisodeGroup.Initialize();
         }
 
         public static bool IsPatched(MethodBase methodInfo, Type type)

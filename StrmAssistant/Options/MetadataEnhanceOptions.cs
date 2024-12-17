@@ -72,6 +72,12 @@ namespace StrmAssistant.Options
         [VisibleCondition(nameof(ChineseMovieDb), SimpleCondition.IsTrue)]
         public string FallbackLanguages { get; set; }
 
+        [DisplayNameL("MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_Episode_Group", typeof(Resources))]
+        [DescriptionL("MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_episode_group_scrapping_for_TV_shows__Default_is_OFF_", typeof(Resources))]
+        [EnabledCondition(nameof(IsMovieDbPluginLoaded), SimpleCondition.IsTrue)]
+        [Required]
+        public bool MovieDbEpisodeGroup { get; set; }
+
         [DisplayNameL("MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person", typeof(Resources))]
         [DescriptionL("MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_", typeof(Resources))]
         [EnabledCondition(nameof(IsMovieDbPluginLoaded), SimpleCondition.IsTrue)]
@@ -134,7 +140,7 @@ namespace StrmAssistant.Options
 
         protected override void Validate(ValidationContext context)
         {
-            string errors = null;
+            string metadataOptionsErrors = null;
 
             foreach (var (value, isValid, errorResource) in new (string, Func<string, bool>, string)[]
                      {
@@ -148,13 +154,13 @@ namespace StrmAssistant.Options
             {
                 if (!string.IsNullOrWhiteSpace(value) && !isValid(value))
                 {
-                    errors = errors == null ? errorResource : $"{errors}; {errorResource}";
+                    metadataOptionsErrors = metadataOptionsErrors == null ? errorResource : $"{metadataOptionsErrors}; {errorResource}";
                 }
             }
 
-            if (!string.IsNullOrEmpty(errors))
+            if (!string.IsNullOrEmpty(metadataOptionsErrors))
             {
-                context.AddValidationError(nameof(MetadataEnhanceOptions), errors);
+                context.AddValidationError(nameof(MetadataEnhanceOptions), metadataOptionsErrors);
             }
         }
     }

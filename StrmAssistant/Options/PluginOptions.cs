@@ -1,10 +1,10 @@
-﻿using Emby.Web.GenericEdit;
+using Emby.Web.GenericEdit;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
+using StrmAssistant.Properties;
 using System;
 using System.ComponentModel;
 using System.Linq;
-using StrmAssistant.Properties;
 
 namespace StrmAssistant.Options
 {
@@ -32,11 +32,17 @@ namespace StrmAssistant.Options
         [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         public ModOptions ModOptions { get; set; } = new ModOptions();
 
+        [DisplayNameL("NetworkOptions_EditorTitle_Network", typeof(Resources))]
+        [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
+        [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
+        public NetworkOptions NetworkOptions { get; set; } = new NetworkOptions();
+
         [DisplayNameL("AboutOptions_EditorTitle_About", typeof(Resources))]
         public AboutOptions AboutOptions { get; set; } = new AboutOptions();
 
         [Browsable(false)]
-        public bool IsConflictPluginLoaded { get; } =
-            AppDomain.CurrentDomain.GetAssemblies().Any(a => a.GetName().Name == "StrmExtract");
+        public bool IsConflictPluginLoaded { get; } = AppDomain.CurrentDomain.GetAssemblies()
+            .Select(a => a.GetName().Name)
+            .Any(n => n == "StrmExtract" || n == "InfuseSync");
     }
 }

@@ -19,6 +19,7 @@ namespace StrmAssistant.Options.View
 
             PluginOptions.MediaInfoExtractOptions.Initialize(libraryManager);
             PluginOptions.ModOptions.Initialize();
+            PluginOptions.NetworkOptions.Initialize();
             PluginOptions.AboutOptions.Initialize();
         }
 

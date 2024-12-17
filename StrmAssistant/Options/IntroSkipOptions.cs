@@ -1,14 +1,16 @@
 ﻿using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Common;
+using Emby.Web.GenericEdit.Validation;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LocalizationAttributes;
+using StrmAssistant.Common;
+using StrmAssistant.Properties;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.InteropServices;
-using StrmAssistant.Properties;
-using StrmAssistant.Common;
 
 namespace StrmAssistant.Options
 {
@@ -83,11 +85,27 @@ namespace StrmAssistant.Options
         [Browsable(false)]
         public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;
 
+        protected override void Validate(ValidationContext context)
+        {
+            if (MarkerEnabledLibraryList.All(o => o.Value == "-1") &&
+                MarkerEnabledLibraryScope.Contains("-1"))
+            {
+                context.AddValidationError(nameof(IntroSkipOptions), Resources.InvalidMarkerEnabledLibraryScope);
+            }
+        }
+
         public void Initialize(ILibraryManager libraryManager)
         {
             LibraryList.Clear();
             UserList.Clear();
             MarkerEnabledLibraryList.Clear();
+
+            MarkerEnabledLibraryList.Add(new EditorSelectOption
+            {
+                Value = "-1",
+                Name = Resources.Favorites,
+                IsEnabled = true
+            });
 
             var libraries = libraryManager.GetVirtualFolders();
 

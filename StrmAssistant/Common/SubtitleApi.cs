@@ -125,6 +125,13 @@ namespace StrmAssistant.Common
 
                 currentStreams.AddRange(externalSubtitleStreams);
                 _itemRepository.SaveMediaStreams(item.InternalId, currentStreams, cancellationToken);
+
+                if (Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.PersistMediaInfo &&
+                    Plugin.LibraryApi.IsLibraryInScope(item))
+                {
+                    await Plugin.LibraryApi.SerializeMediaInfo(item, directoryService, true, cancellationToken)
+                        .ConfigureAwait(false);
+                }
             }
         }
 

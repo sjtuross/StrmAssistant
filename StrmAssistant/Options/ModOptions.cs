@@ -36,6 +36,7 @@ namespace StrmAssistant.Options
             [DescriptionL("ItemType_Movie_Movie", typeof(Resources))] Movie,
             [DescriptionL("ItemType_Collection_Collection", typeof(Resources))] Collection,
             [DescriptionL("ItemType_Series_Series", typeof(Resources))] Series,
+            [DescriptionL("ItemType_Season_Season", typeof(Resources))] Season,
             [DescriptionL("ItemType_Episode_Episode", typeof(Resources))] Episode,
             [DescriptionL("ItemType_Person_Person", typeof(Resources))] Person,
             [DescriptionL("ItemType_LiveTv_LiveTv", typeof(Resources))] LiveTv,
@@ -76,7 +77,7 @@ namespace StrmAssistant.Options
                                                          Plugin.Instance.ApplicationHost.ApplicationVersion >=
                                                          new Version("4.9.0.15") &&
                                                          Plugin.Instance.ApplicationHost.ApplicationVersion <=
-                                                         new Version("4.9.0.32"));
+                                                         new Version("4.9.0.33"));
 
         public void Initialize()
         {

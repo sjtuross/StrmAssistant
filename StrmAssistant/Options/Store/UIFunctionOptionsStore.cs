@@ -29,65 +29,68 @@ namespace StrmAssistant.Options.Store
 
         public UIFunctionOptions UIFunctionOptions => GetOptions();
 
-        private void OnFileSaved(object sender, UIBaseClasses.Store.FileSavedEventArgs e)
+        private void OnFileSaved(object sender, FileSavedEventArgs e)
         {
-            _logger.Info("HidePersonNoImage is set to {0}", UIFunctionOptions.HidePersonNoImage);
-            if (_currentHidePersonNoImage != UIFunctionOptions.HidePersonNoImage)
+            if (e.Options is UIFunctionOptions options)
             {
-                _currentHidePersonNoImage = UIFunctionOptions.HidePersonNoImage;
+                _logger.Info("HidePersonNoImage is set to {0}", options.HidePersonNoImage);
+                if (_currentHidePersonNoImage != options.HidePersonNoImage)
+                {
+                    _currentHidePersonNoImage = options.HidePersonNoImage;
 
-                if (_currentHidePersonNoImage)
-                {
-                    HidePersonNoImage.Patch();
+                    if (_currentHidePersonNoImage)
+                    {
+                        HidePersonNoImage.Patch();
+                    }
+                    else
+                    {
+                        HidePersonNoImage.Unpatch();
+                    }
                 }
-                else
-                {
-                    HidePersonNoImage.Unpatch();
-                }
-            }
 
-            _logger.Info("EnforceLibraryOrder is set to {0}", UIFunctionOptions.EnforceLibraryOrder);
-            if (_currentEnforceLibraryOrder != UIFunctionOptions.EnforceLibraryOrder)
-            {
-                _currentEnforceLibraryOrder = UIFunctionOptions.EnforceLibraryOrder;
+                _logger.Info("EnforceLibraryOrder is set to {0}", options.EnforceLibraryOrder);
+                if (_currentEnforceLibraryOrder != options.EnforceLibraryOrder)
+                {
+                    _currentEnforceLibraryOrder = options.EnforceLibraryOrder;
 
-                if (_currentEnforceLibraryOrder)
-                {
-                    EnforceLibraryOrder.Patch();
+                    if (_currentEnforceLibraryOrder)
+                    {
+                        EnforceLibraryOrder.Patch();
+                    }
+                    else
+                    {
+                        EnforceLibraryOrder.Unpatch();
+                    }
                 }
-                else
-                {
-                    EnforceLibraryOrder.Unpatch();
-                }
-            }
 
-            _logger.Info("BeautifyMissingMetadata is set to {0}", UIFunctionOptions.BeautifyMissingMetadata);
-            if (_currentBeautifyMissingMetadata != UIFunctionOptions.BeautifyMissingMetadata)
-            {
-                _currentBeautifyMissingMetadata = UIFunctionOptions.BeautifyMissingMetadata;
+                _logger.Info("BeautifyMissingMetadata is set to {0}", options.BeautifyMissingMetadata);
+                if (_currentBeautifyMissingMetadata != options.BeautifyMissingMetadata)
+                {
+                    _currentBeautifyMissingMetadata = options.BeautifyMissingMetadata;
 
-                if (_currentBeautifyMissingMetadata)
-                {
-                    BeautifyMissingMetadata.Patch();
+                    if (_currentBeautifyMissingMetadata)
+                    {
+                        BeautifyMissingMetadata.Patch();
+                    }
+                    else
+                    {
+                        BeautifyMissingMetadata.Unpatch();
+                    }
                 }
-                else
-                {
-                    BeautifyMissingMetadata.Unpatch();
-                }
-            }
 
-            _logger.Info("EnhanceMissingEpisodes is set to {0}", UIFunctionOptions.EnhanceMissingEpisodes);
-            if (_currentEnhanceMissingEpisodes != UIFunctionOptions.EnhanceMissingEpisodes)
-            {
-                _currentEnhanceMissingEpisodes = UIFunctionOptions.EnhanceMissingEpisodes;
+                _logger.Info("EnhanceMissingEpisodes is set to {0}", options.EnhanceMissingEpisodes);
+                if (_currentEnhanceMissingEpisodes != options.EnhanceMissingEpisodes)
+                {
+                    _currentEnhanceMissingEpisodes = options.EnhanceMissingEpisodes;
 
-                if (_currentEnhanceMissingEpisodes)
-                {
-                    EnhanceMissingEpisodes.Patch();
-                }
-                else
-                {
-                    EnhanceMissingEpisodes.Unpatch();
+                    if (_currentEnhanceMissingEpisodes)
+                    {
+                        EnhanceMissingEpisodes.Patch();
+                    }
+                    else
+                    {
+                        EnhanceMissingEpisodes.Unpatch();
+                    }
                 }
             }
         }

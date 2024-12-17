@@ -498,6 +498,9 @@ namespace StrmAssistant.Mod
                         case ModOptions.SearchItemType.Series:
                             includeItemTypes.AddRange(new[] { "Series" });
                             break;
+                        case ModOptions.SearchItemType.Season:
+                            includeItemTypes.AddRange(new[] { "Season" });
+                            break;
                         case ModOptions.SearchItemType.Studio:
                             includeItemTypes.AddRange(new[] { "Studio" });
                             break;

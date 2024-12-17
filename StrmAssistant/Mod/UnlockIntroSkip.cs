@@ -169,14 +169,23 @@ namespace StrmAssistant.Mod
         [HarmonyPostfix]
         private static void CreateQueryForEpisodeIntroDetectionPostfix(LibraryOptions libraryOptions, ref InternalItemsQuery __result)
         {
-            var libraries = Plugin.ChapterApi.GetMarkerEnabledLibraries(true);
+            var markerEnabledLibraryScope = Plugin.Instance.IntroSkipStore.GetOptions().MarkerEnabledLibraryScope;
 
-            if (libraries.Any())
+            if (!string.IsNullOrEmpty(markerEnabledLibraryScope) && markerEnabledLibraryScope.Contains("-1"))
             {
-                __result.PathStartsWithAny = libraries.SelectMany(l => l.Locations)
-                    .Select(ls =>
-                        ls.EndsWith(Path.DirectorySeparatorChar.ToString()) ? ls : ls + Path.DirectorySeparatorChar)
-                    .ToArray();
+                __result.ParentIds = Plugin.ChapterApi.GetAllFavoriteSeasons().DefaultIfEmpty(-1).ToArray();
+            }
+            else
+            {
+                var libraries = Plugin.ChapterApi.GetMarkerEnabledLibraries(true);
+
+                if (libraries.Any())
+                {
+                    __result.PathStartsWithAny = libraries.SelectMany(l => l.Locations)
+                        .Select(ls =>
+                            ls.EndsWith(Path.DirectorySeparatorChar.ToString()) ? ls : ls + Path.DirectorySeparatorChar)
+                        .ToArray();
+                }
             }
 
             __result.HasIntroDetectionFailure = null;

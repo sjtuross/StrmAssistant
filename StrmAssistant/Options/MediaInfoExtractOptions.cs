@@ -1,3 +1,4 @@
+using Emby.Media.Common.Extensions;
 using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Common;
 using MediaBrowser.Controller.Library;
@@ -5,6 +6,7 @@ using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
 using MediaBrowser.Model.MediaInfo;
 using StrmAssistant.Properties;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
@@ -37,6 +39,25 @@ namespace StrmAssistant.Options
         [Required]
         [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool ExclusiveExtract { get; set; } = false;
+
+        public enum ExclusiveControl
+        {
+            [DescriptionL("ExclusiveControl_IgnoreFileChange_IgnoreFileChange", typeof(Resources))]
+            IgnoreFileChange,
+            [DescriptionL("ExclusiveControl_CatchAllAllow_CatchAllAllow", typeof(Resources))]
+            CatchAllAllow,
+            [DescriptionL("ExclusiveControl_CatchAllBlock_CatchAllBlock", typeof(Resources))]
+            CatchAllBlock
+        }
+
+        [Browsable(false)]
+        public List<EditorSelectOption> ExclusiveControlList { get; set; } = new List<EditorSelectOption>();
+
+        [DisplayNameL("MediaInfoExtractOptions_ExclusiveExtractFeatureControl_Exclusive_Extract_Feature_Control", typeof(Resources))]
+        [EditMultilSelect]
+        [SelectItemsSource(nameof(ExclusiveControlList))]
+        [VisibleCondition(nameof(ExclusiveExtract), SimpleCondition.IsTrue)]
+        public string ExclusiveControlFeatures { get; set; } = string.Empty;
 
         [DisplayNameL("MediaInfoExtractOptions_PersistMediaInfo_Persist_MediaInfo", typeof(Resources))]
         [DescriptionL("MediaInfoExtractOptions_PersistMediaInfo_Persist_media_info_in_JSON_file__Default_is_OFF_", typeof(Resources))]
@@ -84,6 +105,20 @@ namespace StrmAssistant.Options
                 };
 
                 LibraryList.Add(selectOption);
+            }
+
+            ExclusiveControlList.Clear();
+
+            foreach (Enum item in Enum.GetValues(typeof(ExclusiveControl)))
+            {
+                var selectOption = new EditorSelectOption
+                {
+                    Value = item.ToString(),
+                    Name = EnumExtensions.GetDescription(item),
+                    IsEnabled = true,
+                };
+
+                ExclusiveControlList.Add(selectOption);
             }
         }
     }

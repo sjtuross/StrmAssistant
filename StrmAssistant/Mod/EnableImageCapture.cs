@@ -12,6 +12,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Threading;
 using System.Threading.Tasks;
+using StrmAssistant.Common;
 using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
@@ -561,7 +562,7 @@ namespace StrmAssistant.Mod
                 inputPath = Task.Run(async () => await Plugin.LibraryApi.GetStrmMountPath(strmPath)).Result;
             }
 
-            if (ExtractMediaInfoTask.IsRunning && _totalTimeoutMs != null &&
+            if ((ExtractMediaInfoTask.IsRunning || QueueManager.IsProcessTaskRunning) && _totalTimeoutMs != null &&
                 __instance.GetType() == _quickSingleImageExtractor)
             {
                 var newValue =

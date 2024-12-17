@@ -95,7 +95,7 @@ namespace StrmAssistant.IntroSkip
 
             if (_introSkipProcessTask == null || _introSkipProcessTask.IsCompleted)
             {
-                _introSkipProcessTask = Task.Run(() => QueueManager.IntroSkip_ProcessItemQueueAsync());
+                _introSkipProcessTask = Task.Run(QueueManager.IntroSkip_ProcessItemQueueAsync);
             }
         }
 
@@ -112,15 +112,19 @@ namespace StrmAssistant.IntroSkip
             playSessionData.PlaybackStartTicks = e.PlaybackPositionTicks.Value;
             playSessionData.PreviousPositionTicks = e.PlaybackPositionTicks.Value;
             playSessionData.PreviousEventTime = DateTime.UtcNow;
-            if (!Plugin.ChapterApi.HasIntro(e.Item))
+            if (Plugin.ChapterApi.HasIntro(e.Item) && Plugin.ChapterApi.HasCredits(e.Item))
+            {
+                _logger.Info("IntroSkip - Intro marker and Credits marker already exist");
+            }
+            else
             {
                 _logger.Info("Playback start time: " +
                              new TimeSpan(playSessionData.PlaybackStartTicks).ToString(@"hh\:mm\:ss\.fff"));
                 _logger.Info("IntroSkip - Detection Started");
-            }
-            else
-            {
-                _logger.Info("IntroSkip - Intro marker exists");
+                _logger.Info("IntroSkip - Intro marker is " +
+                             (Plugin.ChapterApi.HasIntro(e.Item) ? "available" : "not available"));
+                _logger.Info("IntroSkip - Credits marker is " +
+                             (Plugin.ChapterApi.HasCredits(e.Item) ? "available" : "not available"));
             }
         }
 
@@ -245,7 +249,7 @@ namespace StrmAssistant.IntroSkip
 
             if (!Plugin.ChapterApi.HasCredits(e.Item))
             {
-                long currentPositionTicks = e.PlaybackPositionTicks.Value;
+                var currentPositionTicks = e.PlaybackPositionTicks.Value;
                 if (currentPositionTicks > e.Item.RunTimeTicks - playSessionData.MaxCreditsDurationTicks)
                 {
                     if (e.Item.RunTimeTicks.Value > currentPositionTicks)
@@ -276,7 +280,9 @@ namespace StrmAssistant.IntroSkip
         public bool IsLibraryInScope(BaseItem item)
         {
             if (!(item is Episode)) return false;
-            
+
+            if (!string.IsNullOrEmpty(item.ContainingFolderPath)) return false;
+
             var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
 
             return isLibraryInScope;

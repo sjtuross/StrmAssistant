@@ -11,6 +11,7 @@ namespace StrmAssistant.Options.Store
         private readonly ILogger _logger;
 
         private bool _currentChineseMovieDb;
+        private bool _currentMovieDbEpisodeGroup;
         private bool _currentEnhanceMovieDbPerson;
         private bool _currentAltMovieDbConfig;
         private bool _currentAltMovieDbImageUrlEnabled;
@@ -24,6 +25,7 @@ namespace StrmAssistant.Options.Store
             _logger= logger;
 
             _currentChineseMovieDb = MetadataEnhanceOptions.ChineseMovieDb;
+            _currentMovieDbEpisodeGroup = MetadataEnhanceOptions.MovieDbEpisodeGroup;
             _currentEnhanceMovieDbPerson = MetadataEnhanceOptions.EnhanceMovieDbPerson;
             _currentAltMovieDbConfig = MetadataEnhanceOptions.AltMovieDbConfig;
             _currentAltMovieDbImageUrlEnabled = !string.IsNullOrEmpty(MetadataEnhanceOptions.AltMovieDbImageUrl);
@@ -37,137 +39,160 @@ namespace StrmAssistant.Options.Store
 
         public MetadataEnhanceOptions MetadataEnhanceOptions => GetOptions();
 
-        private void OnFileSaving(object sender, UIBaseClasses.Store.FileSavingEventArgs e)
+        private void OnFileSaving(object sender, FileSavingEventArgs e)
         {
-            MetadataEnhanceOptions.AltMovieDbApiUrl =
-                !string.IsNullOrWhiteSpace(MetadataEnhanceOptions.AltMovieDbApiUrl)
-                    ? MetadataEnhanceOptions.AltMovieDbApiUrl.Trim().TrimEnd('/')
-                    : MetadataEnhanceOptions.AltMovieDbApiUrl?.Trim();
+            if (e.Options is MetadataEnhanceOptions options)
+            {
+                options.AltMovieDbApiUrl =
+                    !string.IsNullOrWhiteSpace(options.AltMovieDbApiUrl)
+                        ? options.AltMovieDbApiUrl.Trim().TrimEnd('/')
+                        : options.AltMovieDbApiUrl?.Trim();
 
-            MetadataEnhanceOptions.AltMovieDbImageUrl =
-                !string.IsNullOrWhiteSpace(MetadataEnhanceOptions.AltMovieDbImageUrl)
-                    ? MetadataEnhanceOptions.AltMovieDbImageUrl.Trim().TrimEnd('/')
-                    : MetadataEnhanceOptions.AltMovieDbImageUrl?.Trim();
+                options.AltMovieDbImageUrl =
+                    !string.IsNullOrWhiteSpace(options.AltMovieDbImageUrl)
+                        ? options.AltMovieDbImageUrl.Trim().TrimEnd('/')
+                        : options.AltMovieDbImageUrl?.Trim();
+            }
         }
 
-        private void OnFileSaved(object sender, UIBaseClasses.Store.FileSavedEventArgs e)
+        private void OnFileSaved(object sender, FileSavedEventArgs e)
         {
-            _logger.Info("ChineseMovieDb is set to {0}", MetadataEnhanceOptions.ChineseMovieDb);
-            if (_currentChineseMovieDb != MetadataEnhanceOptions.ChineseMovieDb)
+            if (e.Options is MetadataEnhanceOptions options)
             {
-                _currentChineseMovieDb = MetadataEnhanceOptions.ChineseMovieDb;
-
-                if (_currentChineseMovieDb)
+                _logger.Info("ChineseMovieDb is set to {0}", options.ChineseMovieDb);
+                if (_currentChineseMovieDb != options.ChineseMovieDb)
                 {
-                    ChineseMovieDb.Patch();
+                    _currentChineseMovieDb = options.ChineseMovieDb;
+
+                    if (_currentChineseMovieDb)
+                    {
+                        ChineseMovieDb.Patch();
+                    }
+                    else
+                    {
+                        ChineseMovieDb.Unpatch();
+                    }
                 }
-                else
+
+                _logger.Info("MovieDbEpisodeGroup is set to {0}", options.MovieDbEpisodeGroup);
+                if (_currentMovieDbEpisodeGroup != options.MovieDbEpisodeGroup)
                 {
-                    ChineseMovieDb.Unpatch();
+                    _currentMovieDbEpisodeGroup = options.MovieDbEpisodeGroup;
+
+                    if (_currentMovieDbEpisodeGroup)
+                    {
+                        MovieDbEpisodeGroup.Patch();
+                    }
+                    else
+                    {
+                        MovieDbEpisodeGroup.Unpatch();
+                    }
                 }
-            }
 
-            _logger.Info("EnhanceMovieDbPerson is set to {0}", MetadataEnhanceOptions.EnhanceMovieDbPerson);
-            if (_currentEnhanceMovieDbPerson != MetadataEnhanceOptions.EnhanceMovieDbPerson)
-            {
-                _currentEnhanceMovieDbPerson = MetadataEnhanceOptions.EnhanceMovieDbPerson;
-
-                if (_currentEnhanceMovieDbPerson)
+                _logger.Info("EnhanceMovieDbPerson is set to {0}", options.EnhanceMovieDbPerson);
+                if (_currentEnhanceMovieDbPerson != options.EnhanceMovieDbPerson)
                 {
-                    EnhanceMovieDbPerson.Patch();
+                    _currentEnhanceMovieDbPerson = options.EnhanceMovieDbPerson;
+
+                    if (_currentEnhanceMovieDbPerson)
+                    {
+                        EnhanceMovieDbPerson.Patch();
+                    }
+                    else
+                    {
+                        EnhanceMovieDbPerson.Unpatch();
+                    }
                 }
-                else
+
+                _logger.Info("AltMovieDbConfig is set to {0}", options.AltMovieDbConfig);
+                _logger.Info("AltMovieDbApiUrl is set to {0}",
+                    !string.IsNullOrEmpty(options.AltMovieDbApiUrl)
+                        ? options.AltMovieDbApiUrl
+                        : "NONE");
+                _logger.Info("AltMovieDbImageUrl is set to {0}",
+                    !string.IsNullOrEmpty(options.AltMovieDbImageUrl)
+                        ? options.AltMovieDbImageUrl
+                        : "NONE");
+                _logger.Info("AltMovieDbApiKey is set to {0}",
+                    !string.IsNullOrEmpty(options.AltMovieDbApiKey)
+                        ? options.AltMovieDbApiKey
+                        : "NONE");
+
+                if (_currentAltMovieDbConfig != options.AltMovieDbConfig)
                 {
-                    EnhanceMovieDbPerson.Unpatch();
+                    _currentAltMovieDbConfig = options.AltMovieDbConfig;
+
+                    if (_currentAltMovieDbConfig)
+                    {
+                        AltMovieDbConfig.PatchApiUrl();
+                        if (_currentAltMovieDbImageUrlEnabled) AltMovieDbConfig.PatchImageUrl();
+                    }
+                    else
+                    {
+                        AltMovieDbConfig.UnpatchApiUrl();
+                        if (_currentAltMovieDbImageUrlEnabled) AltMovieDbConfig.UnpatchImageUrl();
+                    }
                 }
-            }
 
-            _logger.Info("AltMovieDbConfig is set to {0}", MetadataEnhanceOptions.AltMovieDbConfig);
-            _logger.Info("AltMovieDbApiUrl is set to {0}",
-                !string.IsNullOrEmpty(MetadataEnhanceOptions.AltMovieDbApiUrl)
-                    ? MetadataEnhanceOptions.AltMovieDbApiUrl
-                    : "NONE");
-            _logger.Info("AltMovieDbImageUrl is set to {0}",
-                !string.IsNullOrEmpty(MetadataEnhanceOptions.AltMovieDbImageUrl)
-                    ? MetadataEnhanceOptions.AltMovieDbImageUrl
-                    : "NONE");
-            _logger.Info("AltMovieDbApiKey is set to {0}",
-                !string.IsNullOrEmpty(MetadataEnhanceOptions.AltMovieDbApiKey)
-                    ? MetadataEnhanceOptions.AltMovieDbApiKey
-                    : "NONE");
-
-            if (_currentAltMovieDbConfig != MetadataEnhanceOptions.AltMovieDbConfig)
-            {
-                _currentAltMovieDbConfig = MetadataEnhanceOptions.AltMovieDbConfig;
-
-                if (_currentAltMovieDbConfig)
+                if (_currentAltMovieDbImageUrlEnabled !=
+                    !string.IsNullOrEmpty(options.AltMovieDbImageUrl))
                 {
-                    AltMovieDbConfig.PatchApiUrl();
-                    if (_currentAltMovieDbImageUrlEnabled) AltMovieDbConfig.PatchImageUrl();
+                    _currentAltMovieDbImageUrlEnabled =
+                        !string.IsNullOrEmpty(options.AltMovieDbImageUrl);
+
+                    if (_currentAltMovieDbImageUrlEnabled)
+                    {
+                        AltMovieDbConfig.PatchImageUrl();
+                    }
+                    else
+                    {
+                        AltMovieDbConfig.UnpatchImageUrl();
+                    }
                 }
-                else
-                {
-                    AltMovieDbConfig.UnpatchApiUrl();
-                    if (_currentAltMovieDbImageUrlEnabled) AltMovieDbConfig.UnpatchImageUrl();
-                }
-            }
 
-            if (_currentAltMovieDbImageUrlEnabled != !string.IsNullOrEmpty(MetadataEnhanceOptions.AltMovieDbImageUrl))
-            {
-                _currentAltMovieDbImageUrlEnabled = !string.IsNullOrEmpty(MetadataEnhanceOptions.AltMovieDbImageUrl);
+                _logger.Info("PreferOriginalPoster is set to {0}", options.PreferOriginalPoster);
+                if (_currentPreferOriginalPoster != options.PreferOriginalPoster)
+                {
+                    _currentPreferOriginalPoster = options.PreferOriginalPoster;
 
-                if (_currentAltMovieDbImageUrlEnabled)
-                {
-                    AltMovieDbConfig.PatchImageUrl();
+                    if (_currentPreferOriginalPoster)
+                    {
+                        PreferOriginalPoster.Patch();
+                    }
+                    else
+                    {
+                        PreferOriginalPoster.Unpatch();
+                    }
                 }
-                else
-                {
-                    AltMovieDbConfig.UnpatchImageUrl();
-                }
-            }
 
-            _logger.Info("PreferOriginalPoster is set to {0}", MetadataEnhanceOptions.PreferOriginalPoster);
-            if (_currentPreferOriginalPoster != MetadataEnhanceOptions.PreferOriginalPoster)
-            {
-                _currentPreferOriginalPoster = MetadataEnhanceOptions.PreferOriginalPoster;
+                _logger.Info("PinyinSortName is set to {0}", options.PinyinSortName);
+                if (_currentPinyinSortName != options.PinyinSortName)
+                {
+                    _currentPinyinSortName = options.PinyinSortName;
 
-                if (_currentPreferOriginalPoster)
-                {
-                    PreferOriginalPoster.Patch();
+                    if (_currentPinyinSortName)
+                    {
+                        PinyinSortName.Patch();
+                    }
+                    else
+                    {
+                        PinyinSortName.Unpatch();
+                    }
                 }
-                else
-                {
-                    PreferOriginalPoster.Unpatch();
-                }
-            }
 
-            _logger.Info("PinyinSortName is set to {0}", MetadataEnhanceOptions.PinyinSortName);
-            if (_currentPinyinSortName != MetadataEnhanceOptions.PinyinSortName)
-            {
-                _currentPinyinSortName = MetadataEnhanceOptions.PinyinSortName;
+                _logger.Info("EnhanceNfoMetadata is set to {0}", options.EnhanceNfoMetadata);
+                if (_currentEnhanceNfoMetadata != options.EnhanceNfoMetadata)
+                {
+                    _currentEnhanceNfoMetadata = options.EnhanceNfoMetadata;
 
-                if (_currentPinyinSortName)
-                {
-                    PinyinSortName.Patch();
-                }
-                else
-                {
-                    PinyinSortName.Unpatch();
-                }
-            }
-
-            _logger.Info("EnhanceNfoMetadata is set to {0}", MetadataEnhanceOptions.EnhanceNfoMetadata);
-            if (_currentEnhanceNfoMetadata != MetadataEnhanceOptions.EnhanceNfoMetadata)
-            {
-                _currentEnhanceNfoMetadata = MetadataEnhanceOptions.EnhanceNfoMetadata;
-
-                if (_currentEnhanceNfoMetadata)
-                {
-                    EnhanceNfoMetadata.Patch();
-                }
-                else
-                {
-                    EnhanceNfoMetadata.Unpatch();
+                    if (_currentEnhanceNfoMetadata)
+                    {
+                        EnhanceNfoMetadata.Patch();
+                    }
+                    else
+                    {
+                        EnhanceNfoMetadata.Unpatch();
+                    }
                 }
             }
         }

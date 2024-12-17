@@ -301,11 +301,12 @@ namespace StrmAssistant.Mod
         {
             __result.ContinueWith(task =>
                 {
-                    if (task.IsCompleted)
+                    if (task.IsCompletedSuccessfully)
                     {
                         var result = task.Result;
 
-                        if (SeasonPersonInfoDictionary.TryGetValue(result.Item, out var personInfoList))
+                        if (result.Item != null &&
+                            SeasonPersonInfoDictionary.TryGetValue(result.Item, out var personInfoList))
                         {
                             foreach (var personInfo in personInfoList)
                             {

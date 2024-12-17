@@ -13,6 +13,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.MediaInfo;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Serialization;
+using StrmAssistant.Mod;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -86,9 +87,10 @@ namespace StrmAssistant.Common
             }
         }
 
+        public static List<string> LibraryPathsInScope;
         public static Dictionary<User, bool> AllUsers = new Dictionary<User, bool>();
         public static string[] AdminOrderedViews = Array.Empty<string>();
-
+        
         private readonly bool _fallbackProbeApproach;
         private readonly MethodInfo GetPlayackMediaSources;
 
@@ -115,6 +117,7 @@ namespace StrmAssistant.Common
             _itemRepository = itemRepository;
             _jsonSerializer = jsonSerializer;
 
+            UpdateLibraryPathsInScope();
             FetchUsers();
 
             MediaInfoRefreshOptions = new MetadataRefreshOptions(_fileSystem)
@@ -172,6 +175,28 @@ namespace StrmAssistant.Common
             }
         }
 
+        public void UpdateLibraryPathsInScope()
+        {
+            var libraryIds = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.LibraryScope
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            LibraryPathsInScope = _libraryManager.GetVirtualFolders()
+                .Where(f => !libraryIds.Any() || libraryIds.Contains(f.Id))
+                .SelectMany(l => l.Locations)
+                .Select(ls => ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                    ? ls
+                    : ls + Path.DirectorySeparatorChar)
+                .ToList();
+        }
+
+        public bool IsLibraryInScope(BaseItem item)
+        {
+            if (!string.IsNullOrEmpty(item.ContainingFolderPath)) return false;
+
+            var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
+
+            return isLibraryInScope;
+        }
+
         public void FetchUsers()
         {
             var userQuery = new UserQuery
@@ -197,18 +222,21 @@ namespace StrmAssistant.Common
 
         public bool HasMediaInfo(BaseItem item)
         {
+            if (!item.RunTimeTicks.HasValue) return false;
+
             var mediaStreamCount = item.GetMediaStreams()
                 .FindAll(i => i.Type == MediaStreamType.Video || i.Type == MediaStreamType.Audio).Count;
 
-            return mediaStreamCount > 0 && item.RunTimeTicks.HasValue;
+            return mediaStreamCount > 0;
         }
 
         public bool ImageCaptureEnabled(BaseItem item)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
-            var typeOptions = libraryOptions.GetTypeOptions(item.GetType().Name);
+            var typeName = item.ExtraType == null ? item.GetType().Name : item.DisplayParent.GetType().Name;
+            var typeOptions = libraryOptions.GetTypeOptions(typeName);
 
-            return typeOptions.ImageFetchers.Contains("Image Capture");
+            return typeOptions?.ImageFetchers?.Contains("Image Capture") == true;
         }
 
         public List<BaseItem> FetchExtractQueueItems(List<BaseItem> items)
@@ -663,6 +691,17 @@ namespace StrmAssistant.Common
             await SerializeMediaInfo(item, directoryService, overwrite, cancellationToken).ConfigureAwait(false);
         }
 
+        public async Task SerializeMediaInfo(long itemId, bool overwrite, CancellationToken cancellationToken)
+        {
+            var item = _libraryManager.GetItemById(itemId);
+
+            if (!HasMediaInfo(item)) return;
+
+            var directoryService = new DirectoryService(_logger, _fileSystem);
+
+            await SerializeMediaInfo(item, directoryService, overwrite, cancellationToken).ConfigureAwait(false);
+        }
+
         public async Task<bool> DeserializeMediaInfo(BaseItem item, IDirectoryService directoryService,
             CancellationToken cancellationToken)
         {
@@ -695,6 +734,7 @@ namespace StrmAssistant.Common
 
                         if (workItem is Video)
                         {
+                            ChapterChangeTracker.BypassDeserializeInstance(workItem);
                             _itemRepository.SaveChapters(workItem.InternalId, true, mediaSourceWithChapters.Chapters);
                         }
 

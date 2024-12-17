@@ -27,92 +27,106 @@ namespace StrmAssistant.Options.Store
         
         private void OnFileSaving(object sender, FileSavingEventArgs e)
         {
-            IntroSkipOptions.LibraryScope = string.Join(",",
-                IntroSkipOptions.LibraryScope
-                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(v => IntroSkipOptions.LibraryList.Any(option => option.Value == v)) ??
-                Enumerable.Empty<string>());
+            if (e.Options is IntroSkipOptions options)
+            {
+                options.LibraryScope = string.Join(",",
+                    options.LibraryScope
+                        ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Where(v => options.LibraryList.Any(option => option.Value == v)) ??
+                    Enumerable.Empty<string>());
 
-            IntroSkipOptions.UserScope = string.Join(",",
-                IntroSkipOptions.UserScope
-                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(v => IntroSkipOptions.UserList.Any(option => option.Value == v)) ??
-                Enumerable.Empty<string>());
+                options.UserScope = string.Join(",",
+                    options.UserScope
+                        ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Where(v => options.UserList.Any(option => option.Value == v)) ??
+                    Enumerable.Empty<string>());
 
-            IntroSkipOptions.MarkerEnabledLibraryScope = string.Join(",",
-                IntroSkipOptions.MarkerEnabledLibraryScope
-                    ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(v => IntroSkipOptions.MarkerEnabledLibraryList.Any(option => option.Value == v)) ??
-                Enumerable.Empty<string>());
+                options.MarkerEnabledLibraryScope =
+                    options.MarkerEnabledLibraryScope
+                        ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Contains("-1") == true
+                        ? "-1"
+                        : string.Join(",",
+                            options.MarkerEnabledLibraryScope
+                                ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                .Where(v => options.MarkerEnabledLibraryList.Any(option =>
+                                    option.Value == v)) ?? Enumerable.Empty<string>());
+            }
         }
 
         private void OnFileSaved(object sender, UIBaseClasses.Store.FileSavedEventArgs e)
         {
-            _logger.Info("EnableIntroSkip is set to {0}", IntroSkipOptions.EnableIntroSkip);
-            _logger.Info("MaxIntroDurationSeconds is set to {0}", IntroSkipOptions.MaxIntroDurationSeconds);
-            _logger.Info("MaxCreditsDurationSeconds is set to {0}", IntroSkipOptions.MaxCreditsDurationSeconds);
-            _logger.Info("MinOpeningPlotDurationSeconds is set to {0}", IntroSkipOptions.MinOpeningPlotDurationSeconds);
-
-            if (_currentEnableIntroSkip != IntroSkipOptions.EnableIntroSkip)
+            if (e.Options is IntroSkipOptions options)
             {
-                _currentEnableIntroSkip = IntroSkipOptions.EnableIntroSkip;
-                if (IntroSkipOptions.EnableIntroSkip)
+                _logger.Info("EnableIntroSkip is set to {0}", options.EnableIntroSkip);
+                _logger.Info("MaxIntroDurationSeconds is set to {0}", options.MaxIntroDurationSeconds);
+                _logger.Info("MaxCreditsDurationSeconds is set to {0}", options.MaxCreditsDurationSeconds);
+                _logger.Info("MinOpeningPlotDurationSeconds is set to {0}",
+                    options.MinOpeningPlotDurationSeconds);
+
+                if (_currentEnableIntroSkip != options.EnableIntroSkip)
                 {
-                    Plugin.PlaySessionMonitor.Initialize();
-                }
-                else
-                {
-                    Plugin.PlaySessionMonitor.Dispose();
-                }
-            }
-
-            var intoSkipLibraryScope = string.Join(", ",
-                IntroSkipOptions.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(v => IntroSkipOptions.LibraryList
-                        .FirstOrDefault(option => option.Value == v)
-                        ?.Name) ?? Enumerable.Empty<string>());
-            _logger.Info("IntroSkip - LibraryScope is set to {0}",
-                string.IsNullOrEmpty(intoSkipLibraryScope) ? "ALL" : intoSkipLibraryScope);
-
-            var introSkipUserScope = string.Join(", ",
-                IntroSkipOptions.UserScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(v => IntroSkipOptions.UserList
-                        .FirstOrDefault(option => option.Value == v)
-                        ?.Name) ?? Enumerable.Empty<string>());
-            _logger.Info("IntroSkip - UserScope is set to {0}",
-                string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
-
-            Plugin.PlaySessionMonitor.UpdateLibraryPathsInScope();
-            Plugin.PlaySessionMonitor.UpdateUsersInScope();
-
-            _logger.Info("UnlockIntroSkip is set to {0}", IntroSkipOptions.UnlockIntroSkip);
-            if (_currentUnlockIntroSkip != IntroSkipOptions.UnlockIntroSkip)
-            {
-                _currentUnlockIntroSkip = IntroSkipOptions.UnlockIntroSkip;
-                if (IntroSkipOptions.IsModSupported)
-                {
-                    if (_currentUnlockIntroSkip)
+                    _currentEnableIntroSkip = options.EnableIntroSkip;
+                    if (options.EnableIntroSkip)
                     {
-                        UnlockIntroSkip.Patch();
+                        Plugin.PlaySessionMonitor.Initialize();
                     }
                     else
                     {
-                        UnlockIntroSkip.Unpatch();
+                        Plugin.PlaySessionMonitor.Dispose();
                     }
                 }
+
+                var intoSkipLibraryScope = string.Join(", ",
+                    options.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(v => options.LibraryList
+                            .FirstOrDefault(option => option.Value == v)
+                            ?.Name) ?? Enumerable.Empty<string>());
+                _logger.Info("IntroSkip - LibraryScope is set to {0}",
+                    string.IsNullOrEmpty(intoSkipLibraryScope) ? "ALL" : intoSkipLibraryScope);
+
+                var introSkipUserScope = string.Join(", ",
+                    options.UserScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(v => options.UserList
+                            .FirstOrDefault(option => option.Value == v)
+                            ?.Name) ?? Enumerable.Empty<string>());
+                _logger.Info("IntroSkip - UserScope is set to {0}",
+                    string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
+
+                Plugin.PlaySessionMonitor.UpdateLibraryPathsInScope();
+                Plugin.PlaySessionMonitor.UpdateUsersInScope();
+
+                _logger.Info("UnlockIntroSkip is set to {0}", options.UnlockIntroSkip);
+                if (_currentUnlockIntroSkip != options.UnlockIntroSkip)
+                {
+                    _currentUnlockIntroSkip = options.UnlockIntroSkip;
+                    if (options.IsModSupported)
+                    {
+                        if (_currentUnlockIntroSkip)
+                        {
+                            UnlockIntroSkip.Patch();
+                        }
+                        else
+                        {
+                            UnlockIntroSkip.Unpatch();
+                        }
+                    }
+                }
+
+                var markerEnabledLibraryScope = string.Join(", ",
+                    options.MarkerEnabledLibraryScope
+                        ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v =>
+                            options.MarkerEnabledLibraryList
+                                .FirstOrDefault(option => option.Value == v)?.Name) ?? Enumerable.Empty<string>());
+                _logger.Info("MarkerEnabledLibraryScope is set to {0}",
+                    string.IsNullOrEmpty(markerEnabledLibraryScope)
+                        ? options.MarkerEnabledLibraryList.Any(o => o.Value != "-1") ? "ALL" : "EMPTY"
+                        : markerEnabledLibraryScope);
+                _logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
+                    options.IntroDetectionFingerprintMinutes);
+
+                Plugin.ChapterApi.UpdateLibraryIntroDetectionFingerprintLength();
             }
-
-            var markerEnabledLibraryScope = string.Join(", ",
-                IntroSkipOptions.MarkerEnabledLibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(v => IntroSkipOptions.MarkerEnabledLibraryList
-                        .FirstOrDefault(option => option.Value == v)
-                        ?.Name) ?? Enumerable.Empty<string>());
-            _logger.Info("Fingerprint - MarkerEnabledLibraryScope is set to {0}",
-                string.IsNullOrEmpty(markerEnabledLibraryScope) ? "ALL" : markerEnabledLibraryScope);
-            _logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
-                IntroSkipOptions.IntroDetectionFingerprintMinutes);
-
-            Plugin.ChapterApi.UpdateLibraryIntroDetectionFingerprintLength();
         }
     }
 }
