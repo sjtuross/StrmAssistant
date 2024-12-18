@@ -195,7 +195,7 @@
     <value>Auto merge multiple versions stored in the same folder. Default is OFF.</value>
   </data>
   <data name="PluginOptions_ModOptions_Mod_Features" xml:space="preserve">
-    <value>Mod</value>
+    <value>Search</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Chinese_MovieDb" xml:space="preserve">
     <value>Customize MovieDb Fallback Language</value>
@@ -333,7 +333,7 @@
     <value>Music Artist</value>
   </data>
   <data name="UIFunctionOptions_EditorTitle_UI_Functions" xml:space="preserve">
-    <value>UI Functions</value>
+    <value>Experience Enhance</value>
   </data>
   <data name="UIFunctionOptions_BeautifyMissingMetadata_Beautify_Missing_Metadata" xml:space="preserve">
     <value>Beautify Episode Title</value>

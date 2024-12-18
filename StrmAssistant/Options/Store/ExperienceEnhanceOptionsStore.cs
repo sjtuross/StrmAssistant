@@ -8,11 +8,11 @@ using System.Linq;
 
 namespace StrmAssistant.Options.Store
 {
-    public class UIFunctionOptionsStore : SimpleFileStore<UIFunctionOptions>
+    public class ExperienceEnhanceOptionsStore : SimpleFileStore<ExperienceEnhanceOptions>
     {
         private readonly ILogger _logger;
 
-        public UIFunctionOptionsStore(IApplicationHost applicationHost, ILogger logger, string pluginFullName)
+        public ExperienceEnhanceOptionsStore(IApplicationHost applicationHost, ILogger logger, string pluginFullName)
             : base(applicationHost, logger, pluginFullName)
         {
             _logger = logger;
@@ -21,16 +21,28 @@ namespace StrmAssistant.Options.Store
             FileSaved += OnFileSaved;
         }
         
-        public UIFunctionOptions UIFunctionOptions => GetOptions();
+        public ExperienceEnhanceOptions ExperienceEnhanceOptions => GetOptions();
 
         private void OnFileSaving(object sender, FileSavingEventArgs e)
         {
-            if (e.Options is UIFunctionOptions options)
+            if (e.Options is ExperienceEnhanceOptions options)
             {
-                var changes = PropertyChangeDetector.DetectObjectPropertyChanges(UIFunctionOptions, options);
+                var changes = PropertyChangeDetector.DetectObjectPropertyChanges(ExperienceEnhanceOptions, options);
                 var changedProperties = new HashSet<string>(changes.Select(c => c.PropertyName));
+                
+                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.MergeMultiVersion)))
+                {
+                    if (options.MergeMultiVersion)
+                    {
+                        MergeMultiVersion.Patch();
+                    }
+                    else
+                    {
+                        MergeMultiVersion.Unpatch();
+                    }
+                }
 
-                if (changedProperties.Contains(nameof(UIFunctionOptions.HidePersonNoImage)))
+                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.HidePersonNoImage)))
                 {
                     if (options.HidePersonNoImage)
                     {
@@ -42,7 +54,7 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (changedProperties.Contains(nameof(UIFunctionOptions.EnforceLibraryOrder)))
+                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.EnforceLibraryOrder)))
                 {
                     if (options.EnforceLibraryOrder)
                     {
@@ -54,7 +66,7 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (changedProperties.Contains(nameof(UIFunctionOptions.BeautifyMissingMetadata)))
+                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.BeautifyMissingMetadata)))
                 {
                     if (options.BeautifyMissingMetadata)
                     {
@@ -66,7 +78,7 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (changedProperties.Contains(nameof(UIFunctionOptions.EnhanceMissingEpisodes)))
+                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.EnhanceMissingEpisodes)))
                 {
                     if (options.EnhanceMissingEpisodes)
                     {
@@ -82,8 +94,9 @@ namespace StrmAssistant.Options.Store
 
         private void OnFileSaved(object sender, FileSavedEventArgs e)
         {
-            if (e.Options is UIFunctionOptions options)
+            if (e.Options is ExperienceEnhanceOptions options)
             {
+                _logger.Info("MergeMultiVersion is set to {0}", options.MergeMultiVersion);
                 _logger.Info("HidePersonNoImage is set to {0}", options.HidePersonNoImage);
                 _logger.Info("EnforceLibraryOrder is set to {0}", options.EnforceLibraryOrder);
                 _logger.Info("BeautifyMissingMetadata is set to {0}", options.BeautifyMissingMetadata);

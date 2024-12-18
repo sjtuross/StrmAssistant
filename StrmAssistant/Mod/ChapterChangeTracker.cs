@@ -43,7 +43,7 @@ namespace StrmAssistant.Mod
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.PersistMediaInfo)
+                Plugin.Instance.MediaInfoExtractStore.GetOptions().PersistMediaInfo)
             {
                 Patch();
             }
@@ -52,7 +52,7 @@ namespace StrmAssistant.Mod
         public static void Patch()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony &&
-                Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.IsModSupported)
+                Plugin.Instance.MediaInfoExtractStore.GetOptions().IsModSupported)
             {
                 try
                 {
@@ -87,7 +87,7 @@ namespace StrmAssistant.Mod
         public static void Unpatch()
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony &&
-                Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.IsModSupported)
+                Plugin.Instance.MediaInfoExtractStore.GetOptions().IsModSupported)
             {
                 try
                 {
@@ -117,7 +117,7 @@ namespace StrmAssistant.Mod
         public static void BypassDeserializeInstance(BaseItem item)
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony &&
-                Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.IsModSupported)
+                Plugin.Instance.MediaInfoExtractStore.GetOptions().IsModSupported)
             {
                 DeserializeItem.Value = item.InternalId;
             }

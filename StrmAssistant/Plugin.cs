@@ -39,9 +39,10 @@ namespace StrmAssistant
     {
         private List<IPluginUIPageController> _pages;
         public readonly PluginOptionsStore MainOptionsStore;
-        public readonly IntroSkipOptionsStore IntroSkipStore;
+        public readonly MediaInfoExtractOptionsStore MediaInfoExtractStore;
         public readonly MetadataEnhanceOptionsStore MetadataEnhanceStore;
-        public readonly UIFunctionOptionsStore UIFunctionStore;
+        public readonly IntroSkipOptionsStore IntroSkipStore;
+        public readonly ExperienceEnhanceOptionsStore ExperienceEnhanceStore;
 
         public static Plugin Instance { get; private set; }
         public static LibraryApi LibraryApi { get; private set; }
@@ -61,25 +62,13 @@ namespace StrmAssistant
         private readonly IUserManager _userManager;
         private readonly IUserDataManager _userDataManager;
 
-        public Plugin(IApplicationHost applicationHost,
-            IApplicationPaths applicationPaths,
-            ILogManager logManager,
-            IFileSystem fileSystem,
-            ILibraryManager libraryManager,
-            ISessionManager sessionManager,
-            IItemRepository itemRepository,
-            INotificationManager notificationManager,
-            IMediaSourceManager mediaSourceManager,
-            IMediaMountManager mediaMountManager,
-            IMediaProbeManager mediaProbeManager,
-            ILocalizationManager localizationManager,
-            IUserManager userManager,
-            IUserDataManager userDataManager,
-            IFfmpegManager ffmpegManager,
-            IMediaEncoder mediaEncoder,
-            IJsonSerializer jsonSerializer,
-            IHttpClient httpClient,
-            IServerApplicationHost serverApplicationHost,
+        public Plugin(IApplicationHost applicationHost, IApplicationPaths applicationPaths, ILogManager logManager,
+            IFileSystem fileSystem, ILibraryManager libraryManager, ISessionManager sessionManager,
+            IItemRepository itemRepository, INotificationManager notificationManager,
+            IMediaSourceManager mediaSourceManager, IMediaMountManager mediaMountManager,
+            IMediaProbeManager mediaProbeManager, ILocalizationManager localizationManager, IUserManager userManager,
+            IUserDataManager userDataManager, IFfmpegManager ffmpegManager, IMediaEncoder mediaEncoder,
+            IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerApplicationHost serverApplicationHost,
             IServerConfigurationManager configurationManager)
         {
             Instance = this;
@@ -93,9 +82,13 @@ namespace StrmAssistant
             _userDataManager = userDataManager;
 
             MainOptionsStore = new PluginOptionsStore(applicationHost, Logger, Name);
+            MediaInfoExtractStore =
+                new MediaInfoExtractOptionsStore(applicationHost, Logger, Name + "_" + nameof(MediaInfoExtractOptions));
+            MetadataEnhanceStore =
+                new MetadataEnhanceOptionsStore(applicationHost, Logger, Name + "_" + nameof(MetadataEnhanceOptions));
             IntroSkipStore = new IntroSkipOptionsStore(applicationHost, Logger, Name + "_" + nameof(IntroSkipOptions));
-            MetadataEnhanceStore = new MetadataEnhanceOptionsStore(applicationHost, Logger, Name + "_" + nameof(MetadataEnhanceOptions));
-            UIFunctionStore = new UIFunctionOptionsStore(applicationHost, Logger, Name + "_" + nameof(UIFunctionOptions));
+            ExperienceEnhanceStore =
+                new ExperienceEnhanceOptionsStore(applicationHost, Logger, Name + "_" + nameof(ExperienceEnhanceOptions));
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, mediaMountManager,
                 itemRepository, jsonSerializer, userManager);
@@ -151,7 +144,7 @@ namespace StrmAssistant
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
         {
             if (MainOptionsStore.GetOptions().GeneralOptions.CatchupMode &&
-                (MainOptionsStore.GetOptions().MediaInfoExtractOptions.ExclusiveExtract || e.Item.IsShortcut))
+                (MediaInfoExtractStore.GetOptions().ExclusiveExtract || e.Item.IsShortcut))
             {
                 QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
             }
@@ -186,12 +179,12 @@ namespace StrmAssistant
                 }
             }
         }
-        
+
         private void OnItemRemoved(object sender, ItemChangeEventArgs e)
         {
-            if (MainOptionsStore.GetOptions().MediaInfoExtractOptions.PersistMediaInfo)
+            if (MediaInfoExtractStore.GetOptions().PersistMediaInfo)
             {
-                Task.Run(() => LibraryApi.DeleteMediaInfoJson(e.Item, CancellationToken.None));   
+                Task.Run(() => LibraryApi.DeleteMediaInfoJson(e.Item, CancellationToken.None));
             }
         }
 
@@ -215,7 +208,8 @@ namespace StrmAssistant
 
         public string UserAgent => $"{Name}/{CurrentVersion}";
 
-        public CultureInfo DefaultUICulture => new CultureInfo("zh-CN");
+        public CultureInfo DefaultUICulture =>
+            new CultureInfo(MainOptionsStore.GetOptions().AboutOptions.DefaultUICulture);
 
         public Stream GetThumbImage()
         {
@@ -232,7 +226,7 @@ namespace StrmAssistant
                     _pages = new List<IPluginUIPageController>
                     {
                         new MainPageController(GetPluginInfo(), _libraryManager, MainOptionsStore,
-                            MetadataEnhanceStore, IntroSkipStore, UIFunctionStore)
+                            MediaInfoExtractStore, MetadataEnhanceStore, IntroSkipStore, ExperienceEnhanceStore)
                     };
                 }
 

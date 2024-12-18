@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static StrmAssistant.Common.CommonUtility;
-using static StrmAssistant.Options.MediaInfoExtractOptions;
 
 namespace StrmAssistant.Options.Store
 {
@@ -42,19 +41,6 @@ namespace StrmAssistant.Options.Store
         {
             if (e.Options is PluginOptions options)
             {
-                options.MediaInfoExtractOptions.LibraryScope = string.Join(",",
-                    options.MediaInfoExtractOptions.LibraryScope
-                        ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Where(v => options.MediaInfoExtractOptions.LibraryList.Any(option => option.Value == v)) ??
-                    Enumerable.Empty<string>());
-
-                var controlFeatures = options.MediaInfoExtractOptions.ExclusiveControlFeatures;
-                var selectedFeatures = controlFeatures.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(f => !(f == ExclusiveControl.CatchAllAllow.ToString() &&
-                                  controlFeatures.Contains(ExclusiveControl.CatchAllBlock.ToString())))
-                    .ToList();
-                options.MediaInfoExtractOptions.ExclusiveControlFeatures = string.Join(",", selectedFeatures);
-
                 var isSimpleTokenizer = string.Equals(EnhanceChineseSearch.CurrentTokenizerName, "simple",
                     StringComparison.Ordinal);
                 options.ModOptions.EnhanceChineseSearchRestore =
@@ -109,69 +95,8 @@ namespace StrmAssistant.Options.Store
                 {
                     QueueManager.UpdateSemaphore(options.GeneralOptions.MaxConcurrentCount);
 
-                    if (options.MediaInfoExtractOptions.EnableImageCapture)
+                    if (Plugin.Instance.MediaInfoExtractStore.GetOptions().EnableImageCapture)
                         EnableImageCapture.UpdateResourcePool(options.GeneralOptions.MaxConcurrentCount);
-                }
-
-                if (changedProperties.Contains(nameof(PluginOptions.MediaInfoExtractOptions.PersistMediaInfo)))
-                {
-                    if (options.MediaInfoExtractOptions.PersistMediaInfo)
-                    {
-                        ChapterChangeTracker.Patch();
-                    }
-                    else
-                    {
-                        ChapterChangeTracker.Unpatch();
-                    }
-                }
-
-                if (changedProperties.Contains(nameof(PluginOptions.MediaInfoExtractOptions.EnableImageCapture)))
-                {
-                    if (options.MediaInfoExtractOptions.EnableImageCapture)
-                    {
-                        EnableImageCapture.Patch();
-                        if (options.GeneralOptions.MaxConcurrentCount > 1)
-                            Plugin.Instance.ApplicationHost.NotifyPendingRestart();
-                    }
-                    else
-                    {
-                        EnableImageCapture.Unpatch();
-                    }
-                }
-
-                if (changedProperties.Contains(nameof(PluginOptions.MediaInfoExtractOptions.ExclusiveExtract)))
-                {
-                    if (options.MediaInfoExtractOptions.ExclusiveExtract)
-                    {
-                        ExclusiveExtract.Patch();
-                    }
-                    else
-                    {
-                        ExclusiveExtract.Unpatch();
-                    }
-                }
-
-                if (changedProperties.Contains(nameof(PluginOptions.MediaInfoExtractOptions
-                        .ExclusiveControlFeatures)) && options.MediaInfoExtractOptions.ExclusiveExtract)
-                {
-                    ExclusiveExtract.UpdateControlFeatures();
-                }
-                
-                if (changedProperties.Contains(nameof(PluginOptions.MediaInfoExtractOptions.LibraryScope)))
-                {
-                    Plugin.LibraryApi.UpdateLibraryPathsInScope();
-                }
-
-                if (changedProperties.Contains(nameof(PluginOptions.ModOptions.MergeMultiVersion)))
-                {
-                    if (options.ModOptions.MergeMultiVersion)
-                    {
-                        MergeMultiVersion.Patch();
-                    }
-                    else
-                    {
-                        MergeMultiVersion.Unpatch();
-                    }
                 }
 
                 if (changedProperties.Contains(nameof(PluginOptions.ModOptions.EnhanceChineseSearch)) &&
@@ -218,42 +143,9 @@ namespace StrmAssistant.Options.Store
 
                 if (!suppressLogger)
                 {
-                    _logger.Info("PersistMediaInfo is set to {0}",
-                        options.MediaInfoExtractOptions.PersistMediaInfo);
-                    _logger.Info("MediaInfoJsonRootFolder is set to {0}",
-                        !string.IsNullOrEmpty(options.MediaInfoExtractOptions.MediaInfoJsonRootFolder)
-                            ? options.MediaInfoExtractOptions.MediaInfoJsonRootFolder
-                            : "EMPTY");
-                    _logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
                     _logger.Info("MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
                     _logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
-                    _logger.Info("EnableImageCapture is set to {0}",
-                        options.MediaInfoExtractOptions.EnableImageCapture);
-                    _logger.Info("ExclusiveExtract is set to {0}",
-                        options.MediaInfoExtractOptions.ExclusiveExtract);
 
-                    var controlFeatures = string.Join(", ",
-                        options.MediaInfoExtractOptions.ExclusiveControlFeatures
-                            ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                            .Select(s =>
-                                Enum.TryParse(s.Trim(), true, out ExclusiveControl type)
-                                    ? type.GetDescription()
-                                    : null)
-                            .Where(d => d != null) ?? Array.Empty<string>());
-                    _logger.Info("ExclusiveExtract - ControlFeatures is set to {0}",
-                        string.IsNullOrEmpty(controlFeatures) ? "EMPTY" : controlFeatures);
-
-                    var libraryScope = string.Join(", ",
-                        options.MediaInfoExtractOptions.LibraryScope
-                            ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                            .Select(v =>
-                                options.MediaInfoExtractOptions.LibraryList
-                                    .FirstOrDefault(option => option.Value == v)
-                                    ?.Name) ?? Enumerable.Empty<string>());
-                    _logger.Info("MediaInfoExtract - LibraryScope is set to {0}",
-                        string.IsNullOrEmpty(libraryScope) ? "ALL" : libraryScope);
-
-                    _logger.Info("MergeMultiVersion is set to {0}", options.ModOptions.MergeMultiVersion);
                     _logger.Info("EnhanceChineseSearch is set to {0}", options.ModOptions.EnhanceChineseSearch);
 
                     var searchScope = string.Join(", ",

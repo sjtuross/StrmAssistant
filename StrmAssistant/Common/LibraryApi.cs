@@ -52,8 +52,7 @@ namespace StrmAssistant.Common
         {
             get
             {
-                return Plugin.Instance.MainOptionsStore.GetOptions()
-                    .MediaInfoExtractOptions.ImageCaptureExcludeMediaContainers
+                return Plugin.Instance.MediaInfoExtractStore.GetOptions().ImageCaptureExcludeMediaContainers
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(c =>
                         Enum.TryParse<MediaContainers>(c.Trim(), true, out var container)
@@ -69,8 +68,7 @@ namespace StrmAssistant.Common
         {
             get
             {
-                return Plugin.Instance.MainOptionsStore.GetOptions()
-                    .MediaInfoExtractOptions.ImageCaptureExcludeMediaContainers
+                return Plugin.Instance.MediaInfoExtractStore.GetOptions().ImageCaptureExcludeMediaContainers
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .SelectMany(c =>
                     {
@@ -177,7 +175,7 @@ namespace StrmAssistant.Common
 
         public void UpdateLibraryPathsInScope()
         {
-            var libraryIds = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.LibraryScope
+            var libraryIds = Plugin.Instance.MediaInfoExtractStore.GetOptions().LibraryScope
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             LibraryPathsInScope = _libraryManager.GetVirtualFolders()
                 .Where(f => !libraryIds.Any() || libraryIds.Contains(f.Id))
@@ -241,12 +239,12 @@ namespace StrmAssistant.Common
 
         public List<BaseItem> FetchExtractQueueItems(List<BaseItem> items)
         {
-            var libraryIds = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.LibraryScope
+            var libraryIds = Plugin.Instance.MediaInfoExtractStore.GetOptions().LibraryScope
                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var includeFavorites = libraryIds == null || !libraryIds.Any() || libraryIds.Contains("-1");
             _logger.Info("Include Favorites: " + includeFavorites);
 
-            var includeExtra = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.IncludeExtra;
+            var includeExtra = Plugin.Instance.MediaInfoExtractStore.GetOptions().IncludeExtra;
             var catchupMode = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.CatchupMode;
             var enableIntroSkip = Plugin.Instance.IntroSkipStore.GetOptions().EnableIntroSkip;
 
@@ -298,7 +296,7 @@ namespace StrmAssistant.Common
 
         public List<BaseItem> FetchPreExtractTaskItems()
         {
-            var libraryIds = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.LibraryScope
+            var libraryIds = Plugin.Instance.MediaInfoExtractStore.GetOptions().LibraryScope
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var libraries = _libraryManager.GetVirtualFolders()
                 .Where(f => !libraryIds.Any() || libraryIds.Contains(f.Id)).ToList();
@@ -308,9 +306,9 @@ namespace StrmAssistant.Common
             _logger.Info("MediaInfoExtract - LibraryScope: " +
                          (libraryIds.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
 
-            var includeExtra = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.IncludeExtra;
+            var includeExtra = Plugin.Instance.MediaInfoExtractStore.GetOptions().IncludeExtra;
             _logger.Info("Include Extra: " + includeExtra);
-            var enableImageCapture = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.EnableImageCapture;
+            var enableImageCapture = Plugin.Instance.MediaInfoExtractStore.GetOptions().EnableImageCapture;
 
             var favoritesWithExtra = Array.Empty<BaseItem>();
             if (libraryIds.Contains("-1"))
@@ -406,8 +404,8 @@ namespace StrmAssistant.Common
 
         public List<BaseItem> FetchPostExtractTaskItems(bool includeAudio)
         {
-            var libraryIds = Plugin.Instance.MainOptionsStore.GetOptions()
-                .MediaInfoExtractOptions.LibraryScope.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+            var libraryIds = Plugin.Instance.MediaInfoExtractStore.GetOptions().LibraryScope
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                 .ToArray();
             var libraries = _libraryManager.GetVirtualFolders()
                 .Where(f => !libraryIds.Any() || libraryIds.Contains(f.Id))
@@ -416,7 +414,7 @@ namespace StrmAssistant.Common
             _logger.Info("MediaInfoExtract - LibraryScope: " +
                          (libraryIds.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
 
-            var includeExtra = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.IncludeExtra;
+            var includeExtra = Plugin.Instance.MediaInfoExtractStore.GetOptions().IncludeExtra;
             _logger.Info("Include Extra: " + includeExtra);
 
             var favoritesWithExtra = new List<BaseItem>();
@@ -511,7 +509,7 @@ namespace StrmAssistant.Common
 
         public List<BaseItem> ExpandFavorites(List<BaseItem> items, bool filterNeeded, bool preExtract)
         {
-            var enableImageCapture = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.EnableImageCapture;
+            var enableImageCapture = Plugin.Instance.MediaInfoExtractStore.GetOptions().EnableImageCapture;
 
             var itemsMultiVersions = items.SelectMany(v =>
                     _libraryManager.GetItemList(new InternalItemsQuery
@@ -614,8 +612,7 @@ namespace StrmAssistant.Common
 
         private string GetMediaInfoJsonPath(BaseItem item)
         {
-            var jsonRootFolder = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions
-                .MediaInfoJsonRootFolder;
+            var jsonRootFolder = Plugin.Instance.MediaInfoExtractStore.GetOptions().MediaInfoJsonRootFolder;
 
             var relativePath = item.ContainingFolderPath;
             if (!string.IsNullOrEmpty(jsonRootFolder) && Path.IsPathRooted(item.ContainingFolderPath))

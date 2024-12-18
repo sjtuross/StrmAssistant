@@ -8,7 +8,6 @@ using System.Linq;
 
 namespace StrmAssistant.Options.Store
 {
-
     public class MetadataEnhanceOptionsStore : SimpleFileStore<MetadataEnhanceOptions>
     {
         private readonly ILogger _logger;

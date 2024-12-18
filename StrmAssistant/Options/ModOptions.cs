@@ -16,12 +16,6 @@ namespace StrmAssistant.Options
         [DisplayNameL("PluginOptions_ModOptions_Mod_Features", typeof(Resources))]
         public override string EditorTitle => Resources.PluginOptions_ModOptions_Mod_Features;
 
-        [DisplayNameL("GeneralOptions_MergeMultiVersion_Merge_Multiple_Versions", typeof(Resources))]
-        [DescriptionL("GeneralOptions_MergeMultiVersion_Auto_merge_multiple_versions_if_in_the_same_folder_", typeof(Resources))]
-        [Required]
-        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
-        public bool MergeMultiVersion { get; set; } = false;
-
         [DisplayNameL("ModOptions_EnhanceChineseSearch_Enhance_Chinese_Search", typeof(Resources))]
         [DescriptionL("ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_", typeof(Resources))]
         [Required]

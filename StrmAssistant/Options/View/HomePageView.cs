@@ -1,5 +1,4 @@
-﻿using MediaBrowser.Controller.Library;
-using MediaBrowser.Model.Plugins;
+﻿using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Plugins.UI.Views;
 using StrmAssistant.Options.Store;
 using StrmAssistant.Options.UIBaseClasses.Views;
@@ -9,15 +8,15 @@ namespace StrmAssistant.Options.View
 {
     internal class HomePageView : PluginPageView
     {
-        private readonly PluginOptionsStore store;
+        private readonly PluginOptionsStore _store;
 
-        public HomePageView(PluginInfo pluginInfo, ILibraryManager libraryManager, PluginOptionsStore store)
+        public HomePageView(PluginInfo pluginInfo, PluginOptionsStore store)
             : base(pluginInfo.Id)
         {
-            this.store = store;
+            _store = store;
             ContentData = store.GetOptions();
 
-            PluginOptions.MediaInfoExtractOptions.Initialize(libraryManager);
+            PluginOptions.Initialize();
             PluginOptions.ModOptions.Initialize();
             PluginOptions.NetworkOptions.Initialize();
             PluginOptions.AboutOptions.Initialize();
@@ -27,7 +26,7 @@ namespace StrmAssistant.Options.View
 
         public override Task<IPluginUIView> OnSaveCommand(string itemId, string commandId, string data)
         {
-            store.SetOptions(PluginOptions);
+            _store.SetOptions(PluginOptions);
             return base.OnSaveCommand(itemId, commandId, data);
         }
     }

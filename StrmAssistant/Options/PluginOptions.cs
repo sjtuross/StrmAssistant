@@ -1,4 +1,5 @@
 using Emby.Web.GenericEdit;
+using Emby.Web.GenericEdit.Elements;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
 using StrmAssistant.Properties;
@@ -12,29 +13,18 @@ namespace StrmAssistant.Options
     {
         public override string EditorTitle => Resources.PluginOptions_EditorTitle_Strm_Assistant;
 
-        public override string EditorDescription =>
-            IsConflictPluginLoaded
-                ? Resources.PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract
-                : string.Empty;
+        public override string EditorDescription => string.Empty;
+
+        [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsTrue)]
+        public StatusItem ConflictPluginLoadedStatus { get; set; } = new StatusItem();
 
         [DisplayNameL("GeneralOptions_EditorTitle_General_Options", typeof(Resources))]
-        [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
-        [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         public GeneralOptions GeneralOptions { get; set; } = new GeneralOptions();
 
-        [DisplayNameL("PluginOptions_EditorTitle_Strm_Extract", typeof(Resources))]
-        [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
-        [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
-        public MediaInfoExtractOptions MediaInfoExtractOptions { get; set; } = new MediaInfoExtractOptions();
-
         [DisplayNameL("PluginOptions_ModOptions_Mod_Features", typeof(Resources))]
-        [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
-        [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         public ModOptions ModOptions { get; set; } = new ModOptions();
 
         [DisplayNameL("NetworkOptions_EditorTitle_Network", typeof(Resources))]
-        [VisibleCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
-        [EnabledCondition(nameof(IsConflictPluginLoaded), SimpleCondition.IsFalse)]
         public NetworkOptions NetworkOptions { get; set; } = new NetworkOptions();
 
         [DisplayNameL("AboutOptions_EditorTitle_About", typeof(Resources))]
@@ -44,5 +34,22 @@ namespace StrmAssistant.Options
         public bool IsConflictPluginLoaded { get; } = AppDomain.CurrentDomain.GetAssemblies()
             .Select(a => a.GetName().Name)
             .Any(n => n == "StrmExtract" || n == "InfuseSync");
+
+        public void Initialize()
+        {
+            if (IsConflictPluginLoaded)
+            {
+                ConflictPluginLoadedStatus.Caption = Resources
+                    .PluginOptions_IncompatibleMessage_Please_uninstall_the_conflict_plugin_Strm_Extract;
+                ConflictPluginLoadedStatus.StatusText = string.Empty;
+                ConflictPluginLoadedStatus.Status = ItemStatus.Warning;
+            }
+            else
+            {
+                ConflictPluginLoadedStatus.Caption=string.Empty;
+                ConflictPluginLoadedStatus.StatusText = string.Empty;
+                ConflictPluginLoadedStatus.Status = ItemStatus.None;
+            }
+        }
     }
 }

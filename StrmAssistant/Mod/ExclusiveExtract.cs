@@ -102,7 +102,7 @@ namespace StrmAssistant.Mod
             {
                 PatchFFProbeTimeout();
 
-                if (Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.ExclusiveExtract)
+                if (Plugin.Instance.MediaInfoExtractStore.GetOptions().ExclusiveExtract)
                 {
                     UpdateControlFeatures();
                     Patch();
@@ -301,8 +301,7 @@ namespace StrmAssistant.Mod
 
         public static void UpdateControlFeatures()
         {
-            var controlFeatures = Plugin.Instance.MainOptionsStore.GetOptions()
-                .MediaInfoExtractOptions.ExclusiveControlFeatures;
+            var controlFeatures = Plugin.Instance.MediaInfoExtractStore.GetOptions().ExclusiveControlFeatures;
 
             _selectedFeatures = new HashSet<string>(
                 controlFeatures?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
@@ -438,7 +437,7 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static bool AfterMetadataRefreshPrefix(BaseItem __instance)
         {
-            if (Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.PersistMediaInfo &&
+            if (Plugin.Instance.MediaInfoExtractStore.GetOptions().PersistMediaInfo &&
                 (__instance is Video || __instance is Audio) && Plugin.LibraryApi.IsLibraryInScope(__instance) &&
                 CurrentRefreshContext.Value != null &&
                 CurrentRefreshContext.Value.InternalId == __instance.InternalId)

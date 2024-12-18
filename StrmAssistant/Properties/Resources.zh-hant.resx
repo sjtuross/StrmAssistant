@@ -108,7 +108,7 @@
     <value>自動合併同目錄影片為多版本，不需符合官方嚴格的命名要求，預設為關閉。</value>
   </data>
   <data name="PluginOptions_ModOptions_Mod_Features" xml:space="preserve">
-    <value>魔改</value>
+    <value>搜尋</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Chinese_MovieDb" xml:space="preserve">
     <value>自訂 TMDB 備選語言</value>
@@ -246,7 +246,7 @@
     <value>藝術家</value>
   </data>
   <data name="UIFunctionOptions_EditorTitle_UI_Functions" xml:space="preserve">
-    <value>UI 功能</value>
+    <value>體驗增強</value>
   </data>
   <data name="UIFunctionOptions_BeautifyMissingMetadata_Beautify_Missing_Metadata" xml:space="preserve">
     <value>劇集集標題自動補全</value>

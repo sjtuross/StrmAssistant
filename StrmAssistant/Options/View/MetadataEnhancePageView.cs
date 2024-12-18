@@ -13,7 +13,7 @@ namespace StrmAssistant.Options.View
         public MetadataEnhancePageView(PluginInfo pluginInfo, MetadataEnhanceOptionsStore store)
             : base(pluginInfo.Id)
         {
-            this._store = store;
+            _store = store;
             ContentData = store.GetOptions();
         }
 

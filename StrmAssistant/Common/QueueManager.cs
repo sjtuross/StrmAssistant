@@ -88,11 +88,11 @@ namespace StrmAssistant.Common
 
                 if (!MediaInfoExtractItemQueue.IsEmpty || !ExternalSubtitleItemQueue.IsEmpty)
                 {
-                    var persistMediaInfo = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.PersistMediaInfo;
+                    var persistMediaInfo = Plugin.Instance.MediaInfoExtractStore.GetOptions().PersistMediaInfo;
                     _logger.Info("Persist Media Info: " + persistMediaInfo);
-                    var enableImageCapture = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.EnableImageCapture;
+                    var enableImageCapture = Plugin.Instance.MediaInfoExtractStore.GetOptions().EnableImageCapture;
                     _logger.Info("Image Capture Enabled: " + enableImageCapture);
-                    var exclusiveExtract = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
+                    var exclusiveExtract = Plugin.Instance.MediaInfoExtractStore.GetOptions().ExclusiveExtract;
                     var enableIntroSkip = Plugin.Instance.IntroSkipStore.GetOptions().EnableIntroSkip;
                     _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
 

@@ -6,54 +6,58 @@ using StrmAssistant.Options.Store;
 using StrmAssistant.Options.UIBaseClasses;
 using StrmAssistant.Properties;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Threading.Tasks;
 
 namespace StrmAssistant.Options.View
 {
-
     internal class MainPageController : ControllerBase, IHasTabbedUIPages
     {
         private readonly PluginInfo _pluginInfo;
-        private readonly ILibraryManager _libraryManager;
         private readonly PluginOptionsStore _mainOptionsStore;
         private readonly List<IPluginUIPageController> _tabPages = new List<IPluginUIPageController>();
 
         public MainPageController(PluginInfo pluginInfo, ILibraryManager libraryManager,
-            PluginOptionsStore mainOptionsStore, MetadataEnhanceOptionsStore metadataEnhanceOptionsStore,
-            IntroSkipOptionsStore introSkipOptionsStore, UIFunctionOptionsStore uiFunctionOptionsStore)
+            PluginOptionsStore mainOptionsStore, MediaInfoExtractOptionsStore mediaInfoExtractOptionsStore,
+            MetadataEnhanceOptionsStore metadataEnhanceOptionsStore,
+            IntroSkipOptionsStore introSkipOptionsStore, ExperienceEnhanceOptionsStore experienceEnhanceOptionsStore)
             : base(pluginInfo.Id)
         {
-            Resources.Culture = new CultureInfo("zh-CN");
-
             _pluginInfo = pluginInfo;
-            _libraryManager = libraryManager;
             _mainOptionsStore = mainOptionsStore;
+
             PageInfo = new PluginPageInfo
             {
                 Name = "StrmAssistant",
                 EnableInMainMenu = true,
-                DisplayName = Resources.PluginOptions_EditorTitle_Strm_Assistant,
+                DisplayName = Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",
+                    Plugin.Instance.DefaultUICulture),
                 MenuIcon = "video_settings",
                 IsMainConfigPage = false,
             };
 
+            _tabPages.Add(new TabPageController(pluginInfo, nameof(MediaInfoExtractPageView),
+                Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Extract",
+                    Plugin.Instance.DefaultUICulture),
+                e => new MediaInfoExtractPageView(pluginInfo, libraryManager, mediaInfoExtractOptionsStore)));
             _tabPages.Add(new TabPageController(pluginInfo, nameof(MetadataEnhancePageView),
-                Resources.PluginOptions_MetadataEnhanceOptions_Metadata_Enhance,
+                Resources.ResourceManager.GetString("PluginOptions_MetadataEnhanceOptions_Metadata_Enhance",
+                    Plugin.Instance.DefaultUICulture),
                 e => new MetadataEnhancePageView(pluginInfo, metadataEnhanceOptionsStore)));
             _tabPages.Add(new TabPageController(pluginInfo, nameof(IntroSkipPageView),
-                Resources.PluginOptions_IntroSkipOptions_Intro_Credits_Detection,
-                e => new IntroSkipPageView(pluginInfo, _libraryManager, introSkipOptionsStore)));
-            _tabPages.Add(new TabPageController(pluginInfo, nameof(UIFunctionPageView),
-                Resources.UIFunctionOptions_EditorTitle_UI_Functions,
-                e => new UIFunctionPageView(pluginInfo, uiFunctionOptionsStore)));
+                Resources.ResourceManager.GetString("PluginOptions_IntroSkipOptions_Intro_Credits_Detection",
+                    Plugin.Instance.DefaultUICulture),
+                e => new IntroSkipPageView(pluginInfo, libraryManager, introSkipOptionsStore)));
+            _tabPages.Add(new TabPageController(pluginInfo, nameof(ExperienceEnhancePageView),
+                Resources.ResourceManager.GetString("UIFunctionOptions_EditorTitle_UI_Functions",
+                    Plugin.Instance.DefaultUICulture),
+                e => new ExperienceEnhancePageView(pluginInfo, experienceEnhanceOptionsStore)));
         }
 
         public override PluginPageInfo PageInfo { get; }
 
         public override Task<IPluginUIView> CreateDefaultPageView()
         {
-            IPluginUIView view = new HomePageView(_pluginInfo, _libraryManager, _mainOptionsStore);
+            IPluginUIView view = new HomePageView(_pluginInfo, _mainOptionsStore);
             return Task.FromResult(view);
         }
 

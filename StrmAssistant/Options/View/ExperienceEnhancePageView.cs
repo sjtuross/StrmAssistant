@@ -6,22 +6,22 @@ using System.Threading.Tasks;
 
 namespace StrmAssistant.Options.View
 {
-    internal class UIFunctionPageView : PluginPageView
+    internal class ExperienceEnhancePageView : PluginPageView
     {
-        private readonly UIFunctionOptionsStore _store;
+        private readonly ExperienceEnhanceOptionsStore _store;
 
-        public UIFunctionPageView(PluginInfo pluginInfo, UIFunctionOptionsStore store)
+        public ExperienceEnhancePageView(PluginInfo pluginInfo, ExperienceEnhanceOptionsStore store)
             : base(pluginInfo.Id)
         {
             _store = store;
             ContentData = store.GetOptions();
         }
 
-        public UIFunctionOptions UIFunctionOptions => ContentData as UIFunctionOptions;
+        public ExperienceEnhanceOptions ExperienceEnhanceOptions => ContentData as ExperienceEnhanceOptions;
 
         public override Task<IPluginUIView> OnSaveCommand(string itemId, string commandId, string data)
         {
-            _store.SetOptions(UIFunctionOptions);
+            _store.SetOptions(ExperienceEnhanceOptions);
             return base.OnSaveCommand(itemId, commandId, data);
         }
     }

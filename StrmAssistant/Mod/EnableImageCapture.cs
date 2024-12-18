@@ -98,7 +98,7 @@ namespace StrmAssistant.Mod
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.EnableImageCapture)
+                Plugin.Instance.MediaInfoExtractStore.GetOptions().EnableImageCapture)
             {
                 SemaphoreFFmpeg = new SemaphoreSlim(_currentMaxConcurrentCount);
                 PatchResourcePool();

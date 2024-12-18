@@ -7,10 +7,16 @@ using System.Runtime.InteropServices;
 
 namespace StrmAssistant.Options
 {
-    public class UIFunctionOptions : EditableOptionsBase
+    public class ExperienceEnhanceOptions : EditableOptionsBase
     {
         [DisplayNameL("UIFunctionOptions_EditorTitle_UI_Functions", typeof(Resources))]
         public override string EditorTitle => Resources.UIFunctionOptions_EditorTitle_UI_Functions;
+        
+        [DisplayNameL("GeneralOptions_MergeMultiVersion_Merge_Multiple_Versions", typeof(Resources))]
+        [DescriptionL("GeneralOptions_MergeMultiVersion_Auto_merge_multiple_versions_if_in_the_same_folder_", typeof(Resources))]
+        [Required]
+        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
+        public bool MergeMultiVersion { get; set; } = false;
 
         [DisplayNameL("ModOptions_HidePersonNoImage_Hide_Person_without_Image", typeof(Resources))]
         [DescriptionL("ModOptions_HidePersonNoImage_Hide_person_without_image__Default_is_OFF_", typeof(Resources))]

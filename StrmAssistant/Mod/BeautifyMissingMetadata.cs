@@ -49,7 +49,7 @@ namespace StrmAssistant.Mod
             if (HarmonyMod == null) PatchApproachTracker.FallbackPatchApproach = PatchApproach.Reflection;
 
             if (PatchApproachTracker.FallbackPatchApproach != PatchApproach.None &&
-                Plugin.Instance.UIFunctionStore.GetOptions().BeautifyMissingMetadata)
+                Plugin.Instance.ExperienceEnhanceStore.GetOptions().BeautifyMissingMetadata)
             {
                 Patch();
             }

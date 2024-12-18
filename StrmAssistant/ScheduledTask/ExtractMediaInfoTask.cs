@@ -32,13 +32,13 @@ namespace StrmAssistant.ScheduledTask
         {
             _logger.Info("MediaInfoExtract - Scheduled Task Execute");
             _logger.Info("Max Concurrent Count: " + Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
-            var persistMediaInfo = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.PersistMediaInfo;
+            var persistMediaInfo = Plugin.Instance.MediaInfoExtractStore.GetOptions().PersistMediaInfo;
             _logger.Info("Persist Media Info: " + persistMediaInfo);
-            var enableImageCapture = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.EnableImageCapture;
+            var enableImageCapture = Plugin.Instance.MediaInfoExtractStore.GetOptions().EnableImageCapture;
             _logger.Info("Enable Image Capture: " + enableImageCapture);
             var enableIntroSkip = Plugin.Instance.IntroSkipStore.GetOptions().EnableIntroSkip;
             _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
-            var exclusiveExtract = Plugin.Instance.MainOptionsStore.GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
+            var exclusiveExtract = Plugin.Instance.MediaInfoExtractStore.GetOptions().ExclusiveExtract;
 
             var items = Plugin.LibraryApi.FetchPreExtractTaskItems();
 
