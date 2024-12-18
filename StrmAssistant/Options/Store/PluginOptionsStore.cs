@@ -1,5 +1,6 @@
 ﻿using Emby.Media.Common.Extensions;
 using Emby.Web.GenericEdit.Elements;
+using Emby.Web.GenericEdit.PropertyDiff;
 using MediaBrowser.Common;
 using MediaBrowser.Model.Logging;
 using StrmAssistant.Common;
@@ -7,6 +8,7 @@ using StrmAssistant.Mod;
 using StrmAssistant.Options.UIBaseClasses.Store;
 using StrmAssistant.Properties;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using static StrmAssistant.Common.CommonUtility;
 using static StrmAssistant.Options.MediaInfoExtractOptions;
@@ -17,39 +19,12 @@ namespace StrmAssistant.Options.Store
     {
         private readonly ILogger _logger;
 
-        private int _currentMaxConcurrentCount;
-        private bool _currentPersistMediaInfo;
-        private bool _currentEnableImageCapture;
-        private bool _currentCatchupMode;
-        private bool _currentExclusiveExtract;
-        private string _currentExclusiveControlFeatures;
-
         private bool _currentSuppressOnOptionsSaved;
-        private bool _currentMergeMultiVersion;
-        private bool _currentEnhanceChineseSearch;
-        private string _currentSearchScope;
-
-        private bool _currentProxyServerEnabled;
-        private string _currentProxyServerUrl;
 
         public PluginOptionsStore(IApplicationHost applicationHost, ILogger logger, string pluginFullName)
             : base(applicationHost, logger, pluginFullName)
         {
             _logger = logger;
-
-            _currentMaxConcurrentCount = PluginOptions.GeneralOptions.MaxConcurrentCount;
-            _currentPersistMediaInfo = PluginOptions.MediaInfoExtractOptions.PersistMediaInfo;
-            _currentEnableImageCapture = PluginOptions.MediaInfoExtractOptions.EnableImageCapture;
-            _currentCatchupMode = PluginOptions.GeneralOptions.CatchupMode;
-            _currentExclusiveExtract = PluginOptions.MediaInfoExtractOptions.ExclusiveExtract;
-            _currentExclusiveControlFeatures = PluginOptions.MediaInfoExtractOptions.ExclusiveControlFeatures;
-
-            _currentMergeMultiVersion = PluginOptions.ModOptions.MergeMultiVersion;
-            _currentEnhanceChineseSearch = PluginOptions.ModOptions.EnhanceChineseSearch;
-            _currentSearchScope = PluginOptions.ModOptions.SearchScope;
-
-            _currentProxyServerEnabled = PluginOptions.NetworkOptions.EnableProxyServer;
-            _currentProxyServerUrl = PluginOptions.NetworkOptions.ProxyServerUrl;
 
             FileSaved += OnFileSaved;
             FileSaving += OnFileSaving;
@@ -114,19 +89,12 @@ namespace StrmAssistant.Options.Store
                     options.NetworkOptions.ProxyServerStatus.StatusText = string.Empty;
                     options.NetworkOptions.ShowProxyServerStatus = false;
                 }
-            }
-        }
 
-        private void OnFileSaved(object sender, FileSavedEventArgs e)
-        {
-            if (e.Options is PluginOptions options)
-            {
-                Plugin.LibraryApi.UpdateLibraryPathsInScope();
+                var changes = PropertyChangeDetector.DetectObjectPropertyChanges(PluginOptions, options);
+                var changedProperties = new HashSet<string>(changes.Select(c => c.PropertyName));
 
-                if (_currentCatchupMode != options.GeneralOptions.CatchupMode)
+                if (changedProperties.Contains(nameof(PluginOptions.GeneralOptions.CatchupMode)))
                 {
-                    _currentCatchupMode = options.GeneralOptions.CatchupMode;
-
                     if (options.GeneralOptions.CatchupMode)
                     {
                         Plugin.Instance.InitializeCatchupMode();
@@ -137,21 +105,17 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (_currentMaxConcurrentCount != options.GeneralOptions.MaxConcurrentCount)
+                if (changedProperties.Contains(nameof(PluginOptions.GeneralOptions.MaxConcurrentCount)))
                 {
-                    _currentMaxConcurrentCount = options.GeneralOptions.MaxConcurrentCount;
-
-                    QueueManager.UpdateSemaphore(_currentMaxConcurrentCount);
+                    QueueManager.UpdateSemaphore(options.GeneralOptions.MaxConcurrentCount);
 
                     if (options.MediaInfoExtractOptions.EnableImageCapture)
-                        EnableImageCapture.UpdateResourcePool(_currentMaxConcurrentCount);
+                        EnableImageCapture.UpdateResourcePool(options.GeneralOptions.MaxConcurrentCount);
                 }
 
-                if (_currentPersistMediaInfo != options.MediaInfoExtractOptions.PersistMediaInfo)
+                if (changedProperties.Contains(nameof(PluginOptions.MediaInfoExtractOptions.PersistMediaInfo)))
                 {
-                    _currentPersistMediaInfo = options.MediaInfoExtractOptions.PersistMediaInfo;
-
-                    if (_currentPersistMediaInfo)
+                    if (options.MediaInfoExtractOptions.PersistMediaInfo)
                     {
                         ChapterChangeTracker.Patch();
                     }
@@ -161,14 +125,13 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (_currentEnableImageCapture != options.MediaInfoExtractOptions.EnableImageCapture)
+                if (changedProperties.Contains(nameof(PluginOptions.MediaInfoExtractOptions.EnableImageCapture)))
                 {
-                    _currentEnableImageCapture = options.MediaInfoExtractOptions.EnableImageCapture;
-
-                    if (_currentEnableImageCapture)
+                    if (options.MediaInfoExtractOptions.EnableImageCapture)
                     {
                         EnableImageCapture.Patch();
-                        if (_currentMaxConcurrentCount > 1) Plugin.Instance.ApplicationHost.NotifyPendingRestart();
+                        if (options.GeneralOptions.MaxConcurrentCount > 1)
+                            Plugin.Instance.ApplicationHost.NotifyPendingRestart();
                     }
                     else
                     {
@@ -176,11 +139,9 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (_currentExclusiveExtract != options.MediaInfoExtractOptions.ExclusiveExtract)
+                if (changedProperties.Contains(nameof(PluginOptions.MediaInfoExtractOptions.ExclusiveExtract)))
                 {
-                    _currentExclusiveExtract = options.MediaInfoExtractOptions.ExclusiveExtract;
-
-                    if (_currentExclusiveExtract)
+                    if (options.MediaInfoExtractOptions.ExclusiveExtract)
                     {
                         ExclusiveExtract.Patch();
                     }
@@ -190,19 +151,20 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (_currentExclusiveControlFeatures !=
-                    options.MediaInfoExtractOptions.ExclusiveControlFeatures)
+                if (changedProperties.Contains(nameof(PluginOptions.MediaInfoExtractOptions
+                        .ExclusiveControlFeatures)) && options.MediaInfoExtractOptions.ExclusiveExtract)
                 {
-                    _currentExclusiveControlFeatures = options.MediaInfoExtractOptions.ExclusiveControlFeatures;
-
-                    if (_currentExclusiveExtract) ExclusiveExtract.UpdateControlFeatures();
+                    ExclusiveExtract.UpdateControlFeatures();
+                }
+                
+                if (changedProperties.Contains(nameof(PluginOptions.MediaInfoExtractOptions.LibraryScope)))
+                {
+                    Plugin.LibraryApi.UpdateLibraryPathsInScope();
                 }
 
-                if (_currentMergeMultiVersion != options.ModOptions.MergeMultiVersion)
+                if (changedProperties.Contains(nameof(PluginOptions.ModOptions.MergeMultiVersion)))
                 {
-                    _currentMergeMultiVersion = options.ModOptions.MergeMultiVersion;
-
-                    if (_currentMergeMultiVersion)
+                    if (options.ModOptions.MergeMultiVersion)
                     {
                         MergeMultiVersion.Patch();
                     }
@@ -212,32 +174,22 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (_currentEnhanceChineseSearch != options.ModOptions.EnhanceChineseSearch)
+                if (changedProperties.Contains(nameof(PluginOptions.ModOptions.EnhanceChineseSearch)) &&
+                    ((!options.ModOptions.EnhanceChineseSearch && isSimpleTokenizer) ||
+                     (options.ModOptions.EnhanceChineseSearch && !isSimpleTokenizer)))
                 {
-                    _currentEnhanceChineseSearch = options.ModOptions.EnhanceChineseSearch;
-
-                    var isSimpleTokenizer = string.Equals(EnhanceChineseSearch.CurrentTokenizerName, "simple",
-                        StringComparison.Ordinal);
-
-                    if ((!_currentEnhanceChineseSearch && isSimpleTokenizer) ||
-                        (_currentEnhanceChineseSearch && !isSimpleTokenizer))
-                    {
-                        Plugin.Instance.ApplicationHost.NotifyPendingRestart();
-                    }
+                    Plugin.Instance.ApplicationHost.NotifyPendingRestart();
                 }
 
-                if (_currentSearchScope != options.ModOptions.SearchScope)
+                if (changedProperties.Contains(nameof(PluginOptions.ModOptions.SearchScope)) &&
+                    options.ModOptions.EnhanceChineseSearch)
                 {
-                    _currentSearchScope = options.ModOptions.SearchScope;
-
-                    if (options.ModOptions.EnhanceChineseSearch) EnhanceChineseSearch.UpdateSearchScope();
+                    EnhanceChineseSearch.UpdateSearchScope();
                 }
 
-                if (_currentProxyServerEnabled != options.NetworkOptions.EnableProxyServer)
+                if (changedProperties.Contains(nameof(PluginOptions.NetworkOptions.EnableProxyServer)))
                 {
-                    _currentProxyServerEnabled = options.NetworkOptions.EnableProxyServer;
-
-                    if (_currentProxyServerEnabled)
+                    if (options.NetworkOptions.EnableProxyServer)
                     {
                         EnableProxyServer.Patch();
                     }
@@ -249,17 +201,19 @@ namespace StrmAssistant.Options.Store
                     Plugin.Instance.ApplicationHost.NotifyPendingRestart();
                 }
 
-                if (_currentProxyServerUrl != options.NetworkOptions.ProxyServerUrl)
+                if (changedProperties.Contains(nameof(PluginOptions.NetworkOptions.ProxyServerUrl)) &&
+                    options.NetworkOptions.EnableProxyServer &&
+                    options.NetworkOptions.ProxyServerStatus.Status == ItemStatus.Succeeded)
                 {
-                    _currentProxyServerUrl = options.NetworkOptions.ProxyServerUrl;
-
-                    if (_currentProxyServerEnabled &&
-                        options.NetworkOptions.ProxyServerStatus.Status == ItemStatus.Succeeded)
-                    {
-                        Plugin.Instance.ApplicationHost.NotifyPendingRestart();
-                    }
+                    Plugin.Instance.ApplicationHost.NotifyPendingRestart();
                 }
+            }
+        }
 
+        private void OnFileSaved(object sender, FileSavedEventArgs e)
+        {
+            if (e.Options is PluginOptions options)
+            {
                 var suppressLogger = _currentSuppressOnOptionsSaved;
 
                 if (!suppressLogger)

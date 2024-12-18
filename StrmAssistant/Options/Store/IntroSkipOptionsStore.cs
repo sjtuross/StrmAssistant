@@ -1,8 +1,10 @@
-﻿using MediaBrowser.Common;
+﻿using Emby.Web.GenericEdit.PropertyDiff;
+using MediaBrowser.Common;
 using MediaBrowser.Model.Logging;
 using StrmAssistant.Mod;
 using StrmAssistant.Options.UIBaseClasses.Store;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace StrmAssistant.Options.Store
@@ -11,14 +13,11 @@ namespace StrmAssistant.Options.Store
     {
         private readonly ILogger _logger;
 
-        private bool _currentEnableIntroSkip;
-        private bool _currentUnlockIntroSkip;
-
         public IntroSkipOptionsStore(IApplicationHost applicationHost, ILogger logger, string pluginFullName)
             : base(applicationHost, logger, pluginFullName)
         {
             _logger = logger;
-            _currentEnableIntroSkip = IntroSkipOptions.EnableIntroSkip;
+
             FileSaved += OnFileSaved;
             FileSaving += OnFileSaving;
         }
@@ -51,22 +50,12 @@ namespace StrmAssistant.Options.Store
                                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                                 .Where(v => options.MarkerEnabledLibraryList.Any(option =>
                                     option.Value == v)) ?? Enumerable.Empty<string>());
-            }
-        }
 
-        private void OnFileSaved(object sender, UIBaseClasses.Store.FileSavedEventArgs e)
-        {
-            if (e.Options is IntroSkipOptions options)
-            {
-                _logger.Info("EnableIntroSkip is set to {0}", options.EnableIntroSkip);
-                _logger.Info("MaxIntroDurationSeconds is set to {0}", options.MaxIntroDurationSeconds);
-                _logger.Info("MaxCreditsDurationSeconds is set to {0}", options.MaxCreditsDurationSeconds);
-                _logger.Info("MinOpeningPlotDurationSeconds is set to {0}",
-                    options.MinOpeningPlotDurationSeconds);
+                var changes = PropertyChangeDetector.DetectObjectPropertyChanges(IntroSkipOptions, options);
+                var changedProperties = new HashSet<string>(changes.Select(c => c.PropertyName));
 
-                if (_currentEnableIntroSkip != options.EnableIntroSkip)
+                if (changedProperties.Contains(nameof(IntroSkipOptions.EnableIntroSkip)))
                 {
-                    _currentEnableIntroSkip = options.EnableIntroSkip;
                     if (options.EnableIntroSkip)
                     {
                         Plugin.PlaySessionMonitor.Initialize();
@@ -76,6 +65,45 @@ namespace StrmAssistant.Options.Store
                         Plugin.PlaySessionMonitor.Dispose();
                     }
                 }
+                
+                if (changedProperties.Contains(nameof(IntroSkipOptions.LibraryScope)))
+                {
+                    Plugin.PlaySessionMonitor.UpdateLibraryPathsInScope();
+                }
+
+                if (changedProperties.Contains(nameof(IntroSkipOptions.UserScope)))
+                {
+                    Plugin.PlaySessionMonitor.UpdateUsersInScope();
+                }
+
+                if (changedProperties.Contains(nameof(IntroSkipOptions.UnlockIntroSkip)) && options.IsModSupported)
+                {
+                    if (options.UnlockIntroSkip)
+                    {
+                        UnlockIntroSkip.Patch();
+                    }
+                    else
+                    {
+                        UnlockIntroSkip.Unpatch();
+                    }
+                }
+
+                if (changedProperties.Contains(nameof(IntroSkipOptions.IntroDetectionFingerprintMinutes)))
+                {
+                    Plugin.ChapterApi.UpdateLibraryIntroDetectionFingerprintLength();
+                }
+            }
+        }
+
+        private void OnFileSaved(object sender, FileSavedEventArgs e)
+        {
+            if (e.Options is IntroSkipOptions options)
+            {
+                _logger.Info("EnableIntroSkip is set to {0}", options.EnableIntroSkip);
+                _logger.Info("MaxIntroDurationSeconds is set to {0}", options.MaxIntroDurationSeconds);
+                _logger.Info("MaxCreditsDurationSeconds is set to {0}", options.MaxCreditsDurationSeconds);
+                _logger.Info("MinOpeningPlotDurationSeconds is set to {0}",
+                    options.MinOpeningPlotDurationSeconds);
 
                 var intoSkipLibraryScope = string.Join(", ",
                     options.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
@@ -93,25 +121,9 @@ namespace StrmAssistant.Options.Store
                 _logger.Info("IntroSkip - UserScope is set to {0}",
                     string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
 
-                Plugin.PlaySessionMonitor.UpdateLibraryPathsInScope();
-                Plugin.PlaySessionMonitor.UpdateUsersInScope();
-
                 _logger.Info("UnlockIntroSkip is set to {0}", options.UnlockIntroSkip);
-                if (_currentUnlockIntroSkip != options.UnlockIntroSkip)
-                {
-                    _currentUnlockIntroSkip = options.UnlockIntroSkip;
-                    if (options.IsModSupported)
-                    {
-                        if (_currentUnlockIntroSkip)
-                        {
-                            UnlockIntroSkip.Patch();
-                        }
-                        else
-                        {
-                            UnlockIntroSkip.Unpatch();
-                        }
-                    }
-                }
+                _logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
+                    options.IntroDetectionFingerprintMinutes);
 
                 var markerEnabledLibraryScope = string.Join(", ",
                     options.MarkerEnabledLibraryScope
@@ -122,10 +134,6 @@ namespace StrmAssistant.Options.Store
                     string.IsNullOrEmpty(markerEnabledLibraryScope)
                         ? options.MarkerEnabledLibraryList.Any(o => o.Value != "-1") ? "ALL" : "EMPTY"
                         : markerEnabledLibraryScope);
-                _logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
-                    options.IntroDetectionFingerprintMinutes);
-
-                Plugin.ChapterApi.UpdateLibraryIntroDetectionFingerprintLength();
             }
         }
     }

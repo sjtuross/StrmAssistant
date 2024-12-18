@@ -1,7 +1,10 @@
-﻿using MediaBrowser.Common;
+﻿using Emby.Web.GenericEdit.PropertyDiff;
+using MediaBrowser.Common;
 using MediaBrowser.Model.Logging;
 using StrmAssistant.Mod;
 using StrmAssistant.Options.UIBaseClasses.Store;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace StrmAssistant.Options.Store
 {
@@ -9,36 +12,27 @@ namespace StrmAssistant.Options.Store
     {
         private readonly ILogger _logger;
 
-        private bool _currentHidePersonNoImage;
-        private bool _currentEnforceLibraryOrder;
-        private bool _currentBeautifyMissingMetadata;
-        private bool _currentEnhanceMissingEpisodes;
-
         public UIFunctionOptionsStore(IApplicationHost applicationHost, ILogger logger, string pluginFullName)
             : base(applicationHost, logger, pluginFullName)
         {
             _logger = logger;
 
-            _currentHidePersonNoImage = UIFunctionOptions.HidePersonNoImage;
-            _currentEnforceLibraryOrder = UIFunctionOptions.EnforceLibraryOrder;
-            _currentBeautifyMissingMetadata = UIFunctionOptions.BeautifyMissingMetadata;
-            _currentEnhanceMissingEpisodes = UIFunctionOptions.EnhanceMissingEpisodes;
-
+            FileSaving += OnFileSaving;
             FileSaved += OnFileSaved;
         }
-
+        
         public UIFunctionOptions UIFunctionOptions => GetOptions();
 
-        private void OnFileSaved(object sender, FileSavedEventArgs e)
+        private void OnFileSaving(object sender, FileSavingEventArgs e)
         {
             if (e.Options is UIFunctionOptions options)
             {
-                _logger.Info("HidePersonNoImage is set to {0}", options.HidePersonNoImage);
-                if (_currentHidePersonNoImage != options.HidePersonNoImage)
-                {
-                    _currentHidePersonNoImage = options.HidePersonNoImage;
+                var changes = PropertyChangeDetector.DetectObjectPropertyChanges(UIFunctionOptions, options);
+                var changedProperties = new HashSet<string>(changes.Select(c => c.PropertyName));
 
-                    if (_currentHidePersonNoImage)
+                if (changedProperties.Contains(nameof(UIFunctionOptions.HidePersonNoImage)))
+                {
+                    if (options.HidePersonNoImage)
                     {
                         HidePersonNoImage.Patch();
                     }
@@ -48,12 +42,9 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                _logger.Info("EnforceLibraryOrder is set to {0}", options.EnforceLibraryOrder);
-                if (_currentEnforceLibraryOrder != options.EnforceLibraryOrder)
+                if (changedProperties.Contains(nameof(UIFunctionOptions.EnforceLibraryOrder)))
                 {
-                    _currentEnforceLibraryOrder = options.EnforceLibraryOrder;
-
-                    if (_currentEnforceLibraryOrder)
+                    if (options.EnforceLibraryOrder)
                     {
                         EnforceLibraryOrder.Patch();
                     }
@@ -63,12 +54,9 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                _logger.Info("BeautifyMissingMetadata is set to {0}", options.BeautifyMissingMetadata);
-                if (_currentBeautifyMissingMetadata != options.BeautifyMissingMetadata)
+                if (changedProperties.Contains(nameof(UIFunctionOptions.BeautifyMissingMetadata)))
                 {
-                    _currentBeautifyMissingMetadata = options.BeautifyMissingMetadata;
-
-                    if (_currentBeautifyMissingMetadata)
+                    if (options.BeautifyMissingMetadata)
                     {
                         BeautifyMissingMetadata.Patch();
                     }
@@ -78,12 +66,9 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                _logger.Info("EnhanceMissingEpisodes is set to {0}", options.EnhanceMissingEpisodes);
-                if (_currentEnhanceMissingEpisodes != options.EnhanceMissingEpisodes)
+                if (changedProperties.Contains(nameof(UIFunctionOptions.EnhanceMissingEpisodes)))
                 {
-                    _currentEnhanceMissingEpisodes = options.EnhanceMissingEpisodes;
-
-                    if (_currentEnhanceMissingEpisodes)
+                    if (options.EnhanceMissingEpisodes)
                     {
                         EnhanceMissingEpisodes.Patch();
                     }
@@ -92,6 +77,17 @@ namespace StrmAssistant.Options.Store
                         EnhanceMissingEpisodes.Unpatch();
                     }
                 }
+            }
+        }
+
+        private void OnFileSaved(object sender, FileSavedEventArgs e)
+        {
+            if (e.Options is UIFunctionOptions options)
+            {
+                _logger.Info("HidePersonNoImage is set to {0}", options.HidePersonNoImage);
+                _logger.Info("EnforceLibraryOrder is set to {0}", options.EnforceLibraryOrder);
+                _logger.Info("BeautifyMissingMetadata is set to {0}", options.BeautifyMissingMetadata);
+                _logger.Info("EnhanceMissingEpisodes is set to {0}", options.EnhanceMissingEpisodes);
             }
         }
     }
