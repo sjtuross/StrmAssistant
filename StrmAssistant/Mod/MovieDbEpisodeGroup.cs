@@ -11,12 +11,21 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using static StrmAssistant.LanguageUtility;
 using static StrmAssistant.Mod.PatchManager;
 
 namespace StrmAssistant.Mod
 {
     public static class MovieDbEpisodeGroup
     {
+        internal class SeasonGroupName
+        {
+            public int? LookupSeasonNumber { get; set; }
+            public string LookupLanguage { get; set; }
+            public string GroupName { get; set; }
+            public DateTimeOffset? PremiereDate { get; set; }
+        }
+
         internal class SeasonEpisodeMapping
         {
             public string SeriesTmdbId { get; set; }
@@ -29,10 +38,9 @@ namespace StrmAssistant.Mod
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
 
         private static Assembly _movieDbAssembly;
+        private static MethodInfo _seasonGetMetadata;
         private static MethodInfo _episodeGetMetadata;
         private static MethodInfo _episodeGetImages;
-
-        private static readonly AsyncLocal<SeasonEpisodeMapping> CurrentLookupMapping = new AsyncLocal<SeasonEpisodeMapping>();
 
         public static void Initialize()
         {
@@ -44,6 +52,10 @@ namespace StrmAssistant.Mod
 
                 if (_movieDbAssembly != null)
                 {
+                    var movieDbSeasonProvider = _movieDbAssembly.GetType("MovieDb.MovieDbSeasonProvider");
+                    _seasonGetMetadata = movieDbSeasonProvider.GetMethod("GetMetadata",
+                        BindingFlags.Public | BindingFlags.Instance, null,
+                        new[] { typeof(RemoteMetadataFetchOptions<SeasonInfo>), typeof(CancellationToken) }, null);
                     var movieDbEpisodeProvider = _movieDbAssembly.GetType("MovieDb.MovieDbEpisodeProvider");
                     _episodeGetMetadata = movieDbEpisodeProvider.GetMethod("GetMetadata",
                         BindingFlags.Public | BindingFlags.Instance, null,
@@ -81,6 +93,16 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
+                    if (!IsPatched(_seasonGetMetadata, typeof(MovieDbEpisodeGroup)))
+                    {
+                        HarmonyMod.Patch(_seasonGetMetadata,
+                            prefix: new HarmonyMethod(typeof(MovieDbEpisodeGroup).GetMethod("SeasonGetMetadataPrefix",
+                                BindingFlags.Static | BindingFlags.NonPublic)),
+                            postfix: new HarmonyMethod(typeof(MovieDbEpisodeGroup).GetMethod("SeasonGetMetadataPostfix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.logger.Debug(
+                            "Patch MovieDbSeasonProvider.GetMetadata Success by Harmony");
+                    }
                     if (!IsPatched(_episodeGetMetadata, typeof(MovieDbEpisodeGroup)))
                     {
                         HarmonyMod.Patch(_episodeGetMetadata,
@@ -118,6 +140,14 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
+                    if (IsPatched(_seasonGetMetadata, typeof(MovieDbEpisodeGroup)))
+                    {
+                        HarmonyMod.Unpatch(_seasonGetMetadata,
+                            AccessTools.Method(typeof(MovieDbEpisodeGroup), "SeasonGetMetadataPrefix"));
+                        HarmonyMod.Unpatch(_seasonGetMetadata,
+                            AccessTools.Method(typeof(MovieDbEpisodeGroup), "SeasonGetMetadataPostfix"));
+                        Plugin.Instance.logger.Debug("Unpatch MovieDbSeasonProvider.GetMetadata Success by Harmony");
+                    }
                     if (IsPatched(_episodeGetMetadata, typeof(MovieDbEpisodeGroup)))
                     {
                         HarmonyMod.Unpatch(_episodeGetMetadata,
@@ -145,24 +175,89 @@ namespace StrmAssistant.Mod
         }
 
         [HarmonyPrefix]
-        private static bool EpisodeGetMetadataPrefix(RemoteMetadataFetchOptions<EpisodeInfo> options,
-            CancellationToken cancellationToken, Task<MetadataResult<Episode>> __result)
+        private static bool SeasonGetMetadataPrefix(RemoteMetadataFetchOptions<SeasonInfo> options,
+            CancellationToken cancellationToken, Task<MetadataResult<Season>> __result, out SeasonGroupName __state)
         {
-            var episode = options.SearchInfo;
+            __state = null;
 
-            if (CurrentLookupMapping.Value == null &&
+            var season = options.SearchInfo;
+            if (season.IndexNumber.HasValue &&
+                season.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out var seriesTmdbId) &&
+                season.SeriesProviderIds.TryGetValue(MovieDbEpisodeGroupExternalId.StaticName, out var episodeGroupId))
+            {
+                episodeGroupId = episodeGroupId?.Trim();
+                var episodeGroupInfo = Task
+                    .Run(() => FetchEpisodeGroupInfo(seriesTmdbId, episodeGroupId, cancellationToken),
+                        cancellationToken)
+                    .GetAwaiter()
+                    .GetResult();
+
+                var matchingSeason = episodeGroupInfo?.groups.FirstOrDefault(g => g.order == season.IndexNumber);
+                var firstEpisodeInfo = matchingSeason?.episodes.FirstOrDefault(e => e.order == 0);
+
+                if (matchingSeason != null)
+                {
+                    __state = new SeasonGroupName
+                    {
+                        LookupSeasonNumber = season.IndexNumber,
+                        LookupLanguage = season.MetadataLanguage,
+                        GroupName = matchingSeason.name,
+                        PremiereDate = firstEpisodeInfo?.air_date
+                    };
+                }
+            }
+
+            return true;
+        }
+
+        [HarmonyPostfix]
+        private static void SeasonGetMetadataPostfix(RemoteMetadataFetchOptions<SeasonInfo> options,
+            CancellationToken cancellationToken, Task<MetadataResult<Season>> __result, SeasonGroupName __state)
+        {
+            var metadataResult = __result.Result;
+
+            var isJapaneseFallback = Plugin.Instance.GetPluginOptions().MetadataEnhanceOptions.ChineseMovieDb &&
+                                     GetFallbackLanguages().Contains("ja-jp", StringComparer.OrdinalIgnoreCase);
+
+            if (__state != null && __state.LookupLanguage.StartsWith("zh", StringComparison.OrdinalIgnoreCase) &&
+                (!isJapaneseFallback && IsChinese(__state.GroupName) ||
+                 isJapaneseFallback && (IsChinese(__state.GroupName) || IsJapanese(__state.GroupName))))
+            {
+                if (metadataResult.Item is null)
+                {
+                    metadataResult.Item = new Season();
+                }
+
+                metadataResult.Item.IndexNumber = __state.LookupSeasonNumber;
+                metadataResult.Item.Name = __state.GroupName;
+                metadataResult.Item.PremiereDate = __state.PremiereDate;
+                if (__state.PremiereDate != null)
+                    metadataResult.Item.ProductionYear = __state.PremiereDate.Value.Year;
+
+                metadataResult.HasMetadata = true;
+            }
+        }
+
+        [HarmonyPrefix]
+        private static bool EpisodeGetMetadataPrefix(RemoteMetadataFetchOptions<EpisodeInfo> options,
+            CancellationToken cancellationToken, Task<MetadataResult<Episode>> __result, out SeasonEpisodeMapping __state)
+        {
+            __state = null;
+
+            var episode = options.SearchInfo;
+            if (episode.ParentIndexNumber.HasValue && episode.IndexNumber.HasValue &&
                 episode.SeriesProviderIds.TryGetValue(MetadataProviders.Tmdb.ToString(), out var seriesTmdbId) &&
                 episode.SeriesProviderIds.TryGetValue(MovieDbEpisodeGroupExternalId.StaticName, out var episodeGroupId))
             {
                 episodeGroupId = episodeGroupId?.Trim();
                 var matchingEpisode = Task.Run(() => MapSeasonEpisode(seriesTmdbId, episodeGroupId,
-                        episode.ParentIndexNumber, episode.IndexNumber, cancellationToken))
+                        episode.ParentIndexNumber, episode.IndexNumber, cancellationToken), cancellationToken)
                     .GetAwaiter()
                     .GetResult();
 
                 if (matchingEpisode != null)
                 {
-                    CurrentLookupMapping.Value = matchingEpisode;
+                    __state = matchingEpisode;
                     episode.ParentIndexNumber = matchingEpisode.MappedSeasonNumber;
                     episode.IndexNumber = matchingEpisode.MappedEpisodeNumber;
                 }
@@ -173,48 +268,43 @@ namespace StrmAssistant.Mod
 
         [HarmonyPostfix]
         private static void EpisodeGetMetadataPostfix(RemoteMetadataFetchOptions<EpisodeInfo> options,
-            CancellationToken cancellationToken, Task<MetadataResult<Episode>> __result)
+            CancellationToken cancellationToken, Task<MetadataResult<Episode>> __result, SeasonEpisodeMapping __state)
         {
-            __result.ContinueWith(task =>
-                {
-                    if (!task.IsCompletedSuccessfully || CurrentLookupMapping.Value == null) return;
+            var metadataResult = __result.Result;
+            if (!metadataResult.HasMetadata || metadataResult.Item is null || __state is null) return;
 
-                    var metadataResult = task.Result;
-                    if (!metadataResult.HasMetadata || metadataResult.Item == null) return;
-
-                    var episode = metadataResult.Item;
-                    if (episode != null)
-                    {
-                        var mapping = CurrentLookupMapping.Value;
-                        CurrentLookupMapping.Value = null;
-                        episode.ParentIndexNumber = mapping.LookupSeasonNumber;
-                        episode.IndexNumber = mapping.LookupEpisodeNumber;
-                    }
-                }, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
-                .ConfigureAwait(false);
+            var episode = metadataResult.Item;
+            if (episode != null)
+            {
+                episode.ParentIndexNumber = __state.LookupSeasonNumber;
+                episode.IndexNumber = __state.LookupEpisodeNumber;
+            }
         }
 
         [HarmonyPrefix]
         private static bool EpisodeGetImagesPrefix(RemoteImageFetchOptions options, CancellationToken cancellationToken,
-            Task<IEnumerable<RemoteImageInfo>> __result)
+            Task<IEnumerable<RemoteImageInfo>> __result, out SeasonEpisodeMapping __state)
         {
-            var episode = options.Item as Episode;
-            var seriesTmdbId = episode?.Series.GetProviderId(MetadataProviders.Tmdb);
-            var episodeGroupId = episode?.Series.GetProviderId(MovieDbEpisodeGroupExternalId.StaticName)?.Trim();
+            __state = null;
 
-            if (CurrentLookupMapping.Value is null && !string.IsNullOrEmpty(seriesTmdbId) &&
-                !string.IsNullOrEmpty(episodeGroupId))
+            if (options.Item is Episode episode && episode.ParentIndexNumber.HasValue && episode.IndexNumber.HasValue)
             {
-                var matchingEpisode = Task.Run(() => MapSeasonEpisode(seriesTmdbId, episodeGroupId,
-                        episode.ParentIndexNumber, episode.IndexNumber, cancellationToken))
-                    .GetAwaiter()
-                    .GetResult();
+                var seriesTmdbId = episode.Series.GetProviderId(MetadataProviders.Tmdb);
+                var episodeGroupId = episode.Series.GetProviderId(MovieDbEpisodeGroupExternalId.StaticName)?.Trim();
 
-                if (matchingEpisode != null)
+                if (!string.IsNullOrEmpty(seriesTmdbId) && !string.IsNullOrEmpty(episodeGroupId))
                 {
-                    CurrentLookupMapping.Value = matchingEpisode;
-                    episode.ParentIndexNumber = matchingEpisode.MappedSeasonNumber;
-                    episode.IndexNumber = matchingEpisode.MappedEpisodeNumber;
+                    var matchingEpisode = Task.Run(() => MapSeasonEpisode(seriesTmdbId, episodeGroupId,
+                            episode.ParentIndexNumber, episode.IndexNumber, cancellationToken), cancellationToken)
+                        .GetAwaiter()
+                        .GetResult();
+
+                    if (matchingEpisode != null)
+                    {
+                        __state = matchingEpisode;
+                        episode.ParentIndexNumber = matchingEpisode.MappedSeasonNumber;
+                        episode.IndexNumber = matchingEpisode.MappedEpisodeNumber;
+                    }
                 }
             }
 
@@ -223,21 +313,13 @@ namespace StrmAssistant.Mod
 
         [HarmonyPostfix]
         private static void EpisodeGetImagesPostfix(RemoteImageFetchOptions options,
-            CancellationToken cancellationToken, Task<IEnumerable<RemoteImageInfo>> __result)
+            CancellationToken cancellationToken, Task<IEnumerable<RemoteImageInfo>> __result, SeasonEpisodeMapping __state)
         {
-            __result.ContinueWith(task =>
-                {
-                    if (!task.IsCompletedSuccessfully || CurrentLookupMapping.Value == null) return;
-
-                    if (options.Item is Episode episode)
-                    {
-                        var mapping = CurrentLookupMapping.Value;
-                        CurrentLookupMapping.Value = null;
-                        episode.ParentIndexNumber = mapping.LookupSeasonNumber;
-                        episode.IndexNumber = mapping.LookupEpisodeNumber;
-                    }
-                }, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default)
-                .ConfigureAwait(false);
+            if (options.Item is Episode episode && __state != null)
+            {
+                episode.ParentIndexNumber = __state.LookupSeasonNumber;
+                episode.IndexNumber = __state.LookupEpisodeNumber;
+            }
         }
 
         private static async Task<SeasonEpisodeMapping> MapSeasonEpisode(string seriesTmdbId, string episodeGroupId,

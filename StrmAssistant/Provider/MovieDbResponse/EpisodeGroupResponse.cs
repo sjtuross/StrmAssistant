@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace StrmAssistant.Provider
 {
@@ -17,6 +18,7 @@ namespace StrmAssistant.Provider
 
     internal class GroupEpisode
     {
+        public DateTimeOffset air_date { get; set; }
         public int episode_number { get; set; }
         public int season_number { get; set; }
         public int order { get; set; }
