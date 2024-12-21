@@ -281,7 +281,7 @@ namespace StrmAssistant.IntroSkip
         {
             if (!(item is Episode)) return false;
 
-            if (!string.IsNullOrEmpty(item.ContainingFolderPath)) return false;
+            if (string.IsNullOrEmpty(item.ContainingFolderPath)) return false;
 
             var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
 

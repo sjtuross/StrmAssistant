@@ -71,7 +71,8 @@ namespace StrmAssistant
                             return;
                         }
 
-                        await Plugin.LibraryApi.SerializeMediaInfo(taskItem, directoryService, false, cancellationToken)
+                        await Plugin.LibraryApi.SerializeMediaInfo(taskItem, directoryService, false,
+                                "Persist MediaInfo Task", cancellationToken)
                             .ConfigureAwait(false);
                     }
                     catch (TaskCanceledException)

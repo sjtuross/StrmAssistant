@@ -76,7 +76,12 @@ namespace StrmAssistant.Options
         [DescriptionL("MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_episode_group_scrapping_for_TV_shows__Default_is_OFF_", typeof(Resources))]
         [EnabledCondition(nameof(IsMovieDbPluginLoaded), SimpleCondition.IsTrue)]
         [Required]
-        public bool MovieDbEpisodeGroup { get; set; }
+        public bool MovieDbEpisodeGroup { get; set; } = false;
+
+        [DisplayNameL("MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group", typeof(Resources))]
+        [DescriptionL("MetadataEnhanceOptions_LocalEpisodeGroup_Store_or_load_episode_group_info_to_from_JSON_file__Default_is_OFF_", typeof(Resources))]
+        [VisibleCondition(nameof(MovieDbEpisodeGroup), SimpleCondition.IsTrue)]
+        public bool LocalEpisodeGroup { get; set; } = false;
 
         [DisplayNameL("MetadataEnhanceOptions_EnhanceMovieDbPerson_Enhance_MovieDb_Person", typeof(Resources))]
         [DescriptionL("MetadataEnhanceOptions_EnhanceMovieDbPerson_Import_season_cast_and_update_series_people__Default_is_OFF_", typeof(Resources))]

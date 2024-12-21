@@ -17,7 +17,7 @@ namespace StrmAssistant.Mod
         private static MethodInfo _saveChapters;
         private static MethodInfo _deleteChapters;
 
-        private static readonly AsyncLocal<long> DeserializeItem = new AsyncLocal<long>();
+        private static readonly AsyncLocal<long> BypassItem = new AsyncLocal<long>();
 
         public static void Initialize()
         {
@@ -114,12 +114,12 @@ namespace StrmAssistant.Mod
             }
         }
 
-        public static void BypassDeserializeInstance(BaseItem item)
+        public static void BypassInstance(BaseItem item)
         {
             if (PatchApproachTracker.FallbackPatchApproach == PatchApproach.Harmony &&
                 Plugin.Instance.MediaInfoExtractStore.GetOptions().IsModSupported)
             {
-                DeserializeItem.Value = item.InternalId;
+                BypassItem.Value = item.InternalId;
             }
         }
 
@@ -127,17 +127,19 @@ namespace StrmAssistant.Mod
         private static void SaveChaptersPostfix(long itemId, bool clearExtractionFailureResult,
             List<ChapterInfo> chapters)
         {
-            if (DeserializeItem.Value != 0 && DeserializeItem.Value == itemId) return;
+            if (chapters.Count == 0) return;
 
-            Task.Run(() => Plugin.LibraryApi.SerializeMediaInfo(itemId, true, CancellationToken.None));
+            if (BypassItem.Value != 0 && BypassItem.Value == itemId) return;
+
+            Task.Run(() => Plugin.LibraryApi.SerializeMediaInfo(itemId, true, "Save Chapters", CancellationToken.None));
         }
 
         [HarmonyPostfix]
         private static void DeleteChaptersPostfix(long itemId, MarkerType[] markerTypes)
         {
-            if (DeserializeItem.Value != 0 && DeserializeItem.Value == itemId) return;
+            if (BypassItem.Value != 0 && BypassItem.Value == itemId) return;
 
-            Task.Run(() => Plugin.LibraryApi.SerializeMediaInfo(itemId, true, CancellationToken.None));
+            Task.Run(() => Plugin.LibraryApi.SerializeMediaInfo(itemId, true, "Delete Chapters", CancellationToken.None));
         }
     }
 }

@@ -147,6 +147,7 @@ namespace StrmAssistant.Options.Store
             {
                 _logger.Info("ChineseMovieDb is set to {0}", options.ChineseMovieDb);
                 _logger.Info("MovieDbEpisodeGroup is set to {0}", options.MovieDbEpisodeGroup);
+                _logger.Info("LocalEpisodeGroup is set to {0}", options.LocalEpisodeGroup);
                 _logger.Info("EnhanceMovieDbPerson is set to {0}", options.EnhanceMovieDbPerson);
                 _logger.Info("AltMovieDbConfig is set to {0}", options.AltMovieDbConfig);
                 _logger.Info("AltMovieDbApiUrl is set to {0}",

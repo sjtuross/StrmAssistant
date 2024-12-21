@@ -122,10 +122,9 @@ namespace StrmAssistant.Common
                                         return;
                                     }
 
-                                    if (exclusiveExtract)
-                                    {
-                                        ExclusiveExtract.AllowExtractInstance(taskItem);
-                                    }
+                                    if (exclusiveExtract) ExclusiveExtract.AllowExtractInstance(taskItem);
+
+                                    if (persistMediaInfo) ChapterChangeTracker.BypassInstance(taskItem);
 
                                     var imageCapture = false;
 
@@ -180,7 +179,8 @@ namespace StrmAssistant.Common
                                         if (!deserializeResult)
                                         {
                                             await Plugin.LibraryApi
-                                                .SerializeMediaInfo(taskItem, true, cancellationToken)
+                                                .SerializeMediaInfo(taskItem, true, "Extract MediaInfo Catchup",
+                                                    cancellationToken)
                                                 .ConfigureAwait(false);
                                         }
                                         else if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))

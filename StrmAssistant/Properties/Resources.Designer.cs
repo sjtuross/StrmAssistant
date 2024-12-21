@@ -89,7 +89,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DefaultAllow.
+        ///   Looks up a localized string similar to Catch All Allow.
         /// </summary>
         public static string ExclusiveControl_CatchAllAllow_CatchAllAllow {
             get {
@@ -98,7 +98,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DefaultBlock.
+        ///   Looks up a localized string similar to Catch All Block.
         /// </summary>
         public static string ExclusiveControl_CatchAllBlock_CatchAllBlock {
             get {
@@ -665,6 +665,25 @@ namespace StrmAssistant.Properties {
         public static string MetadataEnhanceOptions_EnhanceNfoMetadata_Nfo_Metadata_Import_Enhanced {
             get {
                 return ResourceManager.GetString("MetadataEnhanceOptions_EnhanceNfoMetadata_Nfo_Metadata_Import_Enhanced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Local Episode Group.
+        /// </summary>
+        public static string MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store or load episode group info to/from JSON file. Default is OFF..
+        /// </summary>
+        public static string MetadataEnhanceOptions_LocalEpisodeGroup_Store_or_load_episode_group_info_to_from_JSON_file__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_LocalEpisodeGroup_Store_or_load_episode_group_info_to_from" +
+                        "_JSON_file__Default_is_OFF_", resourceCulture);
             }
         }
         

@@ -324,6 +324,8 @@ namespace StrmAssistant.Mod
                 !(provider is ICustomMetadataProvider<Video>))
                 return true;
 
+            ChapterChangeTracker.BypassInstance(item);
+
             if (ExclusiveItem.Value != 0 && ExclusiveItem.Value == item.InternalId) return true;
 
             if (item.DateLastRefreshed == DateTimeOffset.MinValue)
@@ -450,7 +452,7 @@ namespace StrmAssistant.Mod
                     }
                     else
                     {
-                        Task.Run(() => Plugin.LibraryApi.SerializeMediaInfo(__instance, true, CancellationToken.None));
+                        Task.Run(() => Plugin.LibraryApi.SerializeMediaInfo(__instance, true,"Exclusive Overwrite", CancellationToken.None));
                     }
                 }
                 else if (!Plugin.LibraryApi.HasMediaInfo(__instance))
@@ -459,7 +461,9 @@ namespace StrmAssistant.Mod
                 }
                 else
                 {
-                    Task.Run(() => Plugin.LibraryApi.SerializeMediaInfo(__instance, false, CancellationToken.None));
+                    Task.Run(() =>
+                        Plugin.LibraryApi.SerializeMediaInfo(__instance, false, "Exclusive Non-existence",
+                            CancellationToken.None));
                 }
 
                 CurrentRefreshContext.Value = null;

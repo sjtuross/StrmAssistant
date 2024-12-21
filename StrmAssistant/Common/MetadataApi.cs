@@ -1,15 +1,19 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Globalization;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using StrmAssistant.Mod;
 using StrmAssistant.Provider;
 using System;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using static StrmAssistant.Common.LanguageUtility;
@@ -214,6 +218,12 @@ namespace StrmAssistant.Common
             try
             {
                 using var response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    _logger.Debug("Failed to get MovieDb response - " + response.StatusCode);
+                    return null;
+                }
+
                 await using var contentStream = response.Content;
                 result = _jsonSerializer.DeserializeFromStream<T>(contentStream);
 
@@ -238,6 +248,102 @@ namespace StrmAssistant.Common
         public async Task<T> GetMovieDbResponse<T>(string url, CancellationToken cancellationToken) where T : class
         {
             return await GetMovieDbResponse<T>(url, null, null, cancellationToken);
+        }
+
+        public Series GetSeriesByPath(string path)
+        {
+            var items = _libraryManager.GetItemList(new InternalItemsQuery { Path = path });
+
+            foreach (var item in items)
+            {
+                if (item is Episode episode)
+                {
+                    return episode.Series;
+                }
+
+                if (item is Season season)
+                {
+                    return season.Series;
+                }
+
+                if (item is Series series)
+                {
+                    return series;
+                }
+            }
+
+            return null;
+        }
+
+        public async Task<EpisodeGroupResponse> FetchOnlineEpisodeGroup(string seriesTmdbId,
+            string episodeGroupId, string localEpisodeGroupPath, CancellationToken cancellationToken)
+        {
+            var url =
+                $"{AltMovieDbConfig.CurrentMovieDbApiUrl}/3/tv/episode_group/{episodeGroupId}?api_key={AltMovieDbConfig.CurrentMovieDbApiKey}";
+
+            var cacheKey = "tmdb_episode_group_" + seriesTmdbId + "_" + episodeGroupId;
+
+            var cachePath = Path.Combine(Plugin.Instance.ApplicationPaths.CachePath, "tmdb-tv", seriesTmdbId,
+                episodeGroupId + ".json");
+
+            var episodeGroupResponse = await Plugin.MetadataApi
+                .GetMovieDbResponse<EpisodeGroupResponse>(url, cacheKey, cachePath, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (episodeGroupResponse != null && !string.IsNullOrEmpty(localEpisodeGroupPath))
+            {
+                try
+                {
+                    _jsonSerializer.SerializeToFile(episodeGroupResponse, localEpisodeGroupPath);
+                }
+                catch (Exception e)
+                {
+                    _logger.Error("LocalEpisodeGroup - Serialization Failed" + localEpisodeGroupPath);
+                    _logger.Error(e.Message);
+                    _logger.Debug(e.StackTrace);
+                }
+            }
+
+            return episodeGroupResponse;
+        }
+
+        public async Task<EpisodeGroupResponse> FetchLocalEpisodeGroup(string localEpisodeGroupPath)
+        {
+            EpisodeGroupResponse result = null;
+
+            if (!string.IsNullOrEmpty(localEpisodeGroupPath))
+            {
+                if (LruCache.TryGetFromCache(localEpisodeGroupPath, out result))
+                {
+                    return result;
+                }
+
+                var directoryService = new DirectoryService(_logger, _fileSystem);
+                var file = directoryService.GetFile(localEpisodeGroupPath);
+
+                if (file?.Exists == true)
+                {
+                    try
+                    {
+                        result = await _jsonSerializer
+                            .DeserializeFromFileAsync<EpisodeGroupResponse>(localEpisodeGroupPath)
+                            .ConfigureAwait(false);
+
+                        if (result != null)
+                        {
+                            LruCache.AddOrUpdateCache(localEpisodeGroupPath, result);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Debug("Failed to get local episode group - " + e.Message);
+                        return null;
+                    }
+                    
+                }
+            }
+
+            return result;
         }
     }
 }
