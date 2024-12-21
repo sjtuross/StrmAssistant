@@ -129,7 +129,8 @@ namespace StrmAssistant
                 if (Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.PersistMediaInfo &&
                     Plugin.LibraryApi.IsLibraryInScope(item))
                 {
-                    await Plugin.LibraryApi.SerializeMediaInfo(item, directoryService, true, cancellationToken)
+                    await Plugin.LibraryApi.SerializeMediaInfo(item, directoryService, true,
+                            "External Subtitle Update", cancellationToken)
                         .ConfigureAwait(false);
                 }
             }

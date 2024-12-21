@@ -190,7 +190,7 @@ namespace StrmAssistant
 
         public bool IsLibraryInScope(BaseItem item)
         {
-            if (!string.IsNullOrEmpty(item.ContainingFolderPath)) return false;
+            if (string.IsNullOrEmpty(item.ContainingFolderPath)) return false;
 
             var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
 
@@ -631,7 +631,7 @@ namespace StrmAssistant
         }
 
         public async Task SerializeMediaInfo(BaseItem item, IDirectoryService directoryService, bool overwrite,
-            CancellationToken cancellationToken)
+            string source, CancellationToken cancellationToken)
         {
             var workItem = item;
             if (!item.RunTimeTicks.HasValue)
@@ -667,30 +667,32 @@ namespace StrmAssistant
                                 _jsonSerializer.SerializeToFile(mediaSourcesWithChapters, mediaInfoJsonPath);
                             }, cancellationToken)
                             .ConfigureAwait(false);
-                        _logger.Info("MediaInfoPersist - Serialization Success: " + mediaInfoJsonPath);
+                        _logger.Info("MediaInfoPersist - Serialization Success (" + source + "): " + mediaInfoJsonPath);
                     }
                     catch (Exception e)
                     {
-                        _logger.Error("MediaInfoPersist - Serialization Failed: " + mediaInfoJsonPath);
+                        _logger.Error("MediaInfoPersist - Serialization Failed (" + source + "): " + mediaInfoJsonPath);
                         _logger.Error(e.Message);
                         _logger.Debug(e.StackTrace);
                     }
                 }
                 else
                 {
-                    _logger.Info("MediaInfoPersist - Serialization Skipped: " + mediaInfoJsonPath);
+                    _logger.Info("MediaInfoPersist - Serialization Skipped (No MediaInfo): " + mediaInfoJsonPath);
                 }
             }
         }
 
-        public async Task SerializeMediaInfo(BaseItem item, bool overwrite, CancellationToken cancellationToken)
+        public async Task SerializeMediaInfo(BaseItem item, bool overwrite, string source,
+            CancellationToken cancellationToken)
         {
             var directoryService = new DirectoryService(_logger, _fileSystem);
 
-            await SerializeMediaInfo(item, directoryService, overwrite, cancellationToken).ConfigureAwait(false);
+            await SerializeMediaInfo(item, directoryService, overwrite, source, cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        public async Task SerializeMediaInfo(long itemId, bool overwrite, CancellationToken cancellationToken)
+        public async Task SerializeMediaInfo(long itemId, bool overwrite, string source, CancellationToken cancellationToken)
         {
             var item = _libraryManager.GetItemById(itemId);
 
@@ -698,7 +700,8 @@ namespace StrmAssistant
 
             var directoryService = new DirectoryService(_logger, _fileSystem);
 
-            await SerializeMediaInfo(item, directoryService, overwrite, cancellationToken).ConfigureAwait(false);
+            await SerializeMediaInfo(item, directoryService, overwrite, source, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public async Task<bool> DeserializeMediaInfo(BaseItem item, IDirectoryService directoryService,
@@ -733,7 +736,7 @@ namespace StrmAssistant
 
                         if (workItem is Video)
                         {
-                            ChapterChangeTracker.BypassDeserializeInstance(workItem);
+                            ChapterChangeTracker.BypassInstance(workItem);
                             _itemRepository.SaveChapters(workItem.InternalId, true, mediaSourceWithChapters.Chapters);
                         }
 

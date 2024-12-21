@@ -80,10 +80,9 @@ namespace StrmAssistant
                             return;
                         }
 
-                        if (exclusiveExtract)
-                        {
-                            ExclusiveExtract.AllowExtractInstance(taskItem);
-                        }
+                        if (exclusiveExtract) ExclusiveExtract.AllowExtractInstance(taskItem);
+
+                        if (persistMediaInfo) ChapterChangeTracker.BypassInstance(taskItem);
 
                         var imageCapture = false;
 
@@ -140,7 +139,8 @@ namespace StrmAssistant
                             if (!deserializeResult)
                             {
                                 await Plugin.LibraryApi
-                                    .SerializeMediaInfo(taskItem, directoryService, true, cancellationToken)
+                                    .SerializeMediaInfo(taskItem, directoryService, true, "Extract MediaInfo Task",
+                                        cancellationToken)
                                     .ConfigureAwait(false);
                             }
                             else if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))
