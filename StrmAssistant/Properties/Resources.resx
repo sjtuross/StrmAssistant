@@ -509,4 +509,10 @@
   <data name="MediaInfoExtractOptions_ExclusiveExtractFeatureControl_Exclusive_Extract_Feature_Control" xml:space="preserve">
     <value>Optional Exclusive Extract Feature Control</value>
   </data>
+  <data name="MetadataEnhanceOptions_LocalEpisodeGroup_Store_or_load_episode_group_info_to_from_JSON_file__Default_is_OFF_" xml:space="preserve">
+    <value>Store or load episode group info to/from JSON file. Default is OFF.</value>
+  </data>
+  <data name="MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group" xml:space="preserve">
+    <value>Enable Local Episode Group</value>
+  </data>
 </root>

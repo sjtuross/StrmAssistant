@@ -422,4 +422,10 @@
   <data name="MediaInfoExtractOptions_ExclusiveExtractFeatureControl_Exclusive_Extract_Feature_Control" xml:space="preserve">
     <value>可选独占模式功能控制</value>
   </data>
+  <data name="MetadataEnhanceOptions_LocalEpisodeGroup_Store_or_load_episode_group_info_to_from_JSON_file__Default_is_OFF_" xml:space="preserve">
+    <value>保存或加载剧集组至/自 JSON 文件，默认关闭。</value>
+  </data>
+  <data name="MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group" xml:space="preserve">
+    <value>启用本地剧集组 TMDB</value>
+  </data>
 </root>

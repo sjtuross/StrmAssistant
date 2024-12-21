@@ -507,7 +507,10 @@ namespace StrmAssistant
             }
 
             if (!suppressLogger)
+            {
                 logger.Info("MovieDbEpisodeGroup is set to {0}", options.MetadataEnhanceOptions.MovieDbEpisodeGroup);
+                logger.Info("LocalEpisodeGroup is set to {0}", options.MetadataEnhanceOptions.LocalEpisodeGroup);
+            }
             if (_currentMovieDbEpisodeGroup != GetOptions().MetadataEnhanceOptions.MovieDbEpisodeGroup)
             {
                 _currentMovieDbEpisodeGroup = GetOptions().MetadataEnhanceOptions.MovieDbEpisodeGroup;
