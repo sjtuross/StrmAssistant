@@ -35,8 +35,10 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using static StrmAssistant.CommonUtility;
+using static StrmAssistant.GeneralOptions;
 using static StrmAssistant.MediaInfoExtractOptions;
 using static StrmAssistant.ModOptions;
+using static StrmAssistant.Options.Utility;
 
 namespace StrmAssistant
 {
@@ -45,6 +47,7 @@ namespace StrmAssistant
         public static Plugin Instance { get; private set; }
         public static LibraryApi LibraryApi { get; private set; }
         public static ChapterApi ChapterApi { get; private set; }
+        public static FingerprintApi FingerprintApi { get; private set; }
         public static NotificationApi NotificationApi { get; private set; }
         public static SubtitleApi SubtitleApi { get; private set; }
         public static PlaySessionMonitor PlaySessionMonitor { get; private set; }
@@ -65,6 +68,7 @@ namespace StrmAssistant
         private bool _currentPersistMediaInfo;
         private bool _currentEnableImageCapture;
         private bool _currentCatchupMode;
+        private string _currentCatchupScope;
         private bool _currentEnableIntroSkip;
         private bool _currentUnlockIntroSkip;
         private bool _currentMergeMultiVersion;
@@ -87,25 +91,13 @@ namespace StrmAssistant
         private bool _currentBeautifyMissingMetadata;
         private bool _currentEnhanceMissingEpisodes;
 
-        public Plugin(IApplicationHost applicationHost,
-            IApplicationPaths applicationPaths,
-            ILogManager logManager,
-            IFileSystem fileSystem,
-            ILibraryManager libraryManager,
-            ISessionManager sessionManager,
-            IItemRepository itemRepository,
-            INotificationManager notificationManager,
-            IMediaSourceManager mediaSourceManager,
-            IMediaMountManager mediaMountManager,
-            IMediaProbeManager mediaProbeManager,
-            ILocalizationManager localizationManager,
-            IUserManager userManager,
-            IUserDataManager userDataManager,
-            IFfmpegManager ffmpegManager,
-            IMediaEncoder mediaEncoder,
-            IJsonSerializer jsonSerializer,
-            IHttpClient httpClient,
-            IServerApplicationHost serverApplicationHost,
+        public Plugin(IApplicationHost applicationHost, IApplicationPaths applicationPaths, ILogManager logManager,
+            IFileSystem fileSystem, ILibraryManager libraryManager, ISessionManager sessionManager,
+            IItemRepository itemRepository, INotificationManager notificationManager,
+            IMediaSourceManager mediaSourceManager, IMediaMountManager mediaMountManager,
+            IMediaProbeManager mediaProbeManager, ILocalizationManager localizationManager, IUserManager userManager,
+            IUserDataManager userDataManager, IFfmpegManager ffmpegManager, IMediaEncoder mediaEncoder,
+            IJsonSerializer jsonSerializer, IHttpClient httpClient, IServerApplicationHost serverApplicationHost,
             IServerConfigurationManager configurationManager) : base(applicationHost)
         {
             Instance = this;
@@ -122,6 +114,7 @@ namespace StrmAssistant
             _currentPersistMediaInfo = GetOptions().MediaInfoExtractOptions.PersistMediaInfo;
             _currentEnableImageCapture = GetOptions().MediaInfoExtractOptions.EnableImageCapture;
             _currentCatchupMode = GetOptions().GeneralOptions.CatchupMode;
+            _currentCatchupScope = GetOptions().GeneralOptions.CatchupTaskScope;
             _currentEnableIntroSkip = GetOptions().IntroSkipOptions.EnableIntroSkip;
             _currentUnlockIntroSkip = GetOptions().IntroSkipOptions.UnlockIntroSkip;
             _currentMergeMultiVersion = GetOptions().ModOptions.MergeMultiVersion;
@@ -134,8 +127,7 @@ namespace StrmAssistant
             _currentProxyServerEnabled = GetOptions().NetworkOptions.EnableProxyServer;
             _currentProxyServerUrl = GetOptions().NetworkOptions.ProxyServerUrl;
             _currentExclusiveExtract = GetOptions().MediaInfoExtractOptions.ExclusiveExtract;
-            _currentExclusiveControlFeatures =
-                GetOptions().MediaInfoExtractOptions.ExclusiveControlFeatures;
+            _currentExclusiveControlFeatures = GetOptions().MediaInfoExtractOptions.ExclusiveControlFeatures;
             _currentPreferOriginalPoster = GetOptions().MetadataEnhanceOptions.PreferOriginalPoster;
             _currentEnhanceChineseSearch = GetOptions().ModOptions.EnhanceChineseSearch;
             _currentSearchScope = GetOptions().ModOptions.SearchScope;
@@ -144,11 +136,12 @@ namespace StrmAssistant
             _currentHidePersonNoImage = GetOptions().UIFunctionOptions.HidePersonNoImage;
             _currentEnforceLibraryOrder = GetOptions().UIFunctionOptions.EnforceLibraryOrder;
             _currentBeautifyMissingMetadata = GetOptions().UIFunctionOptions.BeautifyMissingMetadata;
-            _currentEnhanceMissingEpisodes=GetOptions().UIFunctionOptions.EnhanceMissingEpisodes;
+            _currentEnhanceMissingEpisodes = GetOptions().UIFunctionOptions.EnhanceMissingEpisodes;
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, mediaMountManager,
                 itemRepository, jsonSerializer, userManager);
-            ChapterApi = new ChapterApi(libraryManager, itemRepository, fileSystem, applicationPaths, ffmpegManager,
+            ChapterApi = new ChapterApi(libraryManager, itemRepository);
+            FingerprintApi = new FingerprintApi(libraryManager, fileSystem, applicationPaths, ffmpegManager,
                 mediaEncoder, mediaMountManager, jsonSerializer, serverApplicationHost);
             PlaySessionMonitor = new PlaySessionMonitor(libraryManager, userManager, sessionManager);
             NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
@@ -159,8 +152,8 @@ namespace StrmAssistant
             ShortcutMenuHelper.Initialize(configurationManager);
 
             PatchManager.Initialize();
-            if (_currentCatchupMode) InitializeCatchupMode();
             if (_currentEnableIntroSkip) PlaySessionMonitor.Initialize();
+            if (_currentCatchupMode) UpdateCatchupScope();
             QueueManager.Initialize();
 
             _libraryManager.ItemAdded += OnItemAdded;
@@ -169,17 +162,7 @@ namespace StrmAssistant
             _userManager.UserCreated += OnUserCreated;
             _userManager.UserDeleted += OnUserDeleted;
             _userManager.UserConfigurationUpdated += OnUserConfigurationUpdated;
-        }
-
-        private void InitializeCatchupMode()
-        {
-            DisposeCatchupMode();
             _userDataManager.UserDataSaved += OnUserDataSaved;
-        }
-
-        private void DisposeCatchupMode()
-        {
-            _userDataManager.UserDataSaved -= OnUserDataSaved;
         }
 
         private void OnUserCreated(object sender, GenericEventArgs<User> e)
@@ -199,20 +182,30 @@ namespace StrmAssistant
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (_currentCatchupMode && (_currentExclusiveExtract || e.Item.IsShortcut))
+            if (_currentCatchupMode && _currentUnlockIntroSkip && IsCatchupTaskSelected(CatchupTask.Fingerprint) &&
+                FingerprintApi.IsLibraryInScope(e.Item))
             {
-                QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+                QueueManager.FingerprintItemQueue.Enqueue(e.Item);
             }
-
-            if (_currentEnableIntroSkip && PlaySessionMonitor.IsLibraryInScope(e.Item))
+            else
             {
-                if (!LibraryApi.HasMediaInfo(e.Item))
+                if (_currentCatchupMode && IsCatchupTaskSelected(CatchupTask.MediaInfo) &&
+                    (_currentExclusiveExtract || e.Item.IsShortcut))
                 {
                     QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
                 }
-                else if (e.Item is Episode episode && ChapterApi.SeasonHasIntroCredits(episode))
+
+                if ((_currentCatchupMode && IsCatchupTaskSelected(CatchupTask.IntroSkip)) &&
+                    PlaySessionMonitor.IsLibraryInScope(e.Item))
                 {
-                    QueueManager.IntroSkipItemQueue.Enqueue(episode);
+                    if (!LibraryApi.HasMediaInfo(e.Item))
+                    {
+                        QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+                    }
+                    else if (e.Item is Episode episode && ChapterApi.SeasonHasIntroCredits(episode))
+                    {
+                        QueueManager.IntroSkipItemQueue.Enqueue(episode);
+                    }
                 }
             }
 
@@ -247,7 +240,15 @@ namespace StrmAssistant
         {
             if (e.UserData.IsFavorite)
             {
-                QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+                if (_currentUnlockIntroSkip && _currentCatchupMode && IsCatchupTaskSelected(CatchupTask.Fingerprint) &&
+                    FingerprintApi.IsLibraryInScope(e.Item))
+                {
+                    QueueManager.FingerprintItemQueue.Enqueue(e.Item);
+                }
+                else if (_currentCatchupMode && IsCatchupTaskSelected(CatchupTask.MediaInfo))
+                {
+                    QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+                }
             }
         }
 
@@ -284,6 +285,9 @@ namespace StrmAssistant
 
         protected override bool OnOptionsSaving(PluginOptions options)
         {
+            if (string.IsNullOrEmpty(options.GeneralOptions.CatchupTaskScope))
+                options.GeneralOptions.CatchupTaskScope = CatchupTask.MediaInfo.ToString();
+
             options.MediaInfoExtractOptions.LibraryScope = string.Join(",",
                 options.MediaInfoExtractOptions.LibraryScope
                     ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
@@ -373,6 +377,21 @@ namespace StrmAssistant
         protected override void OnOptionsSaved(PluginOptions options)
         {
             var suppressLogger = _currentSuppressOnOptionsSaved;
+            
+            if (!suppressLogger)
+            {
+                logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
+                var catchupTaskScope = GetSelectedCatchupTaskDescription();
+                logger.Info("CatchupTaskScope is set to {0}", string.IsNullOrEmpty(catchupTaskScope) ? "EMPTY" : catchupTaskScope);
+            }
+            _currentCatchupMode = options.GeneralOptions.CatchupMode;
+
+            if (_currentCatchupScope != options.GeneralOptions.CatchupTaskScope)
+            {
+                _currentCatchupScope = options.GeneralOptions.CatchupTaskScope;
+
+                if (_currentCatchupMode) UpdateCatchupScope();
+            }
 
             if (!suppressLogger)
             {
@@ -471,14 +490,7 @@ namespace StrmAssistant
 
             if (!suppressLogger)
             {
-                var controlFeatures = string.Join(", ",
-                    options.MediaInfoExtractOptions.ExclusiveControlFeatures
-                        ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(s =>
-                            Enum.TryParse(s.Trim(), true, out ExclusiveControl type)
-                                ? EnumExtensions.GetDescription(type)
-                                : null)
-                        .Where(d => d != null) ?? Array.Empty<string>());
+                var controlFeatures = GetSelectedExclusiveFeatureDescription();
                 logger.Info("ExclusiveExtract - ControlFeatures is set to {0}",
                     string.IsNullOrEmpty(controlFeatures) ? "EMPTY" : controlFeatures);
             }
@@ -488,9 +500,9 @@ namespace StrmAssistant
             {
                 _currentExclusiveControlFeatures = options.MediaInfoExtractOptions.ExclusiveControlFeatures;
 
-                if (_currentExclusiveExtract) ExclusiveExtract.UpdateControlFeatures();
+                if (_currentExclusiveExtract) UpdateExclusiveControlFeatures();
             }
-
+            
             if (!suppressLogger)
                 logger.Info("ChineseMovieDb is set to {0}", options.MetadataEnhanceOptions.ChineseMovieDb);
             if (_currentChineseMovieDb != GetOptions().MetadataEnhanceOptions.ChineseMovieDb)
@@ -754,22 +766,6 @@ namespace StrmAssistant
             }
 
             if (!suppressLogger)
-                logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
-            if (_currentCatchupMode != options.GeneralOptions.CatchupMode)
-            {
-                _currentCatchupMode = options.GeneralOptions.CatchupMode;
-
-                if (options.GeneralOptions.CatchupMode)
-                {
-                    InitializeCatchupMode();
-                }
-                else
-                {
-                    DisposeCatchupMode();
-                }
-            }
-
-            if (!suppressLogger)
             {
                 logger.Info("EnableIntroSkip is set to {0}", options.IntroSkipOptions.EnableIntroSkip);
                 logger.Info("MaxIntroDurationSeconds is set to {0}", options.IntroSkipOptions.MaxIntroDurationSeconds);
@@ -842,7 +838,8 @@ namespace StrmAssistant
                 logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
                     options.IntroSkipOptions.IntroDetectionFingerprintMinutes);
             }
-            ChapterApi.UpdateLibraryIntroDetectionFingerprintLength();
+            FingerprintApi.UpdateLibraryPathsInScope();
+            FingerprintApi.UpdateLibraryIntroDetectionFingerprintLength();
 
             if (!suppressLogger)
             {
@@ -916,6 +913,21 @@ namespace StrmAssistant
             options.MediaInfoExtractOptions.LibraryList = list;
             options.IntroSkipOptions.LibraryList = listShow;
             options.IntroSkipOptions.MarkerEnabledLibraryList = listMarkerEnabled;
+
+            var catchTaskList = new List<EditorSelectOption>();
+            foreach (Enum item in Enum.GetValues(typeof(CatchupTask)))
+            {
+                var selectOption = new EditorSelectOption
+                {
+                    Value = item.ToString(),
+                    Name = EnumExtensions.GetDescription(item),
+                    IsEnabled = true,
+                };
+
+                catchTaskList.Add(selectOption);
+            }
+
+            options.GeneralOptions.CatchupTaskList = catchTaskList;
 
             var exclusiveControlList = new List<EditorSelectOption>();
             foreach (Enum item in Enum.GetValues(typeof(ExclusiveControl)))

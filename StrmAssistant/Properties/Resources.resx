@@ -102,7 +102,7 @@
     <value>Catch-up Mode</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>Extract media info for newly added items and sync behaviour-based intro and credits markers. Default is OFF.</value>
+    <value>Extract media info for newly added items and intro marker detection or sync in near real-time. Default is OFF.</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>Include Additional Part and Extra</value>
@@ -514,5 +514,17 @@
   </data>
   <data name="MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group" xml:space="preserve">
     <value>Enable Local Episode Group</value>
+  </data>
+  <data name="CatchupTask_MediaInfo_MediaInfo" xml:space="preserve">
+    <value>MediaInfo Extract</value>
+  </data>
+  <data name="CatchupTask_IntroSkip_IntroSkip" xml:space="preserve">
+    <value>Behavior-based Marker Sync</value>
+  </data>
+  <data name="CatchupTask_Fingerprint_Fingerprint" xml:space="preserve">
+    <value>Built-in Intro Detection</value>
+  </data>
+  <data name="GeneralOptions_CatchupScope_Catchup_Scope" xml:space="preserve">
+    <value>Catchup Task Scope</value>
   </data>
 </root>
