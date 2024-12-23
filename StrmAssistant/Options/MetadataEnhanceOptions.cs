@@ -165,7 +165,7 @@ namespace StrmAssistant.Options
 
             if (!string.IsNullOrEmpty(metadataOptionsErrors))
             {
-                context.AddValidationError(nameof(MetadataEnhanceOptions), metadataOptionsErrors);
+                context.AddValidationError(metadataOptionsErrors);
             }
         }
     }

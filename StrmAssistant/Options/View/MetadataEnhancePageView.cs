@@ -21,6 +21,11 @@ namespace StrmAssistant.Options.View
 
         public override Task<IPluginUIView> OnSaveCommand(string itemId, string commandId, string data)
         {
+            if (ContentData is MetadataEnhanceOptions options)
+            {
+                options.ValidateOrThrow();
+            }
+
             _store.SetOptions(MetadataEnhanceOptions);
             return base.OnSaveCommand(itemId, commandId, data);
         }

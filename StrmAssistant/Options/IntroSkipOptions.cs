@@ -90,7 +90,7 @@ namespace StrmAssistant.Options
             if (MarkerEnabledLibraryList.All(o => o.Value == "-1") &&
                 MarkerEnabledLibraryScope.Contains("-1"))
             {
-                context.AddValidationError(nameof(IntroSkipOptions), Resources.InvalidMarkerEnabledLibraryScope);
+                context.AddValidationError(Resources.InvalidMarkerEnabledLibraryScope);
             }
         }
 

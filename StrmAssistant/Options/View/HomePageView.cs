@@ -26,6 +26,11 @@ namespace StrmAssistant.Options.View
 
         public override Task<IPluginUIView> OnSaveCommand(string itemId, string commandId, string data)
         {
+            if (ContentData is PluginOptions options)
+            {
+                options.NetworkOptions.ValidateOrThrow();
+            }
+
             _store.SetOptions(PluginOptions);
             return base.OnSaveCommand(itemId, commandId, data);
         }

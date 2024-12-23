@@ -24,6 +24,11 @@ namespace StrmAssistant.Options.View
 
         public override Task<IPluginUIView> OnSaveCommand(string itemId, string commandId, string data)
         {
+            if (ContentData is IntroSkipOptions options)
+            {
+                options.ValidateOrThrow();
+            }
+
             _store.SetOptions(IntroSkipOptions);
             return base.OnSaveCommand(itemId, commandId, data);
         }

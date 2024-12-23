@@ -39,9 +39,10 @@ namespace StrmAssistant
 
         protected override void Validate(ValidationContext context)
         {
-            if (!string.IsNullOrWhiteSpace(ProxyServerUrl) && !IsValidProxyUrl(ProxyServerUrl))
+            if (!string.IsNullOrWhiteSpace(ProxyServerUrl) &&
+                !IsValidProxyUrl(ProxyServerUrl))
             {
-                context.AddValidationError(nameof(NetworkOptions), Resources.InvalidProxyServer);
+                context.AddValidationError(Resources.InvalidProxyServer);
             }
         }
 
