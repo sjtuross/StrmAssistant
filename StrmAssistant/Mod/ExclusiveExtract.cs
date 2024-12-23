@@ -5,15 +5,15 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Entities;
 using StrmAssistant.Common;
-using StrmAssistant.Options;
 using StrmAssistant.ScheduledTask;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using static StrmAssistant.Mod.PatchManager;
+using static StrmAssistant.Options.MediaInfoExtractOptions;
+using static StrmAssistant.Options.Utility;
 
 namespace StrmAssistant.Mod
 {
@@ -41,8 +41,6 @@ namespace StrmAssistant.Mod
 
         private static readonly Dictionary<Type, PropertyInfo> RefreshLibraryPropertyCache =
             new Dictionary<Type, PropertyInfo>();
-
-        private static HashSet<string> _selectedFeatures = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         private static AsyncLocal<long> ExclusiveItem { get; } = new AsyncLocal<long>();
 
@@ -104,7 +102,7 @@ namespace StrmAssistant.Mod
 
                 if (Plugin.Instance.MediaInfoExtractStore.GetOptions().ExclusiveExtract)
                 {
-                    UpdateControlFeatures();
+                    UpdateExclusiveControlFeatures();
                     Patch();
                 }
             }
@@ -293,26 +291,10 @@ namespace StrmAssistant.Mod
         [HarmonyPrefix]
         private static void RunFfProcessPrefix(ref int timeoutMs)
         {
-            if (ExtractMediaInfoTask.IsRunning || QueueManager.IsProcessTaskRunning)
+            if (ExtractMediaInfoTask.IsRunning || QueueManager.IsMediaInfoProcessTaskRunning)
             {
                 timeoutMs = 60000 * Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount;
             }
-        }
-
-        public static void UpdateControlFeatures()
-        {
-            var controlFeatures = Plugin.Instance.MediaInfoExtractStore.GetOptions().ExclusiveControlFeatures;
-
-            _selectedFeatures = new HashSet<string>(
-                controlFeatures?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Where(f => !(f == MediaInfoExtractOptions.ExclusiveControl.CatchAllAllow.ToString() &&
-                                  controlFeatures.Contains(MediaInfoExtractOptions.ExclusiveControl.CatchAllBlock.ToString()))) ??
-                Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
-        }
-
-        private static bool IsFeatureSelected(params MediaInfoExtractOptions.ExclusiveControl[] featuresToCheck)
-        {
-            return featuresToCheck.All(f => _selectedFeatures.Contains(f.ToString()));
         }
 
         [HarmonyPrefix]
@@ -334,7 +316,7 @@ namespace StrmAssistant.Mod
                 return false;
             }
 
-            if (!IsFeatureSelected(MediaInfoExtractOptions.ExclusiveControl.IgnoreFileChange) && CurrentRefreshContext.Value != null &&
+            if (!IsExclusiveFeatureSelected(ExclusiveControl.IgnoreFileChange) && CurrentRefreshContext.Value != null &&
                 Plugin.LibraryApi.HasFileChanged(item))
             {
                 CurrentRefreshContext.Value.MediaInfoNeedsUpdate = true;
@@ -345,7 +327,7 @@ namespace StrmAssistant.Mod
                 (CurrentRefreshContext.Value.MetadataRefreshOptions.MetadataRefreshMode <=
                     MetadataRefreshMode.Default &&
                     CurrentRefreshContext.Value.MetadataRefreshOptions.ImageRefreshMode <=
-                    MetadataRefreshMode.Default || !IsFeatureSelected(MediaInfoExtractOptions.ExclusiveControl.CatchAllAllow) &&
+                    MetadataRefreshMode.Default || !IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) &&
                     CurrentRefreshContext.Value.MetadataRefreshOptions.SearchResult != null))
             {
                 if (item is Video && Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
@@ -355,7 +337,7 @@ namespace StrmAssistant.Mod
                 return false;
             }
 
-            if (!IsFeatureSelected(MediaInfoExtractOptions.ExclusiveControl.CatchAllBlock) && !item.IsShortcut &&
+            if (!IsExclusiveFeatureSelected(ExclusiveControl.CatchAllBlock) && !item.IsShortcut &&
                 CurrentRefreshContext.Value != null &&
                 CurrentRefreshContext.Value.MetadataRefreshOptions.ReplaceAllImages)
             {
@@ -363,7 +345,7 @@ namespace StrmAssistant.Mod
                 return true;
             }
 
-            if (!IsFeatureSelected(MediaInfoExtractOptions.ExclusiveControl.CatchAllAllow) && Plugin.LibraryApi.HasMediaInfo(item))
+            if (!IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) && Plugin.LibraryApi.HasMediaInfo(item))
             {
                 if (item is Video && Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
                     QueueManager.ExternalSubtitleItemQueue.Enqueue(item);
@@ -372,15 +354,15 @@ namespace StrmAssistant.Mod
                 return false;
             }
 
-            if (CurrentRefreshContext.Value != null && (IsFeatureSelected(MediaInfoExtractOptions.ExclusiveControl.CatchAllAllow) ||
-                                                        !IsFeatureSelected(MediaInfoExtractOptions.ExclusiveControl.CatchAllBlock) &&
+            if (CurrentRefreshContext.Value != null && (IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) ||
+                                                        !IsExclusiveFeatureSelected(ExclusiveControl.CatchAllBlock) &&
                                                         !item.IsShortcut))
             {
                 CurrentRefreshContext.Value.MediaInfoNeedsUpdate = true;
                 return true;
             }
 
-            if (IsFeatureSelected(MediaInfoExtractOptions.ExclusiveControl.CatchAllBlock))
+            if (IsExclusiveFeatureSelected(ExclusiveControl.CatchAllBlock))
             {
                 return false;
             }
@@ -407,7 +389,7 @@ namespace StrmAssistant.Mod
                     MediaInfoNeedsUpdate = false
                 };
 
-                if (IsFeatureSelected(MediaInfoExtractOptions.ExclusiveControl.CatchAllAllow))
+                if (IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow))
                 {
                     options.EnableRemoteContentProbe = true;
                 }
@@ -415,7 +397,7 @@ namespace StrmAssistant.Mod
 
             if (item.DateLastRefreshed == DateTimeOffset.MinValue) return true;
 
-            if (!IsFeatureSelected(MediaInfoExtractOptions.ExclusiveControl.CatchAllAllow) && !item.IsShortcut &&
+            if (!IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) && !item.IsShortcut &&
                 provider is IDynamicImageProvider && provider.GetType().Name == "VideoImageProvider" &&
                 refreshOptions is MetadataRefreshOptions && !refreshOptions.ReplaceAllImages &&
                 item.HasImage(ImageType.Primary))
@@ -424,7 +406,7 @@ namespace StrmAssistant.Mod
                 return false;
             }
 
-            if (!IsFeatureSelected(MediaInfoExtractOptions.ExclusiveControl.CatchAllAllow) && item.IsShortcut &&
+            if (!IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) && item.IsShortcut &&
                 (provider is ILocalImageProvider || provider is IRemoteImageProvider) &&
                 refreshOptions is MetadataRefreshOptions && !refreshOptions.ReplaceAllImages &&
                 item.HasImage(ImageType.Primary))

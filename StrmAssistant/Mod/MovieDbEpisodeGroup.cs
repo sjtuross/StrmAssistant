@@ -23,7 +23,6 @@ namespace StrmAssistant.Mod
             public int? LookupSeasonNumber { get; set; }
             public string LookupLanguage { get; set; }
             public string GroupName { get; set; }
-            public DateTimeOffset? PremiereDate { get; set; }
         }
 
         internal class SeasonEpisodeMapping
@@ -284,7 +283,6 @@ namespace StrmAssistant.Mod
             if (episodeGroupInfo != null)
             {
                 var matchingSeason = episodeGroupInfo.groups.FirstOrDefault(g => g.order == season.IndexNumber);
-                var firstEpisodeInfo = matchingSeason?.episodes.FirstOrDefault(e => e.order == 0);
 
                 if (matchingSeason != null)
                 {
@@ -292,8 +290,7 @@ namespace StrmAssistant.Mod
                     {
                         LookupSeasonNumber = season.IndexNumber,
                         LookupLanguage = season.MetadataLanguage,
-                        GroupName = matchingSeason.name,
-                        PremiereDate = firstEpisodeInfo?.air_date
+                        GroupName = matchingSeason.name
                     };
                 }
             }
@@ -319,13 +316,11 @@ namespace StrmAssistant.Mod
             if (metadataResult.Item is null) metadataResult.Item = new Season();
 
             metadataResult.Item.IndexNumber = __state.LookupSeasonNumber;
+
             if (shouldAssignSeasonName) metadataResult.Item.Name = __state.GroupName;
 
-            if (__state.PremiereDate.HasValue && __state.PremiereDate != DateTimeOffset.MinValue)
-            {
-                metadataResult.Item.PremiereDate = __state.PremiereDate;
-                metadataResult.Item.ProductionYear = __state.PremiereDate.Value.Year;
-            }
+            metadataResult.Item.PremiereDate = null;
+            metadataResult.Item.ProductionYear = null;
 
             metadataResult.HasMetadata = true;
         }

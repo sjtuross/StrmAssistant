@@ -17,6 +17,7 @@ namespace StrmAssistant.Options.View
             ContentData = store.GetOptions();
 
             PluginOptions.Initialize();
+            PluginOptions.GeneralOptions.Initialize();
             PluginOptions.ModOptions.Initialize();
             PluginOptions.NetworkOptions.Initialize();
             PluginOptions.AboutOptions.Initialize();

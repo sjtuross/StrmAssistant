@@ -70,6 +70,33 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Built-in Intro Detection.
+        /// </summary>
+        public static string CatchupTask_Fingerprint_Fingerprint {
+            get {
+                return ResourceManager.GetString("CatchupTask_Fingerprint_Fingerprint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Behavior-based Intro Sync.
+        /// </summary>
+        public static string CatchupTask_IntroSkip_IntroSkip {
+            get {
+                return ResourceManager.GetString("CatchupTask_IntroSkip_IntroSkip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MediaInfo Extract.
+        /// </summary>
+        public static string CatchupTask_MediaInfo_MediaInfo {
+            get {
+                return ResourceManager.GetString("CatchupTask_MediaInfo_MediaInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Clears behavior-based intro and credits markers.
         /// </summary>
         public static string ClearChapterMarkersTask_Description_Clears_behavior_based_intro_and_credits_markers {
@@ -166,6 +193,15 @@ namespace StrmAssistant.Properties {
         public static string Favorites {
             get {
                 return ResourceManager.GetString("Favorites", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Catchup Scope.
+        /// </summary>
+        public static string GeneralOptions_CatchupScope_Catchup_Scope {
+            get {
+                return ResourceManager.GetString("GeneralOptions_CatchupScope_Catchup_Scope", resourceCulture);
             }
         }
         
@@ -346,7 +382,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Proxy Server is invalid. Format is http[s]://&lt;host&gt;:&lt;port&gt;.
+        ///   Looks up a localized string similar to Proxy Server is invalid. Format is http[s]://[&lt;username&gt;:&lt;password&gt;@]&lt;host&gt;:&lt;port&gt;.
         /// </summary>
         public static string InvalidProxyServer {
             get {
@@ -845,7 +881,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Support http(s) proxy server. Latency to proxy server must be less than 500 milliseconds. Disabled if unavailabe or leave blank..
+        ///   Looks up a localized string similar to Support http(s) proxy server. Latency to Google must be less than 500 milliseconds. Disabled if unavailabe or leave blank. Restart if any changes..
         /// </summary>
         public static string ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_ {
             get {

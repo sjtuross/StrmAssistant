@@ -18,7 +18,7 @@
     <value>追更模式</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>電影洗版或劇集有更新後即時提取媒體資訊以及同步基於行為的片頭片尾標記，預設為關閉。</value>
+    <value>電影洗版或劇集有更新後即時擷取媒體資訊以及片頭片尾標記探測或同步，預設為關閉。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>包含分集和附加內容</value>
@@ -375,13 +375,13 @@
     <value>無更新</value>
   </data>
   <data name="InvalidProxyServer" xml:space="preserve">
-    <value>代理伺服器無效，格式為 http[s]://&lt;host&gt;:&lt;port&gt;</value>
+    <value>代理伺服器無效，格式為 http[s]://[&lt;username&gt;:&lt;password&gt;@]&lt;host&gt;:&lt;port&gt;</value>
   </data>
   <data name="ModOptions_ProxyServer_Proxy_Server" xml:space="preserve">
     <value>代理伺服器</value>
   </data>
   <data name="ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_" xml:space="preserve">
-    <value>支援 HTTP(S) 代理伺服器，至代理伺服器的延遲必須小於500毫秒，測試失敗或留空則停用。</value>
+    <value>支援 HTTP(S) 代理伺服器，至 Google 的延遲必須小於 666 毫秒，測試失敗或留空則停用，設定變更後須重新啟動生效。</value>
   </data>
   <data name="ProxyServer_Available" xml:space="preserve">
     <value>可用</value>
@@ -430,5 +430,17 @@
   </data>
   <data name="ExperienceEnhanceOptions_EditorTitle_Experience_Enhance" xml:space="preserve">
     <value>體驗增強</value>
+  </data>
+  <data name="CatchupTask_MediaInfo_MediaInfo" xml:space="preserve">
+    <value>媒體資訊擷取</value>
+  </data>
+  <data name="CatchupTask_IntroSkip_IntroSkip" xml:space="preserve">
+    <value>播放行為的片頭片尾標記同步</value>
+  </data>
+  <data name="CatchupTask_Fingerprint_Fingerprint" xml:space="preserve">
+    <value>原生片頭偵測</value>
+  </data>
+  <data name="GeneralOptions_CatchupScope_Catchup_Scope" xml:space="preserve">
+    <value>追更任務範圍</value>
   </data>
 </root>

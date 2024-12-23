@@ -2,6 +2,8 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
+using StrmAssistant.Mod;
+using StrmAssistant.Options;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,7 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using StrmAssistant.Mod;
+using static StrmAssistant.Options.Utility;
 
 namespace StrmAssistant.Common
 {
@@ -18,21 +20,25 @@ namespace StrmAssistant.Common
         private static ILogger _logger;
         private static readonly ConcurrentQueue<Func<Task>> _taskQueue = new ConcurrentQueue<Func<Task>>();
         private static readonly object _lock = new object();
-        private static DateTime _masterProcessLastRunTime = DateTime.MinValue;
+        private static DateTime _mediaInfoProcessLastRunTime = DateTime.MinValue;
         private static DateTime _introSkipProcessLastRunTime = DateTime.MinValue;
+        private static DateTime _fingerprintProcessLastRunTime = DateTime.MinValue;
         private static readonly TimeSpan ThrottleInterval = TimeSpan.FromSeconds(30);
         private static int _currentMaxConcurrentCount;
 
-        public static CancellationTokenSource MasterTokenSource;
+        public static CancellationTokenSource MediaInfoTokenSource;
         public static CancellationTokenSource IntroSkipTokenSource;
+        public static CancellationTokenSource FingerprintTokenSource;
         public static SemaphoreSlim SemaphoreMaster;
         public static SemaphoreSlim SemaphoreLocal;
         public static ConcurrentQueue<BaseItem> MediaInfoExtractItemQueue = new ConcurrentQueue<BaseItem>();
         public static ConcurrentQueue<BaseItem> ExternalSubtitleItemQueue = new ConcurrentQueue<BaseItem>();
         public static ConcurrentQueue<Episode> IntroSkipItemQueue = new ConcurrentQueue<Episode>();
-        public static Task MasterProcessTask;
+        public static ConcurrentQueue<BaseItem> FingerprintItemQueue = new ConcurrentQueue<BaseItem>();
+        public static Task MediaInfoProcessTask;
+        public static Task FingerprintProcessTask;
 
-        public static bool IsProcessTaskRunning { get; private set; }
+        public static bool IsMediaInfoProcessTaskRunning { get; private set; }
 
         public static void Initialize()
         {
@@ -41,9 +47,14 @@ namespace StrmAssistant.Common
             SemaphoreMaster = new SemaphoreSlim(_currentMaxConcurrentCount);
             SemaphoreLocal = new SemaphoreSlim(_currentMaxConcurrentCount);
 
-            if (MasterProcessTask == null || MasterProcessTask.IsCompleted)
+            if (MediaInfoProcessTask is null || MediaInfoProcessTask.IsCompleted)
             {
-                MasterProcessTask = Task.Run(() => Master_ProcessItemQueueAsync());
+                MediaInfoProcessTask = Task.Run(MediaInfo_ProcessItemQueueAsync);
+            }
+
+            if (FingerprintProcessTask is null || FingerprintProcessTask.IsCompleted)
+            {
+                FingerprintProcessTask = Task.Run(Fingerprint_ProcessItemQueueAsync);
             }
         }
 
@@ -65,14 +76,14 @@ namespace StrmAssistant.Common
             }
         }
 
-        public static async Task Master_ProcessItemQueueAsync()
+        public static async Task MediaInfo_ProcessItemQueueAsync()
         {
-            _logger.Info("Master - ProcessItemQueueAsync Started");
-            MasterTokenSource = new CancellationTokenSource();
-            var cancellationToken = MasterTokenSource.Token;
+            _logger.Info("MediaInfo - ProcessItemQueueAsync Started");
+            MediaInfoTokenSource = new CancellationTokenSource();
+            var cancellationToken = MediaInfoTokenSource.Token;
             while (!cancellationToken.IsCancellationRequested)
             {
-                var timeSinceLastRun = DateTime.UtcNow - _masterProcessLastRunTime;
+                var timeSinceLastRun = DateTime.UtcNow - _mediaInfoProcessLastRunTime;
                 var remainingTime = ThrottleInterval - timeSinceLastRun;
                 if (remainingTime > TimeSpan.Zero)
                 {
@@ -88,11 +99,6 @@ namespace StrmAssistant.Common
 
                 if (!MediaInfoExtractItemQueue.IsEmpty || !ExternalSubtitleItemQueue.IsEmpty)
                 {
-                    var persistMediaInfo = Plugin.Instance.MediaInfoExtractStore.GetOptions().PersistMediaInfo;
-                    _logger.Info("Persist Media Info: " + persistMediaInfo);
-                    var enableImageCapture = Plugin.Instance.MediaInfoExtractStore.GetOptions().EnableImageCapture;
-                    _logger.Info("Image Capture Enabled: " + enableImageCapture);
-                    var exclusiveExtract = Plugin.Instance.MediaInfoExtractStore.GetOptions().ExclusiveExtract;
                     var enableIntroSkip = Plugin.Instance.IntroSkipStore.GetOptions().EnableIntroSkip;
                     _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
 
@@ -122,72 +128,12 @@ namespace StrmAssistant.Common
                                         return;
                                     }
 
-                                    if (exclusiveExtract) ExclusiveExtract.AllowExtractInstance(taskItem);
+                                    await InternalMediaInfoProcessAsync(taskItem, cancellationToken).ConfigureAwait(false);
 
-                                    if (persistMediaInfo) ChapterChangeTracker.BypassInstance(taskItem);
-
-                                    var imageCapture = false;
-
-                                    if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
-                                    {
-                                        var filePath = taskItem.Path;
-                                        if (taskItem.IsShortcut)
-                                        {
-                                            filePath = await Plugin.LibraryApi.GetStrmMountPath(filePath)
-                                                .ConfigureAwait(false);
-                                        }
-
-                                        var fileExtension = Path.GetExtension(filePath).TrimStart('.');
-                                        if (!LibraryApi.ExcludeMediaExtensions.Contains(fileExtension))
-                                        {
-                                            if (taskItem.IsShortcut)
-                                            {
-                                                EnableImageCapture.AllowImageCaptureInstance(taskItem);
-                                            }
-
-                                            imageCapture = true;
-                                            var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
-                                            await taskItem.RefreshMetadata(refreshOptions, cancellationToken)
-                                                .ConfigureAwait(false);
-                                        }
-                                    }
-
-                                    var deserializeResult = false;
-
-                                    if(!imageCapture)
-                                    {
-                                        if (persistMediaInfo)
-                                        {
-                                            deserializeResult = await Plugin.LibraryApi
-                                                .DeserializeMediaInfo(taskItem, cancellationToken)
-                                                .ConfigureAwait(false);
-                                        }
-                                        if (!deserializeResult)
-                                        {
-                                            await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken)
-                                                .ConfigureAwait(false);
-                                        }
-                                    }
-
-                                    if (enableIntroSkip && Plugin.PlaySessionMonitor.IsLibraryInScope(taskItem))
+                                    if (IsCatchupTaskSelected(GeneralOptions.CatchupTask.IntroSkip) &&
+                                        Plugin.PlaySessionMonitor.IsLibraryInScope(taskItem))
                                     {
                                         IntroSkipItemQueue.Enqueue(taskItem as Episode);
-                                    }
-
-                                    if (persistMediaInfo)
-                                    {
-                                        if (!deserializeResult)
-                                        {
-                                            await Plugin.LibraryApi
-                                                .SerializeMediaInfo(taskItem, true, "Extract MediaInfo Catchup",
-                                                    cancellationToken)
-                                                .ConfigureAwait(false);
-                                        }
-                                        else if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))
-                                        {
-                                            await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
-                                                .ConfigureAwait(false);
-                                        }
                                     }
 
                                     _logger.Info("MediaInfoExtract - Item Processed: " + taskItem.Name + " - " + taskItem.Path);
@@ -255,30 +201,31 @@ namespace StrmAssistant.Common
 
                     lock (_lock)
                     {
-                        if (!IsProcessTaskRunning && (dequeueMediaInfoItems.Count > 0 || dequeueSubtitleItems.Count > 0))
+                        if (!IsMediaInfoProcessTaskRunning && (dequeueMediaInfoItems.Count > 0 || dequeueSubtitleItems.Count > 0))
                         {
-                            IsProcessTaskRunning = true;
-                            var task = Task.Run(() => Master_ProcessTaskQueueAsync(cancellationToken));
+                            IsMediaInfoProcessTaskRunning = true;
+                            var task = Task.Run(() => MediaInfo_ProcessTaskQueueAsync(cancellationToken));
                         }
                     }
                 }
-                _masterProcessLastRunTime = DateTime.UtcNow;
+                _mediaInfoProcessLastRunTime = DateTime.UtcNow;
             }
 
             if (MediaInfoExtractItemQueue.IsEmpty && ExternalSubtitleItemQueue.IsEmpty)
             {
-                _logger.Info("Master - ProcessItemQueueAsync Stopped");
+                _logger.Info("MediaInfo - ProcessItemQueueAsync Stopped");
             }
             else
             {
-                _logger.Info("Master - ProcessItemQueueAsync Cancelled");
+                _logger.Info("MediaInfo - ProcessItemQueueAsync Cancelled");
             }
         }
 
-        private static async Task Master_ProcessTaskQueueAsync(CancellationToken cancellationToken)
+        private static async Task MediaInfo_ProcessTaskQueueAsync(CancellationToken cancellationToken)
         {
-            _logger.Info("Master - ProcessTaskQueueAsync Started");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
+            _logger.Info("MediaInfo - ProcessTaskQueueAsync Started");
+            _logger.Info("Max Concurrent Count: " +
+                         Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -313,15 +260,262 @@ namespace StrmAssistant.Common
 
             lock (_lock)
             {
-                IsProcessTaskRunning = false;
+                IsMediaInfoProcessTaskRunning = false;
                 if (_taskQueue.IsEmpty)
                 {
-                    _logger.Info("Master - ProcessTaskQueueAsync Stopped");
+                    _logger.Info("MediaInfo - ProcessTaskQueueAsync Stopped");
                 }
                 else
                 {
-                    _logger.Info("Master - ProcessTaskQueueAsync Cancelled");
+                    _logger.Info("MediaInfo - ProcessTaskQueueAsync Cancelled");
                 }
+            }
+        }
+
+        private static async Task InternalMediaInfoProcessAsync(BaseItem taskItem, CancellationToken cancellationToken)
+        {
+            var persistMediaInfo = Plugin.Instance.MediaInfoExtractStore.GetOptions().PersistMediaInfo;
+            _logger.Info("Persist Media Info: " + persistMediaInfo);
+            var enableImageCapture = Plugin.Instance.MediaInfoExtractStore.GetOptions().EnableImageCapture;
+            _logger.Info("Image Capture Enabled: " + enableImageCapture);
+            var exclusiveExtract = Plugin.Instance.MediaInfoExtractStore.GetOptions().ExclusiveExtract;
+
+            if (exclusiveExtract) ExclusiveExtract.AllowExtractInstance(taskItem);
+
+            if (persistMediaInfo) ChapterChangeTracker.BypassInstance(taskItem);
+
+            var imageCapture = false;
+
+            if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
+            {
+                var filePath = taskItem.Path;
+                if (taskItem.IsShortcut)
+                {
+                    filePath = await Plugin.LibraryApi.GetStrmMountPath(filePath)
+                        .ConfigureAwait(false);
+                }
+
+                var fileExtension = Path.GetExtension(filePath).TrimStart('.');
+                if (!LibraryApi.ExcludeMediaExtensions.Contains(fileExtension))
+                {
+                    if (taskItem.IsShortcut)
+                    {
+                        EnableImageCapture.AllowImageCaptureInstance(taskItem);
+                    }
+
+                    imageCapture = true;
+                    var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
+                    await taskItem.RefreshMetadata(refreshOptions, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+            }
+
+            var deserializeResult = false;
+
+            if (!imageCapture)
+            {
+                if (persistMediaInfo)
+                {
+                    deserializeResult = await Plugin.LibraryApi
+                        .DeserializeMediaInfo(taskItem, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+
+                if (!deserializeResult)
+                {
+                    await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+            }
+
+            if (persistMediaInfo)
+            {
+                if (!deserializeResult)
+                {
+                    await Plugin.LibraryApi
+                        .SerializeMediaInfo(taskItem, true, "Extract MediaInfo Catchup",
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))
+                {
+                    await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+            }
+        }
+
+        public static async Task Fingerprint_ProcessItemQueueAsync()
+        {
+            _logger.Info("Fingerprint - ProcessItemQueueAsync Started");
+            FingerprintTokenSource = new CancellationTokenSource();
+            var cancellationToken = FingerprintTokenSource.Token;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                var timeSinceLastRun = DateTime.UtcNow - _fingerprintProcessLastRunTime;
+                var remainingTime = ThrottleInterval - timeSinceLastRun;
+                if (remainingTime > TimeSpan.Zero)
+                {
+                    try
+                    {
+                        await Task.Delay(remainingTime, cancellationToken);
+                    }
+                    catch
+                    {
+                        break;
+                    }
+                }
+
+                if (!FingerprintItemQueue.IsEmpty)
+                {
+                    var dequeueItems = new List<BaseItem>();
+                    while (FingerprintItemQueue.TryDequeue(out var dequeueItem))
+                    {
+                        dequeueItems.Add(dequeueItem);
+                    }
+
+                    if (dequeueItems.Count > 0)
+                    {
+                        _logger.Info("Fingerprint - Clear Item Queue Started");
+                        
+                        var episodes = Plugin.FingerprintApi.FetchFingerprintQueueItems(dequeueItems);
+
+                        if (IsCatchupTaskSelected(GeneralOptions.CatchupTask.MediaInfo, GeneralOptions.CatchupTask.IntroSkip))
+                        {
+                            var episodeIds = episodes.Select(e => e.InternalId).ToHashSet();
+                            var mediaInfoItems = dequeueItems.Where(i => !episodeIds.Contains(i.InternalId));
+                            foreach (var item in mediaInfoItems)
+                            {
+                                MediaInfoExtractItemQueue.Enqueue(item);
+                            }
+                        }
+
+                        _logger.Info("Fingerprint - Number of items: " + episodes.Count);
+
+                        var groupedBySeason = episodes.GroupBy(e => e.Season).ToList();
+
+                        var tasks = new List<Task>();
+
+                        foreach (var season in groupedBySeason)
+                        {
+                            if (cancellationToken.IsCancellationRequested)
+                            {
+                                break;
+                            }
+
+                            foreach (var episode in season)
+                            {
+                                var taskItem = episode;
+
+                                try
+                                {
+                                    await SemaphoreMaster.WaitAsync(cancellationToken);
+                                }
+                                catch
+                                {
+                                    break;
+                                }
+
+                                var task = Task.Run(async () =>
+                                {
+                                    try
+                                    {
+                                        if (cancellationToken.IsCancellationRequested)
+                                        {
+                                            _logger.Info("Fingerprint - Item Cancelled: " + taskItem.Name + " - " +
+                                                         taskItem.Path);
+                                            return;
+                                        }
+
+                                        if (Plugin.LibraryApi.IsExtractNeeded(taskItem))
+                                        {
+                                            await InternalMediaInfoProcessAsync(taskItem, cancellationToken)
+                                                .ConfigureAwait(false);
+                                        }
+
+                                        await Plugin.FingerprintApi.ExtractIntroFingerprint(taskItem, cancellationToken)
+                                            .ConfigureAwait(false);
+
+                                        _logger.Info("Fingerprint - Item Processed: " + taskItem.Name + " - " +
+                                                     taskItem.Path);
+                                    }
+                                    catch (TaskCanceledException)
+                                    {
+                                        _logger.Info("Fingerprint - Item Cancelled: " + taskItem.Name + " - " +
+                                                     taskItem.Path);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        _logger.Error("Fingerprint - Item Failed: " + taskItem.Name + " - " +
+                                                      taskItem.Path);
+                                        _logger.Error(e.Message);
+                                        _logger.Debug(e.StackTrace);
+                                    }
+                                    finally
+                                    {
+                                        SemaphoreMaster.Release();
+                                    }
+                                }, cancellationToken);
+                                tasks.Add(task);
+                            }
+                            await Task.WhenAll(tasks);
+                            tasks.Clear();
+
+                            try
+                            {
+                                await SemaphoreLocal.WaitAsync(cancellationToken);
+                            }
+                            catch
+                            {
+                                break;
+                            }
+
+                            var taskSeason = season.Key;
+                            var seasonTask = Task.Run(async () =>
+                            {
+                                try
+                                {
+                                    if (cancellationToken.IsCancellationRequested)
+                                    {
+                                        return;
+                                    }
+
+                                    await Plugin.FingerprintApi
+                                        .UpdateIntroMarkerForSeason(taskSeason, cancellationToken)
+                                        .ConfigureAwait(false);
+                                }
+                                catch (TaskCanceledException)
+                                {
+                                    _logger.Info("Fingerprint - Item Cancelled: " + taskSeason.Name + " - " +
+                                                 taskSeason.Path);
+                                }
+                                catch (Exception e)
+                                {
+                                    _logger.Error("Fingerprint - Item Failed: " + taskSeason.Name + " - " +
+                                                  taskSeason.Path);
+                                    _logger.Error(e.Message);
+                                    _logger.Debug(e.StackTrace);
+                                }
+                                finally
+                                {
+                                    SemaphoreLocal.Release();
+                                }
+                            }, cancellationToken);
+                        }
+
+                        _logger.Info("Fingerprint - Clear Item Queue Stopped");
+                    }
+                }
+                _fingerprintProcessLastRunTime = DateTime.UtcNow;
+            }
+
+            if (FingerprintItemQueue.IsEmpty)
+            {
+                _logger.Info("Fingerprint - ProcessItemQueueAsync Stopped");
+            }
+            else
+            {
+                _logger.Info("Fingerprint - ProcessItemQueueAsync Cancelled");
             }
         }
 
@@ -378,7 +572,8 @@ namespace StrmAssistant.Common
 
         public static void Dispose()
         {
-            MasterTokenSource?.Cancel();
+            MediaInfoTokenSource?.Cancel();
+            FingerprintTokenSource?.Cancel();
         }
     }
 }

@@ -88,9 +88,14 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
+                if (changedProperties.Contains(nameof(IntroSkipOptions.MarkerEnabledLibraryScope)))
+                {
+                    Plugin.FingerprintApi.UpdateLibraryPathsInScope();
+                }
+
                 if (changedProperties.Contains(nameof(IntroSkipOptions.IntroDetectionFingerprintMinutes)))
                 {
-                    Plugin.ChapterApi.UpdateLibraryIntroDetectionFingerprintLength();
+                    Plugin.FingerprintApi.UpdateLibraryIntroDetectionFingerprintLength();
                 }
             }
         }

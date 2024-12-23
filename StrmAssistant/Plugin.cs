@@ -32,6 +32,8 @@ using System.IO;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using static StrmAssistant.Options.GeneralOptions;
+using static StrmAssistant.Options.Utility;
 
 namespace StrmAssistant
 {
@@ -47,6 +49,7 @@ namespace StrmAssistant
         public static Plugin Instance { get; private set; }
         public static LibraryApi LibraryApi { get; private set; }
         public static ChapterApi ChapterApi { get; private set; }
+        public static FingerprintApi FingerprintApi { get; private set; }
         public static NotificationApi NotificationApi { get; private set; }
         public static SubtitleApi SubtitleApi { get; private set; }
         public static PlaySessionMonitor PlaySessionMonitor { get; private set; }
@@ -92,7 +95,8 @@ namespace StrmAssistant
 
             LibraryApi = new LibraryApi(libraryManager, fileSystem, mediaSourceManager, mediaMountManager,
                 itemRepository, jsonSerializer, userManager);
-            ChapterApi = new ChapterApi(libraryManager, itemRepository, fileSystem, applicationPaths, ffmpegManager,
+            ChapterApi = new ChapterApi(libraryManager, itemRepository);
+            FingerprintApi = new FingerprintApi(libraryManager, fileSystem, applicationPaths, ffmpegManager,
                 mediaEncoder, mediaMountManager, jsonSerializer, serverApplicationHost);
             PlaySessionMonitor = new PlaySessionMonitor(libraryManager, userManager, sessionManager);
             NotificationApi = new NotificationApi(notificationManager, userManager, sessionManager);
@@ -103,7 +107,7 @@ namespace StrmAssistant
             ShortcutMenuHelper.Initialize(configurationManager);
 
             PatchManager.Initialize();
-            if (MainOptionsStore.GetOptions().GeneralOptions.CatchupMode) InitializeCatchupMode();
+            if (MainOptionsStore.GetOptions().GeneralOptions.CatchupMode) UpdateCatchupScope();
             if (IntroSkipStore.GetOptions().EnableIntroSkip) PlaySessionMonitor.Initialize();
             QueueManager.Initialize();
 
@@ -113,17 +117,7 @@ namespace StrmAssistant
             _userManager.UserCreated += OnUserCreated;
             _userManager.UserDeleted += OnUserDeleted;
             _userManager.UserConfigurationUpdated += OnUserConfigurationUpdated;
-        }
-
-        public void InitializeCatchupMode()
-        {
-            DisposeCatchupMode();
             _userDataManager.UserDataSaved += OnUserDataSaved;
-        }
-
-        public void DisposeCatchupMode()
-        {
-            _userDataManager.UserDataSaved -= OnUserDataSaved;
         }
 
         private void OnUserCreated(object sender, GenericEventArgs<User> e)
@@ -143,21 +137,31 @@ namespace StrmAssistant
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (MainOptionsStore.GetOptions().GeneralOptions.CatchupMode &&
-                (MediaInfoExtractStore.GetOptions().ExclusiveExtract || e.Item.IsShortcut))
+            if (MainOptionsStore.PluginOptions.GeneralOptions.CatchupMode &&
+                IntroSkipStore.IntroSkipOptions.UnlockIntroSkip && IsCatchupTaskSelected(CatchupTask.Fingerprint) &&
+                FingerprintApi.IsLibraryInScope(e.Item))
             {
-                QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+                QueueManager.FingerprintItemQueue.Enqueue(e.Item);
             }
-
-            if (IntroSkipStore.GetOptions().EnableIntroSkip && PlaySessionMonitor.IsLibraryInScope(e.Item))
+            else
             {
-                if (!LibraryApi.HasMediaInfo(e.Item))
+                if (MainOptionsStore.PluginOptions.GeneralOptions.CatchupMode && IsCatchupTaskSelected(CatchupTask.MediaInfo) &&
+                    (MediaInfoExtractStore.MediaInfoExtractOptions.ExclusiveExtract || e.Item.IsShortcut))
                 {
                     QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
                 }
-                else if (e.Item is Episode episode && ChapterApi.SeasonHasIntroCredits(episode))
+
+                if (MainOptionsStore.PluginOptions.GeneralOptions.CatchupMode && IsCatchupTaskSelected(CatchupTask.IntroSkip) &&
+                    PlaySessionMonitor.IsLibraryInScope(e.Item))
                 {
-                    QueueManager.IntroSkipItemQueue.Enqueue(episode);
+                    if (!LibraryApi.HasMediaInfo(e.Item))
+                    {
+                        QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+                    }
+                    else if (e.Item is Episode episode && ChapterApi.SeasonHasIntroCredits(episode))
+                    {
+                        QueueManager.IntroSkipItemQueue.Enqueue(episode);
+                    }
                 }
             }
 
@@ -192,7 +196,17 @@ namespace StrmAssistant
         {
             if (e.UserData.IsFavorite)
             {
-                QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+                if (MainOptionsStore.PluginOptions.GeneralOptions.CatchupMode &&
+                    IntroSkipStore.IntroSkipOptions.UnlockIntroSkip && IsCatchupTaskSelected(CatchupTask.Fingerprint) &&
+                    FingerprintApi.IsLibraryInScope(e.Item))
+                {
+                    QueueManager.FingerprintItemQueue.Enqueue(e.Item);
+                }
+                else if (MainOptionsStore.PluginOptions.GeneralOptions.CatchupMode &&
+                         IsCatchupTaskSelected(CatchupTask.MediaInfo))
+                {
+                    QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+                }
             }
         }
 

@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static StrmAssistant.Common.CommonUtility;
+using static StrmAssistant.Options.Utility;
 
 namespace StrmAssistant.Options.Store
 {
@@ -41,6 +42,9 @@ namespace StrmAssistant.Options.Store
         {
             if (e.Options is PluginOptions options)
             {
+                if (string.IsNullOrEmpty(options.GeneralOptions.CatchupTaskScope))
+                    options.GeneralOptions.CatchupTaskScope = GeneralOptions.CatchupTask.MediaInfo.ToString();
+
                 var isSimpleTokenizer = string.Equals(EnhanceChineseSearch.CurrentTokenizerName, "simple",
                     StringComparison.Ordinal);
                 options.ModOptions.EnhanceChineseSearchRestore =
@@ -54,12 +58,13 @@ namespace StrmAssistant.Options.Store
                 if (options.NetworkOptions.EnableProxyServer &&
                     !string.IsNullOrWhiteSpace(options.NetworkOptions.ProxyServerUrl))
                 {
-                    if (TryParseProxyUrl(options.NetworkOptions.ProxyServerUrl, out var host, out var port) &&
-                        CheckProxyReachability(host, port) is (true, var tcpPing))
+                    if (TryParseProxyUrl(options.NetworkOptions.ProxyServerUrl, out var schema, out var host, out var port,
+                            out var username, out var password) &&
+                        CheckProxyReachability(schema, host, port, username, password) is (true, var httpPing))
                     {
                         options.NetworkOptions.ProxyServerStatus.Status = ItemStatus.Succeeded;
                         options.NetworkOptions.ProxyServerStatus.Caption = Resources.ProxyServer_Available;
-                        options.NetworkOptions.ProxyServerStatus.StatusText = $"{tcpPing} ms";
+                        options.NetworkOptions.ProxyServerStatus.StatusText = $"{httpPing} ms";
                     }
                     else
                     {
@@ -79,16 +84,9 @@ namespace StrmAssistant.Options.Store
                 var changes = PropertyChangeDetector.DetectObjectPropertyChanges(PluginOptions, options);
                 var changedProperties = new HashSet<string>(changes.Select(c => c.PropertyName));
 
-                if (changedProperties.Contains(nameof(PluginOptions.GeneralOptions.CatchupMode)))
+                if (changedProperties.Contains(nameof(PluginOptions.GeneralOptions.CatchupTaskScope)))
                 {
-                    if (options.GeneralOptions.CatchupMode)
-                    {
-                        Plugin.Instance.InitializeCatchupMode();
-                    }
-                    else
-                    {
-                        Plugin.Instance.DisposeCatchupMode();
-                    }
+                    if (options.GeneralOptions.CatchupMode) UpdateCatchupScope();
                 }
 
                 if (changedProperties.Contains(nameof(PluginOptions.GeneralOptions.MaxConcurrentCount)))
@@ -143,6 +141,11 @@ namespace StrmAssistant.Options.Store
 
                 if (!suppressLogger)
                 {
+                    _logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
+                    var catchupTaskScope = GetSelectedCatchupTaskDescription();
+                    _logger.Info("CatchupTaskScope is set to {0}",
+                        string.IsNullOrEmpty(catchupTaskScope) ? "EMPTY" : catchupTaskScope);
+
                     _logger.Info("MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
                     _logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
 

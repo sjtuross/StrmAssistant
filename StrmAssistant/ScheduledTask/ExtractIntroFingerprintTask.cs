@@ -31,7 +31,7 @@ namespace StrmAssistant.ScheduledTask
             _logger.Info("Max Concurrent Count: " + Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
             _logger.Info("Intro Detection Fingerprint Length (Minutes): " + Plugin.Instance.IntroSkipStore.GetOptions().IntroDetectionFingerprintMinutes);
 
-            var items = Plugin.ChapterApi.FetchIntroFingerprintTaskItems();
+            var items = Plugin.FingerprintApi.FetchIntroFingerprintTaskItems();
             _logger.Info("IntroFingerprintExtract - Number of items: " + items.Count);
 
             var directoryService = new DirectoryService(_logger, _fileSystem);
@@ -71,7 +71,7 @@ namespace StrmAssistant.ScheduledTask
                             return;
                         }
 
-                        await Plugin.ChapterApi.ExtractIntroFingerprint(item, directoryService, cancellationToken)
+                        await Plugin.FingerprintApi.ExtractIntroFingerprint(item, directoryService, cancellationToken)
                             .ConfigureAwait(false);
                     }
                     catch (TaskCanceledException)

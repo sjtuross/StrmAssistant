@@ -173,11 +173,11 @@ namespace StrmAssistant.Mod
 
             if (!string.IsNullOrEmpty(markerEnabledLibraryScope) && markerEnabledLibraryScope.Contains("-1"))
             {
-                __result.ParentIds = Plugin.ChapterApi.GetAllFavoriteSeasons().DefaultIfEmpty(-1).ToArray();
+                __result.ParentIds = Plugin.FingerprintApi.GetAllFavoriteSeasons().DefaultIfEmpty(-1).ToArray();
             }
             else
             {
-                var libraries = Plugin.ChapterApi.GetMarkerEnabledLibraries(true);
+                var libraries = Plugin.FingerprintApi.GetMarkerEnabledLibraries(true);
 
                 if (libraries.Any())
                 {

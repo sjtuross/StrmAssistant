@@ -1,7 +1,12 @@
-﻿using Emby.Web.GenericEdit;
+using Emby.Media.Common.Extensions;
+using Emby.Web.GenericEdit;
+using Emby.Web.GenericEdit.Common;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.LocalizationAttributes;
 using StrmAssistant.Properties;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace StrmAssistant.Options
 {
@@ -15,9 +20,45 @@ namespace StrmAssistant.Options
         [Required]
         public bool CatchupMode { get; set; } = false;
 
+        public enum CatchupTask
+        {
+            [DescriptionL("CatchupTask_MediaInfo_MediaInfo", typeof(Resources))]
+            MediaInfo,
+            [DescriptionL("CatchupTask_Fingerprint_Fingerprint", typeof(Resources))]
+            Fingerprint,
+            [DescriptionL("CatchupTask_IntroSkip_IntroSkip", typeof(Resources))]
+            IntroSkip
+        }
+
+        [Browsable(false)]
+        public List<EditorSelectOption> CatchupTaskList { get; set; } = new List<EditorSelectOption>();
+
+        [DisplayNameL("GeneralOptions_CatchupScope_Catchup_Scope", typeof(Resources))]
+        [EditMultilSelect]
+        [SelectItemsSource(nameof(CatchupTaskList))]
+        [VisibleCondition(nameof(CatchupMode), SimpleCondition.IsTrue)]
+        public string CatchupTaskScope { get; set; } = CatchupTask.MediaInfo.ToString();
+
         [DisplayNameL("PluginOptions_MaxConcurrentCount_Max_Concurrent_Count", typeof(Resources))]
         [DescriptionL("PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_", typeof(Resources))]
         [Required, MinValue(1), MaxValue(20)]
         public int MaxConcurrentCount { get; set; } = 1;
+
+        public void Initialize()
+        {
+            CatchupTaskList.Clear();
+
+            foreach (Enum item in Enum.GetValues(typeof(CatchupTask)))
+            {
+                var selectOption = new EditorSelectOption
+                {
+                    Value = item.ToString(),
+                    Name = EnumExtensions.GetDescription(item),
+                    IsEnabled = true,
+                };
+
+                CatchupTaskList.Add(selectOption);
+            }
+        }
     }
 }

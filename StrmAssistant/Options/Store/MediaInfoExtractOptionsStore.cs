@@ -1,5 +1,4 @@
-﻿using Emby.Web.GenericEdit.Common;
-using Emby.Web.GenericEdit.PropertyDiff;
+﻿using Emby.Web.GenericEdit.PropertyDiff;
 using MediaBrowser.Common;
 using MediaBrowser.Model.Logging;
 using StrmAssistant.Mod;
@@ -7,6 +6,7 @@ using StrmAssistant.Options.UIBaseClasses.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static StrmAssistant.Options.Utility;
 
 namespace StrmAssistant.Options.Store
 {
@@ -86,7 +86,7 @@ namespace StrmAssistant.Options.Store
                 if (changedProperties.Contains(nameof(MediaInfoExtractOptions.ExclusiveControlFeatures)) &&
                     options.ExclusiveExtract)
                 {
-                    ExclusiveExtract.UpdateControlFeatures();
+                    UpdateExclusiveControlFeatures();
                 }
 
                 if (changedProperties.Contains(nameof(MediaInfoExtractOptions.LibraryScope)))
@@ -107,13 +107,7 @@ namespace StrmAssistant.Options.Store
                 _logger.Info("EnableImageCapture is set to {0}", options.EnableImageCapture);
                 _logger.Info("ExclusiveExtract is set to {0}", options.ExclusiveExtract);
 
-                var controlFeatures = string.Join(", ",
-                    options.ExclusiveControlFeatures?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(s =>
-                            Enum.TryParse(s.Trim(), true, out MediaInfoExtractOptions.ExclusiveControl type)
-                                ? type.GetDescription()
-                                : null)
-                        .Where(d => d != null) ?? Array.Empty<string>());
+                var controlFeatures = GetSelectedExclusiveFeatureDescription();
                 _logger.Info("ExclusiveExtract - ControlFeatures is set to {0}",
                     string.IsNullOrEmpty(controlFeatures) ? "EMPTY" : controlFeatures);
 
