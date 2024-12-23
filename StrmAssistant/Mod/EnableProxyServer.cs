@@ -1,4 +1,4 @@
-﻿using Emby.Web.GenericEdit.Elements;
+using Emby.Web.GenericEdit.Elements;
 using HarmonyLib;
 using System;
 using System.Net;
@@ -91,14 +91,22 @@ namespace StrmAssistant.Mod
         [HarmonyPostfix]
         private static void CreateHttpClientHandlerPostfix(ref HttpClientHandler __result)
         {
-            var proxyServer = Plugin.Instance.GetPluginOptions().NetworkOptions.ProxyServerUrl;
-            var proxyStatus = Plugin.Instance.GetPluginOptions().NetworkOptions.ProxyServerStatus.Status;
-            var ignoreCertificateValidation =
-                Plugin.Instance.GetPluginOptions().NetworkOptions.IgnoreCertificateValidation;
+            var options = Plugin.Instance.GetPluginOptions().NetworkOptions;
+            var proxyStatus = options.ProxyServerStatus.Status;
+            var ignoreCertificateValidation = options.IgnoreCertificateValidation;
 
-            if (IsValidProxyUrl(proxyServer) && proxyStatus == ItemStatus.Succeeded)
+            if (Uri.TryCreate(options.ProxyServerUrl, UriKind.Absolute, out var proxyUri) &&
+                proxyStatus == ItemStatus.Succeeded && TryParseProxyUrl(options.ProxyServerUrl, out var schema,
+                    out var host, out var port, out var username, out var password))
             {
-                __result.Proxy = new WebProxy(proxyServer);
+                __result.Proxy = new WebProxy(proxyUri)
+                {
+                    BypassProxyOnLocal = true,
+                    Credentials = !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password)
+                        ? new NetworkCredential(username, password)
+                        : null
+                };
+
                 __result.UseProxy = true;
 
                 if (ignoreCertificateValidation)

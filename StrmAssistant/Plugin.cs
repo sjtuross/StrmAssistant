@@ -344,12 +344,13 @@ namespace StrmAssistant
             if (options.NetworkOptions.EnableProxyServer &&
                 !string.IsNullOrWhiteSpace(options.NetworkOptions.ProxyServerUrl))
             {
-                if (TryParseProxyUrl(options.NetworkOptions.ProxyServerUrl, out var host, out var port) &&
-                    CheckProxyReachability(host, port) is (true, var tcpPing))
+                if (TryParseProxyUrl(options.NetworkOptions.ProxyServerUrl, out var schema, out var host, out var port,
+                        out var username, out var password) &&
+                    CheckProxyReachability(schema, host, port, username, password) is (true, var httpPing))
                 {
                     options.NetworkOptions.ProxyServerStatus.Status = ItemStatus.Succeeded;
                     options.NetworkOptions.ProxyServerStatus.Caption = Resources.ProxyServer_Available;
-                    options.NetworkOptions.ProxyServerStatus.StatusText = $"{tcpPing} ms";
+                    options.NetworkOptions.ProxyServerStatus.StatusText = $"{httpPing} ms";
                 }
                 else
                 {

@@ -462,13 +462,13 @@
     <value>No Update</value>
   </data>
   <data name="InvalidProxyServer" xml:space="preserve">
-    <value>Proxy Server is invalid. Format is http[s]://&lt;host&gt;:&lt;port&gt;</value>
+    <value>Proxy Server is invalid. Format is http[s]://[&lt;username&gt;:&lt;password&gt;@]&lt;host&gt;:&lt;port&gt;</value>
   </data>
   <data name="ModOptions_ProxyServer_Proxy_Server" xml:space="preserve">
     <value>Proxy Server</value>
   </data>
   <data name="ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_" xml:space="preserve">
-    <value>Support http(s) proxy server. Latency to proxy server must be less than 500 milliseconds. Disabled if unavailabe or leave blank.</value>
+    <value>Support http(s) proxy server. Latency to Google must be less than 666 milliseconds. Disabled if unavailabe or leave blank. Restart if any changes.</value>
   </data>
   <data name="ProxyServer_Available" xml:space="preserve">
     <value>Available</value>

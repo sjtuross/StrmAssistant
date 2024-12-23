@@ -669,7 +669,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Local Episode Group.
+        ///   Looks up a localized string similar to Enable Local Episode Group.
         /// </summary>
         public static string MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group {
             get {
@@ -836,7 +836,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Support http(s) proxy server. Latency to proxy server must be less than 500 milliseconds. Disabled if unavailabe or leave blank..
+        ///   Looks up a localized string similar to Support http(s) proxy server. Latency to proxy server must be less than 500 milliseconds. Disabled if unavailabe or leave blank. Restart if any changes..
         /// </summary>
         public static string ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_ {
             get {
@@ -1147,7 +1147,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mod.
+        ///   Looks up a localized string similar to Search.
         /// </summary>
         public static string PluginOptions_ModOptions_Mod_Features {
             get {
@@ -1256,7 +1256,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to UI Functions.
+        ///   Looks up a localized string similar to Experience Enhance.
         /// </summary>
         public static string UIFunctionOptions_EditorTitle_UI_Functions {
             get {
