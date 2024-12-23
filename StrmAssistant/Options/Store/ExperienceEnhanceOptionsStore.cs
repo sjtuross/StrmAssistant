@@ -42,9 +42,9 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.HidePersonNoImage)))
+                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.UIFunctionOptions.HidePersonNoImage)))
                 {
-                    if (options.HidePersonNoImage)
+                    if (options.UIFunctionOptions.HidePersonNoImage)
                     {
                         HidePersonNoImage.Patch();
                     }
@@ -54,9 +54,9 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.EnforceLibraryOrder)))
+                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.UIFunctionOptions.EnforceLibraryOrder)))
                 {
-                    if (options.EnforceLibraryOrder)
+                    if (options.UIFunctionOptions.EnforceLibraryOrder)
                     {
                         EnforceLibraryOrder.Patch();
                     }
@@ -66,9 +66,9 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.BeautifyMissingMetadata)))
+                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.UIFunctionOptions.BeautifyMissingMetadata)))
                 {
-                    if (options.BeautifyMissingMetadata)
+                    if (options.UIFunctionOptions.BeautifyMissingMetadata)
                     {
                         BeautifyMissingMetadata.Patch();
                     }
@@ -78,9 +78,9 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.EnhanceMissingEpisodes)))
+                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.UIFunctionOptions.EnhanceMissingEpisodes)))
                 {
-                    if (options.EnhanceMissingEpisodes)
+                    if (options.UIFunctionOptions.EnhanceMissingEpisodes)
                     {
                         EnhanceMissingEpisodes.Patch();
                     }
@@ -97,10 +97,10 @@ namespace StrmAssistant.Options.Store
             if (e.Options is ExperienceEnhanceOptions options)
             {
                 _logger.Info("MergeMultiVersion is set to {0}", options.MergeMultiVersion);
-                _logger.Info("HidePersonNoImage is set to {0}", options.HidePersonNoImage);
-                _logger.Info("EnforceLibraryOrder is set to {0}", options.EnforceLibraryOrder);
-                _logger.Info("BeautifyMissingMetadata is set to {0}", options.BeautifyMissingMetadata);
-                _logger.Info("EnhanceMissingEpisodes is set to {0}", options.EnhanceMissingEpisodes);
+                _logger.Info("HidePersonNoImage is set to {0}", options.UIFunctionOptions.HidePersonNoImage);
+                _logger.Info("EnforceLibraryOrder is set to {0}", options.UIFunctionOptions.EnforceLibraryOrder);
+                _logger.Info("BeautifyMissingMetadata is set to {0}", options.UIFunctionOptions.BeautifyMissingMetadata);
+                _logger.Info("EnhanceMissingEpisodes is set to {0}", options.UIFunctionOptions.EnhanceMissingEpisodes);
             }
         }
     }

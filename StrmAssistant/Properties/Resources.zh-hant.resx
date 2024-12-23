@@ -246,7 +246,7 @@
     <value>藝術家</value>
   </data>
   <data name="UIFunctionOptions_EditorTitle_UI_Functions" xml:space="preserve">
-    <value>體驗增強</value>
+    <value>UI 功能</value>
   </data>
   <data name="UIFunctionOptions_BeautifyMissingMetadata_Beautify_Missing_Metadata" xml:space="preserve">
     <value>劇集集標題自動補全</value>
@@ -427,5 +427,8 @@
   </data>
   <data name="MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group" xml:space="preserve">
     <value>啟用本地劇集組 TMDB</value>
+  </data>
+  <data name="ExperienceEnhanceOptions_EditorTitle_Experience_Enhance" xml:space="preserve">
+    <value>體驗增強</value>
   </data>
 </root>

@@ -27,7 +27,7 @@ namespace StrmAssistant.Options.View
 
             PageInfo = new PluginPageInfo
             {
-                Name = "StrmAssistant",
+                Name = "Settings",
                 EnableInMainMenu = true,
                 DisplayName = Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",
                     Plugin.Instance.DefaultUICulture),
@@ -48,7 +48,7 @@ namespace StrmAssistant.Options.View
                     Plugin.Instance.DefaultUICulture),
                 e => new IntroSkipPageView(pluginInfo, libraryManager, introSkipOptionsStore)));
             _tabPages.Add(new TabPageController(pluginInfo, nameof(ExperienceEnhancePageView),
-                Resources.ResourceManager.GetString("UIFunctionOptions_EditorTitle_UI_Functions",
+                Resources.ResourceManager.GetString("ExperienceEnhanceOptions_EditorTitle_Experience_Enhance",
                     Plugin.Instance.DefaultUICulture),
                 e => new ExperienceEnhancePageView(pluginInfo, experienceEnhanceOptionsStore)));
         }

@@ -116,6 +116,15 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Experience Enhance.
+        /// </summary>
+        public static string ExperienceEnhanceOptions_EditorTitle_Experience_Enhance {
+            get {
+                return ResourceManager.GetString("ExperienceEnhanceOptions_EditorTitle_Experience_Enhance", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Extracts intro fingerprint from episodes.
         /// </summary>
         public static string ExtractIntroFingerprintTask_Description_Extracts_intro_fingerprint_from_episodes {
@@ -669,7 +678,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Local Episode Group.
+        ///   Looks up a localized string similar to Enable Local Episode Group.
         /// </summary>
         public static string MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group {
             get {
@@ -1147,7 +1156,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Mod.
+        ///   Looks up a localized string similar to Search.
         /// </summary>
         public static string PluginOptions_ModOptions_Mod_Features {
             get {
@@ -1256,7 +1265,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to UI Functions.
+        ///   Looks up a localized string similar to Experience Enhance.
         /// </summary>
         public static string UIFunctionOptions_EditorTitle_UI_Functions {
             get {
