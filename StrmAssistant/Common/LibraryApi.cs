@@ -19,6 +19,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using static StrmAssistant.GeneralOptions;
+using static StrmAssistant.Options.Utility;
 
 namespace StrmAssistant
 {
@@ -51,9 +53,10 @@ namespace StrmAssistant
             MediaContainers.MpegTs, MediaContainers.Ts, MediaContainers.M2Ts
         };
 
+        public static List<string> LibraryPathsInScope;
         public static Dictionary<User, bool> AllUsers = new Dictionary<User, bool>();
         public static string[] AdminOrderedViews = Array.Empty<string>();
-
+        
         private readonly bool _fallbackProbeApproach;
         private readonly MethodInfo GetPlayackMediaSources;
 
@@ -80,6 +83,7 @@ namespace StrmAssistant
             _itemRepository = itemRepository;
             _jsonSerializer = jsonSerializer;
 
+            UpdateLibraryPathsInScope();
             FetchUsers();
 
             MediaInfoRefreshOptions = new MetadataRefreshOptions(_fileSystem)
@@ -137,6 +141,28 @@ namespace StrmAssistant
             }
         }
 
+        public void UpdateLibraryPathsInScope()
+        {
+            var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope?
+                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            LibraryPathsInScope = _libraryManager.GetVirtualFolders()
+                .Where(f => libraryIds is null || !libraryIds.Any() || libraryIds.Contains(f.Id))
+                .SelectMany(l => l.Locations)
+                .Select(ls => ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                    ? ls
+                    : ls + Path.DirectorySeparatorChar)
+                .ToList();
+        }
+
+        public bool IsLibraryInScope(BaseItem item)
+        {
+            if (string.IsNullOrEmpty(item.ContainingFolderPath)) return false;
+
+            var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
+
+            return isLibraryInScope;
+        }
+
         public void FetchUsers()
         {
             var userQuery = new UserQuery
@@ -183,44 +209,33 @@ namespace StrmAssistant
         {
             var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope
                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
-            var includeFavorites = libraryIds == null || !libraryIds.Any() || libraryIds.Contains("-1");
-            _logger.Info("Include Favorites: " + includeFavorites);
 
+            var includeFavorites = libraryIds == null || !libraryIds.Any() || libraryIds.Contains("-1");
             var includeExtra = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.IncludeExtra;
-            var catchupMode=Plugin.Instance.GetPluginOptions().GeneralOptions.CatchupMode;
-            var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
 
             var resultItems = new List<BaseItem>();
 
-            if (catchupMode)
+            if (IsCatchupTaskSelected(CatchupTask.MediaInfo))
             {
                 if (includeFavorites) resultItems = ExpandFavorites(items, true, true);
 
                 var incomingItems = items.OfType<Video>().Cast<BaseItem>().ToList();
-
-                var libraryPathsInScope = _libraryManager.GetVirtualFolders()
-                    .Where(f => libraryIds == null || !libraryIds.Any() || libraryIds.Contains(f.Id))
-                    .SelectMany(l => l.Locations)
-                    .Select(ls => ls.EndsWith(Path.DirectorySeparatorChar.ToString())
-                        ? ls
-                        : ls + Path.DirectorySeparatorChar)
-                    .ToList();
 
                 if (libraryIds == null || !libraryIds.Any())
                 {
                     resultItems = resultItems.Concat(incomingItems).ToList();
                 }
 
-                if (libraryIds != null && libraryIds.Any(id => id != "-1") && libraryPathsInScope.Any())
+                if (libraryIds != null && libraryIds.Any(id => id != "-1") && LibraryPathsInScope.Any())
                 {
                     var filteredItems = incomingItems
-                        .Where(i => libraryPathsInScope.Any(p => i.ContainingFolderPath.StartsWith(p)))
+                        .Where(i => LibraryPathsInScope.Any(p => i.ContainingFolderPath.StartsWith(p)))
                         .ToList();
                     resultItems = resultItems.Concat(filteredItems).ToList();
                 }
             }
 
-            if (enableIntroSkip)
+            if (IsCatchupTaskSelected(CatchupTask.IntroSkip))
             {
                 var episodesIntroSkip = Plugin.ChapterApi.SeasonHasIntroCredits(items.OfType<Episode>().ToList());
                 resultItems = resultItems.Concat(episodesIntroSkip).ToList();
@@ -432,9 +447,7 @@ namespace StrmAssistant
 
             foreach (var item in items)
             {
-                if (!HasMediaInfo(item) || !item.HasImage(ImageType.Primary) &&
-                    !(HasMediaInfo(item) && item.MediaContainer.HasValue &&
-                      ExcludeMediaContainers.Contains(item.MediaContainer.Value)))
+                if (IsExtractNeeded(item))
                 {
                     results.Add(item);
                 }
@@ -449,7 +462,14 @@ namespace StrmAssistant
             return results;
         }
 
-        public List<BaseItem> ExpandFavorites(List<BaseItem> items, bool filterNeeded, bool preExtract)
+        public bool IsExtractNeeded(BaseItem item)
+        {
+            return !HasMediaInfo(item) || !item.HasImage(ImageType.Primary) &&
+                !(HasMediaInfo(item) && item.MediaContainer.HasValue &&
+                  ExcludeMediaContainers.Contains(item.MediaContainer.Value));
+        }
+
+        public List<BaseItem> ExpandFavorites(List<BaseItem> items, bool filterNeeded, bool? preExtract)
         {
             var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
 
@@ -478,7 +498,7 @@ namespace StrmAssistant
                 };
                 var episodesMediaInfo = _libraryManager.GetItemList(episodesMediaInfoQuery);
 
-                if (enableImageCapture && preExtract)
+                if (enableImageCapture && preExtract == true)
                 {
                     var episodesImageCaptureQuery = new InternalItemsQuery
                     {
@@ -571,7 +591,7 @@ namespace StrmAssistant
         }
 
         public async Task SerializeMediaInfo(BaseItem item, IDirectoryService directoryService, bool overwrite,
-            CancellationToken cancellationToken)
+            string source, CancellationToken cancellationToken)
         {
             var workItem = item;
             if (!item.RunTimeTicks.HasValue)
@@ -607,30 +627,32 @@ namespace StrmAssistant
                                 _jsonSerializer.SerializeToFile(mediaSourcesWithChapters, mediaInfoJsonPath);
                             }, cancellationToken)
                             .ConfigureAwait(false);
-                        _logger.Info("MediaInfoPersist - Serialization Success: " + mediaInfoJsonPath);
+                        _logger.Info("MediaInfoPersist - Serialization Success (" + source + "): " + mediaInfoJsonPath);
                     }
                     catch (Exception e)
                     {
-                        _logger.Error("MediaInfoPersist - Serialization Failed: " + mediaInfoJsonPath);
+                        _logger.Error("MediaInfoPersist - Serialization Failed (" + source + "): " + mediaInfoJsonPath);
                         _logger.Error(e.Message);
                         _logger.Debug(e.StackTrace);
                     }
                 }
                 else
                 {
-                    _logger.Info("MediaInfoPersist - Serialization Skipped: " + mediaInfoJsonPath);
+                    _logger.Info("MediaInfoPersist - Serialization Skipped (No MediaInfo): " + mediaInfoJsonPath);
                 }
             }
         }
 
-        public async Task SerializeMediaInfo(BaseItem item, bool overwrite, CancellationToken cancellationToken)
+        public async Task SerializeMediaInfo(BaseItem item, bool overwrite, string source,
+            CancellationToken cancellationToken)
         {
             var directoryService = new DirectoryService(_logger, _fileSystem);
 
-            await SerializeMediaInfo(item, directoryService, overwrite, cancellationToken).ConfigureAwait(false);
+            await SerializeMediaInfo(item, directoryService, overwrite, source, cancellationToken)
+                .ConfigureAwait(false);
         }
 
-        public async Task SerializeMediaInfo(long itemId, bool overwrite, CancellationToken cancellationToken)
+        public async Task SerializeMediaInfo(long itemId, bool overwrite, string source, CancellationToken cancellationToken)
         {
             var item = _libraryManager.GetItemById(itemId);
 
@@ -638,7 +660,8 @@ namespace StrmAssistant
 
             var directoryService = new DirectoryService(_logger, _fileSystem);
 
-            await SerializeMediaInfo(item, directoryService, overwrite, cancellationToken).ConfigureAwait(false);
+            await SerializeMediaInfo(item, directoryService, overwrite, source, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         public async Task<bool> DeserializeMediaInfo(BaseItem item, IDirectoryService directoryService,

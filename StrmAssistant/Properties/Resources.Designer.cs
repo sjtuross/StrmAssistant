@@ -70,6 +70,33 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Built-in Intro Detection.
+        /// </summary>
+        public static string CatchupTask_Fingerprint_Fingerprint {
+            get {
+                return ResourceManager.GetString("CatchupTask_Fingerprint_Fingerprint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Behavior-based Intro Sync.
+        /// </summary>
+        public static string CatchupTask_IntroSkip_IntroSkip {
+            get {
+                return ResourceManager.GetString("CatchupTask_IntroSkip_IntroSkip", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to MediaInfo Extract.
+        /// </summary>
+        public static string CatchupTask_MediaInfo_MediaInfo {
+            get {
+                return ResourceManager.GetString("CatchupTask_MediaInfo_MediaInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Clears behavior-based intro and credits markers.
         /// </summary>
         public static string ClearChapterMarkersTask_Description_Clears_behavior_based_intro_and_credits_markers {
@@ -89,7 +116,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DefaultAllow.
+        ///   Looks up a localized string similar to Catch All Allow.
         /// </summary>
         public static string ExclusiveControl_CatchAllAllow_CatchAllAllow {
             get {
@@ -98,7 +125,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to DefaultBlock.
+        ///   Looks up a localized string similar to Catch All Block.
         /// </summary>
         public static string ExclusiveControl_CatchAllBlock_CatchAllBlock {
             get {
@@ -157,6 +184,15 @@ namespace StrmAssistant.Properties {
         public static string Favorites {
             get {
                 return ResourceManager.GetString("Favorites", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Catchup Scope.
+        /// </summary>
+        public static string GeneralOptions_CatchupScope_Catchup_Scope {
+            get {
+                return ResourceManager.GetString("GeneralOptions_CatchupScope_Catchup_Scope", resourceCulture);
             }
         }
         
@@ -337,7 +373,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Proxy Server is invalid. Format is http[s]://&lt;host&gt;:&lt;port&gt;.
+        ///   Looks up a localized string similar to Proxy Server is invalid. Format is http[s]://[&lt;username&gt;:&lt;password&gt;@]&lt;host&gt;:&lt;port&gt;.
         /// </summary>
         public static string InvalidProxyServer {
             get {
@@ -669,6 +705,25 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Enable Local Episode Group.
+        /// </summary>
+        public static string MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store or load episode group info to/from JSON file. Default is OFF..
+        /// </summary>
+        public static string MetadataEnhanceOptions_LocalEpisodeGroup_Store_or_load_episode_group_info_to_from_JSON_file__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("MetadataEnhanceOptions_LocalEpisodeGroup_Store_or_load_episode_group_info_to_from" +
+                        "_JSON_file__Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Support MovieDb Episode Group.
         /// </summary>
         public static string MetadataEnhanceOptions_MovieDbEpisodeGroup_Support_MovieDb_Episode_Group {
@@ -817,7 +872,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Support http(s) proxy server. Latency to proxy server must be less than 500 milliseconds. Disabled if unavailabe or leave blank..
+        ///   Looks up a localized string similar to Support http(s) proxy server. Latency to Google must be less than 500 milliseconds. Disabled if unavailabe or leave blank. Restart if any changes..
         /// </summary>
         public static string ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_ {
             get {

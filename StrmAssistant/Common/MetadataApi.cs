@@ -1,6 +1,7 @@
 using MediaBrowser.Common.Net;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.Globalization;
@@ -9,6 +10,7 @@ using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
 using System;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using static StrmAssistant.LanguageUtility;
@@ -208,6 +210,12 @@ namespace StrmAssistant
             try
             {
                 using var response = await _httpClient.SendAsync(options, "GET").ConfigureAwait(false);
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    _logger.Debug("Failed to get MovieDb response - " + response.StatusCode);
+                    return null;
+                }
+
                 await using var contentStream = response.Content;
                 result = _jsonSerializer.DeserializeFromStream<T>(contentStream);
 
@@ -232,6 +240,31 @@ namespace StrmAssistant
         public async Task<T> GetMovieDbResponse<T>(string url, CancellationToken cancellationToken) where T : class
         {
             return await GetMovieDbResponse<T>(url, null, null, cancellationToken);
+        }
+
+        public Series GetSeriesByPath(string path)
+        {
+            var items = _libraryManager.GetItemList(new InternalItemsQuery { Path = path });
+
+            foreach (var item in items)
+            {
+                if (item is Episode episode)
+                {
+                    return episode.Series;
+                }
+
+                if (item is Season season)
+                {
+                    return season.Series;
+                }
+
+                if (item is Series series)
+                {
+                    return series;
+                }
+            }
+
+            return null;
         }
     }
 }

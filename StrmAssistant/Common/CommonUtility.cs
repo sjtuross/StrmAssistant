@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace StrmAssistant
 {
@@ -32,29 +35,40 @@ namespace StrmAssistant
             {
                 var uri = new Uri(proxyUrl);
                 return (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps) &&
-                       (uri.IsDefaultPort || (uri.Port > 0 && uri.Port <= 65535));
+                       (uri.IsDefaultPort || (uri.Port > 0 && uri.Port <= 65535)) &&
+                       (string.IsNullOrEmpty(uri.UserInfo) || uri.UserInfo.Contains(":"));
             }
             catch
             {
-                // ignored
+                return false;
             }
-
-            return false;
         }
 
-        public static bool TryParseProxyUrl(string proxyUrl, out string host, out int port)
+        public static bool TryParseProxyUrl(string proxyUrl, out string schema, out string host, out int port, out string username, out string password)
         {
+            schema = string.Empty;
             host = string.Empty;
             port = 0;
+            username = string.Empty;
+            password = string.Empty;
 
             try
             {
                 var uri = new Uri(proxyUrl);
                 if (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps)
                 {
+                    schema = uri.Scheme;
                     host = uri.Host;
                     port = uri.IsDefaultPort ? uri.Scheme == Uri.UriSchemeHttp ? 80 : 443 : uri.Port;
-                    return port > 0 && port <= 65535;
+
+                    if (!string.IsNullOrEmpty(uri.UserInfo))
+                    {
+                        var userInfoParts = uri.UserInfo.Split(':');
+                        username = userInfoParts[0];
+                        password = userInfoParts.Length > 1 ? userInfoParts[1] : string.Empty;
+                    }
+
+                    return true;
                 }
             }
             catch
@@ -71,18 +85,68 @@ namespace StrmAssistant
             {
                 using var tcpClient = new TcpClient();
                 var stopwatch = Stopwatch.StartNew();
-                var connectTask = tcpClient.ConnectAsync(host, port);
-                if (!connectTask.Wait(500))
+                if (tcpClient.ConnectAsync(host, port).Wait(666))
                 {
-                    return (false, null);
+                    stopwatch.Stop();
+                    return (true, stopwatch.Elapsed.TotalMilliseconds);
                 }
-                stopwatch.Stop();
-                return (true, stopwatch.Elapsed.TotalMilliseconds);
             }
             catch
             {
-                return (false, null);
+                // ignored
             }
+
+            return (false, null);
+        }
+
+        public static (bool isReachable, double? httpPing) CheckProxyReachability(string scheme, string host, int port,
+            string username, string password)
+        {
+            double? httpPing = null;
+
+            try
+            {
+                var proxyUrl = new UriBuilder(scheme, host, port).Uri;
+                using var handler = new HttpClientHandler();
+                handler.Proxy = new WebProxy(proxyUrl)
+                {
+                    Credentials = !string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(password)
+                        ? new NetworkCredential(username, password)
+                        : null
+                };
+                handler.UseProxy = true;
+
+                using var client = new HttpClient(handler);
+                client.Timeout = TimeSpan.FromMilliseconds(666);
+
+                var task1 = client.GetAsync("http://www.gstatic.com/generate_204");
+                var task2 = client.GetAsync("http://www.google.com/generate_204");
+
+                var stopwatch = Stopwatch.StartNew();
+                var completedTask = Task.WhenAny(task1, task2).Result;
+                stopwatch.Stop();
+
+                if (completedTask.Status == TaskStatus.RanToCompletion && completedTask.Result.IsSuccessStatusCode &&
+                    completedTask.Result.StatusCode == HttpStatusCode.NoContent)
+                {
+                    httpPing = stopwatch.Elapsed.TotalMilliseconds;
+                }
+                else
+                {
+                    var otherTask = completedTask == task1 ? task2 : task1;
+                    if (otherTask.Status == TaskStatus.RanToCompletion && otherTask.Result.IsSuccessStatusCode &&
+                        otherTask.Result.StatusCode == HttpStatusCode.NoContent)
+                    {
+                        httpPing = stopwatch.Elapsed.TotalMilliseconds;
+                    }
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+
+            return (httpPing.HasValue, httpPing);
         }
     }
 }

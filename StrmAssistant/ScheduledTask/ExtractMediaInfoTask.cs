@@ -99,7 +99,8 @@ namespace StrmAssistant
                             if (!deserializeResult)
                             {
                                 await Plugin.LibraryApi
-                                    .SerializeMediaInfo(taskItem, directoryService, true, cancellationToken)
+                                    .SerializeMediaInfo(taskItem, directoryService, true, "Extract MediaInfo Task",
+                                        cancellationToken)
                                     .ConfigureAwait(false);
                             }
                             else if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))

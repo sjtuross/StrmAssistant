@@ -6,7 +6,7 @@ namespace StrmAssistant
     public static class LanguageUtility
     {
         private static readonly Regex ChineseRegex = new Regex(@"[\u4E00-\u9FFF]", RegexOptions.Compiled);
-        private static readonly Regex JapaneseRegex = new Regex(@"[\u3040-\u30FF&&[^\u30FB]]", RegexOptions.Compiled);
+        private static readonly Regex JapaneseRegex = new Regex(@"[\u3040-\u30FF]", RegexOptions.Compiled);
         private static readonly Regex KoreanRegex = new Regex(@"[\uAC00-\uD7A3]", RegexOptions.Compiled);
         private static readonly Regex DefaultChineseEpisodeNameRegex = new Regex(@"第\s*\d+\s*集", RegexOptions.Compiled);
         private static readonly Regex DefaultJapaneseEpisodeNameRegex = new Regex(@"第\s*\d+\s*話", RegexOptions.Compiled);
@@ -15,7 +15,8 @@ namespace StrmAssistant
 
         public static bool IsChinese(string input) => !string.IsNullOrEmpty(input) && ChineseRegex.IsMatch(input);
 
-        public static bool IsJapanese(string input) => !string.IsNullOrEmpty(input) && JapaneseRegex.IsMatch(input);
+        public static bool IsJapanese(string input) => !string.IsNullOrEmpty(input) &&
+                                                       JapaneseRegex.IsMatch(input.Replace("\u30FB", string.Empty));
 
         public static bool IsKorean(string input) => !string.IsNullOrEmpty(input) && KoreanRegex.IsMatch(input);
 
@@ -34,7 +35,7 @@ namespace StrmAssistant
         {
             if (string.IsNullOrEmpty(input)) return null;
 
-            return IsChinese(input) ? "zh" : IsJapanese(input) ? "jp" : IsKorean(input) ? "ko" : "en";
+            return IsJapanese(input) ? "ja" : IsKorean(input) ? "ko" : IsChinese(input) ? "zh" : "en";
         }
 
         public static string RemoveDefaultCollectionName(string input)

@@ -15,7 +15,7 @@
     <value>追更模式</value>
   </data>
   <data name="PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_" xml:space="preserve">
-    <value>电影洗版或剧集有更新后实时提取媒体信息以及同步基于行为的片头片尾标记，默认关闭。</value>
+    <value>电影洗版或剧集有更新后实时提取媒体信息以及片头片尾标记探测或同步，默认关闭。</value>
   </data>
   <data name="PluginOptions_IncludeExtra_Include_Extra" xml:space="preserve">
     <value>包含分集和附加内容</value>
@@ -375,13 +375,13 @@
     <value>无更新</value>
   </data>
   <data name="InvalidProxyServer" xml:space="preserve">
-    <value>代理服务器无效，格式为 http[s]://&lt;host&gt;:&lt;port&gt;</value>
+    <value>代理服务器无效，格式为 http[s]://[&lt;username&gt;:&lt;password&gt;@]&lt;host&gt;:&lt;port&gt;</value>
   </data>
   <data name="ModOptions_ProxyServer_Proxy_Server" xml:space="preserve">
     <value>代理服务器</value>
   </data>
   <data name="ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_" xml:space="preserve">
-    <value>支持 HTTP(S) 代理服务器，至代理服务器的延迟必须小于500毫秒，测试失败或留空则禁用。</value>
+    <value>支持 HTTP(S) 代理服务器，至 Google 的延迟必须小于 666 毫秒，测试失败或留空则禁用，设置变更后须重启生效。</value>
   </data>
   <data name="ProxyServer_Available" xml:space="preserve">
     <value>可用</value>
@@ -421,5 +421,23 @@
   </data>
   <data name="MediaInfoExtractOptions_ExclusiveExtractFeatureControl_Exclusive_Extract_Feature_Control" xml:space="preserve">
     <value>可选独占模式功能控制</value>
+  </data>
+  <data name="MetadataEnhanceOptions_LocalEpisodeGroup_Store_or_load_episode_group_info_to_from_JSON_file__Default_is_OFF_" xml:space="preserve">
+    <value>保存或加载剧集组至/自 JSON 文件，默认关闭。</value>
+  </data>
+  <data name="MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group" xml:space="preserve">
+    <value>启用本地剧集组 TMDB</value>
+  </data>
+  <data name="CatchupTask_MediaInfo_MediaInfo" xml:space="preserve">
+    <value>媒体信息提取</value>
+  </data>
+  <data name="CatchupTask_IntroSkip_IntroSkip" xml:space="preserve">
+    <value>行为探测标记同步</value>
+  </data>
+  <data name="CatchupTask_Fingerprint_Fingerprint" xml:space="preserve">
+    <value>原生片头探测</value>
+  </data>
+  <data name="GeneralOptions_CatchupScope_Catchup_Scope" xml:space="preserve">
+    <value>追更任务范围</value>
   </data>
 </root>
