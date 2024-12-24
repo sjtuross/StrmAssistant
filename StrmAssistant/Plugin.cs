@@ -195,7 +195,7 @@ namespace StrmAssistant
                     QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
                 }
 
-                if ((_currentCatchupMode && IsCatchupTaskSelected(CatchupTask.IntroSkip)) &&
+                if (_currentCatchupMode && IsCatchupTaskSelected(CatchupTask.IntroSkip) &&
                     PlaySessionMonitor.IsLibraryInScope(e.Item))
                 {
                     if (!LibraryApi.HasMediaInfo(e.Item))

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -151,7 +151,6 @@ namespace StrmAssistant
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
 
             var includeFavorites = libraryIds?.Contains("-1") == true;
-            _logger.Info("Include Favorites: " + includeFavorites);
             var catchupMode = Plugin.Instance.GetPluginOptions().GeneralOptions.CatchupMode;
 
             var resultItems = new List<Episode>();

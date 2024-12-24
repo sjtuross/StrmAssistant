@@ -99,21 +99,19 @@ namespace StrmAssistant
 
                 if (!MediaInfoExtractItemQueue.IsEmpty || !ExternalSubtitleItemQueue.IsEmpty)
                 {
-                    var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
-                    _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
-
                     var dequeueMediaInfoItems = new List<BaseItem>();
                     while (MediaInfoExtractItemQueue.TryDequeue(out var dequeueItem))
                     {
                         dequeueMediaInfoItems.Add(dequeueItem);
                     }
 
+                    var mediaInfoItems = new List<BaseItem>();
                     if (dequeueMediaInfoItems.Count > 0)
                     {
                         _logger.Info("MediaInfoExtract - Clear Item Queue Started");
 
                         var dedupMediaInfoItems = dequeueMediaInfoItems.GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
-                        var mediaInfoItems = Plugin.LibraryApi.FetchExtractQueueItems(dedupMediaInfoItems);
+                        mediaInfoItems = Plugin.LibraryApi.FetchExtractQueueItems(dedupMediaInfoItems);
 
                         foreach (var item in mediaInfoItems)
                         {
@@ -159,14 +157,15 @@ namespace StrmAssistant
                         dequeueSubtitleItems.Add(dequeueItem);
                     }
 
+                    var subtitleItems = new List<BaseItem>();
                     if (dequeueSubtitleItems.Count > 0)
                     {
                         _logger.Info("ExternalSubtitle - Clear Item Queue Started");
 
-                        var dedupSubtitleItems =
+                        subtitleItems =
                             dequeueSubtitleItems.GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
 
-                        foreach (var item in dedupSubtitleItems)
+                        foreach (var item in subtitleItems)
                         {
                             var taskItem = item;
                             _taskQueue.Enqueue(async () =>
@@ -201,7 +200,7 @@ namespace StrmAssistant
 
                     lock (_lock)
                     {
-                        if (!IsMediaInfoProcessTaskRunning && (dequeueMediaInfoItems.Count > 0 || dequeueSubtitleItems.Count > 0))
+                        if (!IsMediaInfoProcessTaskRunning && (mediaInfoItems.Count > 0 || subtitleItems.Count > 0))
                         {
                             IsMediaInfoProcessTaskRunning = true;
                             var task = Task.Run(() => MediaInfo_ProcessTaskQueueAsync(cancellationToken));
@@ -274,9 +273,7 @@ namespace StrmAssistant
         private static async Task InternalMediaInfoProcessAsync(BaseItem taskItem, CancellationToken cancellationToken)
         {
             var persistMediaInfo = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.PersistMediaInfo;
-            _logger.Info("Persist Media Info: " + persistMediaInfo);
             var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
-            _logger.Info("Image Capture Enabled: " + enableImageCapture);
             var exclusiveExtract = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.ExclusiveExtract;
 
             if (exclusiveExtract) ExclusiveExtract.AllowExtractInstance(taskItem);
@@ -393,14 +390,14 @@ namespace StrmAssistant
 
                         var groupedBySeason = episodes.GroupBy(e => e.Season).ToList();
 
-                        var tasks = new List<Task>();
-
                         foreach (var season in groupedBySeason)
                         {
                             if (cancellationToken.IsCancellationRequested)
                             {
                                 break;
                             }
+
+                            var episodeTasks = new List<Task>();
 
                             foreach (var episode in season)
                             {
@@ -455,18 +452,7 @@ namespace StrmAssistant
                                         SemaphoreMaster.Release();
                                     }
                                 }, cancellationToken);
-                                tasks.Add(task);
-                            }
-                            await Task.WhenAll(tasks);
-                            tasks.Clear();
-
-                            try
-                            {
-                                await SemaphoreLocal.WaitAsync(cancellationToken);
-                            }
-                            catch
-                            {
-                                break;
+                                episodeTasks.Add(task);
                             }
 
                             var taskSeason = season.Key;
@@ -474,10 +460,14 @@ namespace StrmAssistant
                             {
                                 try
                                 {
+                                    await Task.WhenAll(episodeTasks);
+
                                     if (cancellationToken.IsCancellationRequested)
                                     {
                                         return;
                                     }
+
+                                    await SemaphoreLocal.WaitAsync(cancellationToken);
 
                                     await Plugin.FingerprintApi
                                         .UpdateIntroMarkerForSeason(taskSeason, cancellationToken)
@@ -572,6 +562,7 @@ namespace StrmAssistant
         public static void Dispose()
         {
             MediaInfoTokenSource?.Cancel();
+            FingerprintTokenSource?.Cancel();
         }
     }
 }

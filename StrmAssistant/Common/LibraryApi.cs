@@ -245,16 +245,13 @@ namespace StrmAssistant
         {
             var libraryIds = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.LibraryScope
                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
-            var includeFavorites = libraryIds == null || !libraryIds.Any() || libraryIds.Contains("-1");
-            _logger.Info("Include Favorites: " + includeFavorites);
 
+            var includeFavorites = libraryIds == null || !libraryIds.Any() || libraryIds.Contains("-1");
             var includeExtra = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.IncludeExtra;
-            var catchupMode=Plugin.Instance.GetPluginOptions().GeneralOptions.CatchupMode;
-            var enableIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.EnableIntroSkip;
 
             var resultItems = new List<BaseItem>();
 
-            if (catchupMode && IsCatchupTaskSelected(CatchupTask.MediaInfo))
+            if (IsCatchupTaskSelected(CatchupTask.MediaInfo))
             {
                 if (includeFavorites) resultItems = ExpandFavorites(items, true, true);
 
@@ -274,7 +271,7 @@ namespace StrmAssistant
                 }
             }
 
-            if (enableIntroSkip || (catchupMode && IsCatchupTaskSelected(CatchupTask.IntroSkip)))
+            if (IsCatchupTaskSelected(CatchupTask.IntroSkip))
             {
                 var episodesIntroSkip = Plugin.ChapterApi.SeasonHasIntroCredits(items.OfType<Episode>().ToList());
                 resultItems = resultItems.Concat(episodesIntroSkip).ToList();
