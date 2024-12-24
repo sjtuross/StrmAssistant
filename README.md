@@ -54,6 +54,7 @@
 27. 添加删除菜单项至合集媒体库
 28. 支持对外`HTTP`请求使用代理服务器
 29. 支持`TMDB`剧集组刮削，用指定的剧集组刮削剧集，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/TMDB-剧集组刮削-(Episode-Group))
+30. 保存或加载剧集组至/自 JSON 文件，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/本地剧集组刮削)
 
 ## 安装
 
@@ -71,7 +72,7 @@
 
 ## 声明
 
-本项目为开源项目，与 **Emby LLC** 没有任何关联，也未获得 Emby LLC 的授权或认可。本项目的目的是为合法购买并安装了 Emby 软件的用户提供额外的功能增强和使用便利。
+本项目为开源项目，与 Emby LLC 没有任何关联，也未获得 Emby LLC 的授权或认可。本项目的目的是为合法购买并安装了 Emby 软件的用户提供额外的功能增强和使用便利。
 
 ### 使用须知
 

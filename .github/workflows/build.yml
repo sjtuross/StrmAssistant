@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - mod
+      - tab-ui
   pull_request:
     branches:
       - mod
+      - tab-ui
 
 jobs:
   build:
