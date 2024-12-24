@@ -45,7 +45,7 @@ namespace StrmAssistant
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
 
-            UpdateLibraryPathsInScope();
+            UpdateLibraryPathsInScope(Plugin.Instance.IntroSkipStore.GetOptions().MarkerEnabledLibraryScope);
 
             try
             {
@@ -95,36 +95,20 @@ namespace StrmAssistant
             return isLibraryInScope;
         }
 
-        public void UpdateLibraryPathsInScope()
+        public void UpdateLibraryPathsInScope(string currentScope)
         {
-            LibraryPathsInScope = GetMarkerEnabledLibraries(true)
-                .SelectMany(l => l.Locations)
-                .Select(ls => ls.EndsWith(Path.DirectorySeparatorChar.ToString())
-                    ? ls
-                    : ls + Path.DirectorySeparatorChar)
-            .ToList();
-        }
+            var libraryIds = currentScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
 
-        public List<VirtualFolderInfo> GetMarkerEnabledLibraries(bool suppressLogging)
-        {
-            var libraryIds = Plugin.Instance.IntroSkipStore.GetOptions().MarkerEnabledLibraryScope
-                ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
-
-            var libraries = _libraryManager.GetVirtualFolders()
+            LibraryPathsInScope = _libraryManager.GetVirtualFolders()
                 .Where(f => libraryIds != null && libraryIds.Any(id => id != "-1")
                     ? libraryIds.Contains(f.Id)
                     : f.LibraryOptions.EnableMarkerDetection &&
                       (f.CollectionType == CollectionType.TvShows.ToString() || f.CollectionType is null))
+                .SelectMany(l => l.Locations)
+                .Select(ls => ls.EndsWith(Path.DirectorySeparatorChar.ToString())
+                    ? ls
+                    : ls + Path.DirectorySeparatorChar)
                 .ToList();
-
-            if (!suppressLogging)
-            {
-                _logger.Info("MarkerEnabledLibraryScope: " + (libraries.Any()
-                    ? string.Join(", ", libraries.Select(l => l.Name))
-                    : "EMPTY"));
-            }
-
-            return libraries;
         }
 
         public long[] GetAllFavoriteSeasons()
@@ -181,10 +165,11 @@ namespace StrmAssistant
 
         public List<Episode> FetchIntroFingerprintTaskItems()
         {
-            var libraries = UpdateLibraryIntroDetectionFingerprintLength();
+            var markerEnabledLibraryScope = Plugin.Instance.IntroSkipStore.GetOptions().MarkerEnabledLibraryScope;
+            var introDetectionFingerprintMinutes =
+                Plugin.Instance.IntroSkipStore.GetOptions().IntroDetectionFingerprintMinutes;
+            UpdateLibraryIntroDetectionFingerprintLength(markerEnabledLibraryScope, introDetectionFingerprintMinutes);
 
-            var introDetectionFingerprintMinutes = Plugin.Instance.IntroSkipStore.GetOptions().IntroDetectionFingerprintMinutes;
-            
             var itemsFingerprintQuery = new InternalItemsQuery
             {
                 IncludeItemTypes = new[] { nameof(Episode) },
@@ -194,8 +179,6 @@ namespace StrmAssistant
                 MinRunTimeTicks = TimeSpan.FromMinutes(introDetectionFingerprintMinutes).Ticks,
                 HasAudioStream = true
             };
-
-            var markerEnabledLibraryScope = Plugin.Instance.IntroSkipStore.GetOptions().MarkerEnabledLibraryScope;
 
             if (!string.IsNullOrEmpty(markerEnabledLibraryScope) && markerEnabledLibraryScope.Contains("-1"))
             {
@@ -207,22 +190,29 @@ namespace StrmAssistant
             }
 
             var items = _libraryManager.GetItemList(itemsFingerprintQuery).OfType<Episode>().ToList();
-            
+
             return items;
         }
 
-        public List<VirtualFolderInfo> UpdateLibraryIntroDetectionFingerprintLength()
+        public void UpdateLibraryIntroDetectionFingerprintLength(string currentScope,
+            int currentLength)
         {
-            var libraries = GetMarkerEnabledLibraries(false);
+            var libraryIds = currentScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
 
-            var introDetectionFingerprintMinutes = Plugin.Instance.IntroSkipStore.GetOptions().IntroDetectionFingerprintMinutes;
+            var libraries = _libraryManager.GetVirtualFolders()
+                .Where(f => libraryIds != null && libraryIds.Any(id => id != "-1")
+                    ? libraryIds.Contains(f.Id)
+                    : f.LibraryOptions.EnableMarkerDetection &&
+                      (f.CollectionType == CollectionType.TvShows.ToString() || f.CollectionType is null))
+                .ToList();
+
+            _logger.Info("MarkerEnabledLibraryScope: " +
+                         (libraries.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "EMPTY"));
 
             foreach (var library in libraries)
             {
-                library.LibraryOptions.IntroDetectionFingerprintLength = introDetectionFingerprintMinutes;
+                library.LibraryOptions.IntroDetectionFingerprintLength = currentLength;
             }
-
-            return libraries;
         }
 
         public async Task ExtractIntroFingerprint(Episode item, IDirectoryService directoryService,

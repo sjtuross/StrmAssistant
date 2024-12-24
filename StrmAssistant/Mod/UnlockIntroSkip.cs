@@ -177,14 +177,9 @@ namespace StrmAssistant.Mod
             }
             else
             {
-                var libraries = Plugin.FingerprintApi.GetMarkerEnabledLibraries(true);
-
-                if (libraries.Any())
+                if (FingerprintApi.LibraryPathsInScope.Any())
                 {
-                    __result.PathStartsWithAny = libraries.SelectMany(l => l.Locations)
-                        .Select(ls =>
-                            ls.EndsWith(Path.DirectorySeparatorChar.ToString()) ? ls : ls + Path.DirectorySeparatorChar)
-                        .ToArray();
+                    __result.PathStartsWithAny = FingerprintApi.LibraryPathsInScope.ToArray();
                 }
             }
 

@@ -102,7 +102,8 @@ namespace StrmAssistant.Mod
 
                 if (Plugin.Instance.MediaInfoExtractStore.GetOptions().ExclusiveExtract)
                 {
-                    UpdateExclusiveControlFeatures();
+                    UpdateExclusiveControlFeatures(Plugin.Instance.MediaInfoExtractStore.GetOptions()
+                        .ExclusiveControlFeatures);
                     Patch();
                 }
             }

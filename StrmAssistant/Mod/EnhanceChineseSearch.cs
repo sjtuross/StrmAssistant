@@ -81,7 +81,7 @@ namespace StrmAssistant.Mod
             {
                 if (Plugin.Instance.ApplicationHost.ApplicationVersion >= new Version("4.8.3.0"))
                 {
-                    UpdateSearchScope();
+                    UpdateSearchScope(Plugin.Instance.MainOptionsStore.GetOptions().ModOptions.SearchScope);
                     PatchPhase1();
                 }
                 else
@@ -440,10 +440,10 @@ namespace StrmAssistant.Mod
             }
         }
 
-        public static void UpdateSearchScope()
+        public static void UpdateSearchScope(string currentScope)
         {
-            var searchScope = Plugin.Instance.MainOptionsStore.GetOptions().ModOptions.SearchScope?
-                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+            var searchScope = currentScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries) ??
+                              Array.Empty<string>();
 
             var includeItemTypes = new List<string>();
 

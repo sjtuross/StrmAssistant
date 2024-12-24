@@ -10,15 +10,12 @@ namespace StrmAssistant.Options
         private static HashSet<string> _selectedExclusiveFeatures = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private static HashSet<string> _selectedCatchupTasks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        public static void UpdateExclusiveControlFeatures()
+        public static void UpdateExclusiveControlFeatures(string currentScope)
         {
-            var controlFeatures =
-                Plugin.Instance.MediaInfoExtractStore.MediaInfoExtractOptions.ExclusiveControlFeatures;
-
             _selectedExclusiveFeatures = new HashSet<string>(
-                controlFeatures?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                currentScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Where(f => !(f == MediaInfoExtractOptions.ExclusiveControl.CatchAllAllow.ToString() &&
-                                  controlFeatures.Contains(MediaInfoExtractOptions.ExclusiveControl.CatchAllBlock.ToString()))) ??
+                                  currentScope.Contains(MediaInfoExtractOptions.ExclusiveControl.CatchAllBlock.ToString()))) ??
                 Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
         }
 
@@ -34,12 +31,10 @@ namespace StrmAssistant.Options
                     Enum.TryParse(feature.Trim(), true, out GeneralOptions.CatchupTask type) ? type.GetDescription() : null));
         }
 
-        public static void UpdateCatchupScope()
+        public static void UpdateCatchupScope(string currentScope)
         {
-            var catchupTaskScope = Plugin.Instance.MainOptionsStore.PluginOptions.GeneralOptions.CatchupTaskScope;
-
             _selectedCatchupTasks = new HashSet<string>(
-                catchupTaskScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries) ??
+                currentScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries) ??
                 Array.Empty<string>(), StringComparer.OrdinalIgnoreCase);
         }
 

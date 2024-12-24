@@ -117,7 +117,7 @@ namespace StrmAssistant.Common
             _itemRepository = itemRepository;
             _jsonSerializer = jsonSerializer;
 
-            UpdateLibraryPathsInScope();
+            UpdateLibraryPathsInScope(Plugin.Instance.MediaInfoExtractStore.GetOptions().LibraryScope);
             FetchUsers();
 
             MediaInfoRefreshOptions = new MetadataRefreshOptions(_fileSystem)
@@ -175,10 +175,9 @@ namespace StrmAssistant.Common
             }
         }
 
-        public void UpdateLibraryPathsInScope()
+        public void UpdateLibraryPathsInScope(string currentScope)
         {
-            var libraryIds = Plugin.Instance.MediaInfoExtractStore.GetOptions().LibraryScope?
-                .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            var libraryIds = currentScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             LibraryPathsInScope = _libraryManager.GetVirtualFolders()
                 .Where(f => libraryIds is null || !libraryIds.Any() || libraryIds.Contains(f.Id))
                 .SelectMany(l => l.Locations)

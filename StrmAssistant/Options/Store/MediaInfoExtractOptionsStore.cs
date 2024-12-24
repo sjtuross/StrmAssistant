@@ -83,15 +83,15 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (changedProperties.Contains(nameof(MediaInfoExtractOptions.ExclusiveControlFeatures)) &&
-                    options.ExclusiveExtract)
+                if (changedProperties.Contains(nameof(MediaInfoExtractOptions.ExclusiveControlFeatures)) ||
+                    changedProperties.Contains(nameof(MediaInfoExtractOptions.ExclusiveExtract)))
                 {
-                    UpdateExclusiveControlFeatures();
+                    if (options.ExclusiveExtract) UpdateExclusiveControlFeatures(options.ExclusiveControlFeatures);
                 }
 
                 if (changedProperties.Contains(nameof(MediaInfoExtractOptions.LibraryScope)))
                 {
-                    Plugin.LibraryApi.UpdateLibraryPathsInScope();
+                    Plugin.LibraryApi.UpdateLibraryPathsInScope(options.LibraryScope);
                 }
             }
         }

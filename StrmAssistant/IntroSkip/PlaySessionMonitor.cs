@@ -45,14 +45,13 @@ namespace StrmAssistant.IntroSkip
             _userManager = userManager;
             _sessionManager = sessionManager;
 
-            UpdateLibraryPathsInScope();
-            UpdateUsersInScope();
+            UpdateLibraryPathsInScope(Plugin.Instance.IntroSkipStore.GetOptions().LibraryScope);
+            UpdateUsersInScope(Plugin.Instance.IntroSkipStore.GetOptions().UserScope);
         }
 
-        public void UpdateLibraryPathsInScope()
+        public void UpdateLibraryPathsInScope(string currentScope)
         {
-            var libraryIds = Plugin.Instance.IntroSkipStore.GetOptions().LibraryScope
-                ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
+            var libraryIds = currentScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             LibraryPathsInScope = _libraryManager.GetVirtualFolders()
                 .Where(f => libraryIds != null && libraryIds.Any()
                     ? libraryIds.Contains(f.Id)
@@ -64,7 +63,7 @@ namespace StrmAssistant.IntroSkip
                 .ToList();
         }
 
-        public void UpdateUsersInScope()
+        public void UpdateUsersInScope(string currentScope)
         {
             var userIds = Plugin.Instance.IntroSkipStore.GetOptions().UserScope
                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();

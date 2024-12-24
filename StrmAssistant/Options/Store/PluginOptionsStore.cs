@@ -84,9 +84,10 @@ namespace StrmAssistant.Options.Store
                 var changes = PropertyChangeDetector.DetectObjectPropertyChanges(PluginOptions, options);
                 var changedProperties = new HashSet<string>(changes.Select(c => c.PropertyName));
 
-                if (changedProperties.Contains(nameof(PluginOptions.GeneralOptions.CatchupTaskScope)))
+                if (changedProperties.Contains(nameof(PluginOptions.GeneralOptions.CatchupMode)) ||
+                    changedProperties.Contains(nameof(PluginOptions.GeneralOptions.CatchupTaskScope)))
                 {
-                    if (options.GeneralOptions.CatchupMode) UpdateCatchupScope();
+                    if (options.GeneralOptions.CatchupMode) UpdateCatchupScope(options.GeneralOptions.CatchupTaskScope);
                 }
 
                 if (changedProperties.Contains(nameof(PluginOptions.GeneralOptions.MaxConcurrentCount)))
@@ -104,10 +105,11 @@ namespace StrmAssistant.Options.Store
                     Plugin.Instance.ApplicationHost.NotifyPendingRestart();
                 }
 
-                if (changedProperties.Contains(nameof(PluginOptions.ModOptions.SearchScope)) &&
-                    options.ModOptions.EnhanceChineseSearch)
+                if (changedProperties.Contains(nameof(PluginOptions.ModOptions.SearchScope)) ||
+                    changedProperties.Contains(nameof(PluginOptions.ModOptions.EnhanceChineseSearch)))
                 {
-                    EnhanceChineseSearch.UpdateSearchScope();
+                    if (options.ModOptions.EnhanceChineseSearch)
+                        EnhanceChineseSearch.UpdateSearchScope(options.ModOptions.SearchScope);
                 }
 
                 if (changedProperties.Contains(nameof(PluginOptions.NetworkOptions.EnableProxyServer)))
@@ -120,15 +122,14 @@ namespace StrmAssistant.Options.Store
                     {
                         EnableProxyServer.Unpatch();
                     }
-
-                    Plugin.Instance.ApplicationHost.NotifyPendingRestart();
                 }
 
-                if (changedProperties.Contains(nameof(PluginOptions.NetworkOptions.ProxyServerUrl)) &&
-                    options.NetworkOptions.EnableProxyServer &&
-                    options.NetworkOptions.ProxyServerStatus.Status == ItemStatus.Succeeded)
+                if (changedProperties.Contains(nameof(PluginOptions.NetworkOptions.ProxyServerUrl)) ||
+                    changedProperties.Contains(nameof(PluginOptions.NetworkOptions.EnableProxyServer)))
                 {
-                    Plugin.Instance.ApplicationHost.NotifyPendingRestart();
+                    if (options.NetworkOptions.EnableProxyServer &&
+                        options.NetworkOptions.ProxyServerStatus.Status == ItemStatus.Succeeded)
+                        Plugin.Instance.ApplicationHost.NotifyPendingRestart();
                 }
             }
         }

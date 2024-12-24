@@ -65,15 +65,19 @@ namespace StrmAssistant.Options.Store
                         Plugin.PlaySessionMonitor.Dispose();
                     }
                 }
-                
-                if (changedProperties.Contains(nameof(IntroSkipOptions.LibraryScope)))
+
+                if (changedProperties.Contains(nameof(IntroSkipOptions.LibraryScope)) ||
+                    changedProperties.Contains(nameof(IntroSkipOptions.EnableIntroSkip)))
                 {
-                    Plugin.PlaySessionMonitor.UpdateLibraryPathsInScope();
+                    if (options.EnableIntroSkip)
+                        Plugin.PlaySessionMonitor.UpdateLibraryPathsInScope(options.LibraryScope);
                 }
 
-                if (changedProperties.Contains(nameof(IntroSkipOptions.UserScope)))
+                if (changedProperties.Contains(nameof(IntroSkipOptions.UserScope)) ||
+                    changedProperties.Contains(nameof(IntroSkipOptions.EnableIntroSkip)))
                 {
-                    Plugin.PlaySessionMonitor.UpdateUsersInScope();
+                    if (options.EnableIntroSkip)
+                        Plugin.PlaySessionMonitor.UpdateUsersInScope(options.UserScope);
                 }
 
                 if (changedProperties.Contains(nameof(IntroSkipOptions.UnlockIntroSkip)) && options.IsModSupported)
@@ -88,14 +92,19 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (changedProperties.Contains(nameof(IntroSkipOptions.MarkerEnabledLibraryScope)))
+                if (changedProperties.Contains(nameof(IntroSkipOptions.MarkerEnabledLibraryScope)) ||
+                    changedProperties.Contains(nameof(IntroSkipOptions.UnlockIntroSkip)))
                 {
-                    Plugin.FingerprintApi.UpdateLibraryPathsInScope();
+                    if (options.UnlockIntroSkip)
+                        Plugin.FingerprintApi.UpdateLibraryPathsInScope(options.MarkerEnabledLibraryScope);
                 }
 
-                if (changedProperties.Contains(nameof(IntroSkipOptions.IntroDetectionFingerprintMinutes)))
+                if (changedProperties.Contains(nameof(IntroSkipOptions.IntroDetectionFingerprintMinutes)) ||
+                    changedProperties.Contains(nameof(IntroSkipOptions.UnlockIntroSkip)))
                 {
-                    Plugin.FingerprintApi.UpdateLibraryIntroDetectionFingerprintLength();
+                    if (options.UnlockIntroSkip)
+                        Plugin.FingerprintApi.UpdateLibraryIntroDetectionFingerprintLength(
+                            options.MarkerEnabledLibraryScope, options.IntroDetectionFingerprintMinutes);
                 }
             }
         }

@@ -107,7 +107,8 @@ namespace StrmAssistant
             ShortcutMenuHelper.Initialize(configurationManager);
 
             PatchManager.Initialize();
-            if (MainOptionsStore.GetOptions().GeneralOptions.CatchupMode) UpdateCatchupScope();
+            if (MainOptionsStore.GetOptions().GeneralOptions.CatchupMode)
+                UpdateCatchupScope(MainOptionsStore.GetOptions().GeneralOptions.CatchupTaskScope);
             if (IntroSkipStore.GetOptions().EnableIntroSkip) PlaySessionMonitor.Initialize();
             QueueManager.Initialize();
 
