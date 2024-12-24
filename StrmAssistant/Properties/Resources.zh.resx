@@ -435,7 +435,7 @@
     <value>媒体信息提取</value>
   </data>
   <data name="CatchupTask_IntroSkip_IntroSkip" xml:space="preserve">
-    <value>播放行为的片头片尾标记同步</value>
+    <value>行为探测标记同步</value>
   </data>
   <data name="CatchupTask_Fingerprint_Fingerprint" xml:space="preserve">
     <value>原生片头探测</value>

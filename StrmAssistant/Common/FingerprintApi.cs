@@ -136,7 +136,6 @@ namespace StrmAssistant
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
 
             var includeFavorites = libraryIds?.Contains("-1") == true;
-            _logger.Info("Include Favorites: " + includeFavorites);
             var catchupMode = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.CatchupMode;
 
             var resultItems = new List<Episode>();

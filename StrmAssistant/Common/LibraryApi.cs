@@ -242,9 +242,8 @@ namespace StrmAssistant.Common
         {
             var libraryIds = Plugin.Instance.MediaInfoExtractStore.GetOptions().LibraryScope
                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
-            var includeFavorites = libraryIds == null || !libraryIds.Any() || libraryIds.Contains("-1");
-            _logger.Info("Include Favorites: " + includeFavorites);
 
+            var includeFavorites = libraryIds == null || !libraryIds.Any() || libraryIds.Contains("-1");
             var includeExtra = Plugin.Instance.MediaInfoExtractStore.GetOptions().IncludeExtra;
 
             var resultItems = new List<BaseItem>();
