@@ -76,6 +76,6 @@ namespace StrmAssistant
                                                          Plugin.Instance.ApplicationHost.ApplicationVersion >=
                                                          new Version("4.9.0.15") &&
                                                          Plugin.Instance.ApplicationHost.ApplicationVersion <=
-                                                         new Version("4.9.0.33"));
+                                                         new Version("4.9.0.34"));
     }
 }
