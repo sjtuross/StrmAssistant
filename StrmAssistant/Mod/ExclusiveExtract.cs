@@ -398,19 +398,23 @@ namespace StrmAssistant.Mod
 
             if (item.DateLastRefreshed == DateTimeOffset.MinValue) return true;
 
-            if (!IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) && !item.IsShortcut &&
-                provider is IDynamicImageProvider && provider.GetType().Name == "VideoImageProvider" &&
-                refreshOptions is MetadataRefreshOptions && !refreshOptions.ReplaceAllImages &&
-                item.HasImage(ImageType.Primary))
+            if (!item.IsShortcut &&
+                item.HasImage(ImageType.Primary) && provider is IDynamicImageProvider &&
+                provider.GetType().Name == "VideoImageProvider" &&
+                (IsExclusiveFeatureSelected(ExclusiveControl.CatchAllBlock) ||
+                 !IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) &&
+                 refreshOptions is MetadataRefreshOptions && !refreshOptions.ReplaceAllImages))
             {
                 __result = false;
                 return false;
             }
 
-            if (!IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) && item.IsShortcut &&
+            if (item.IsShortcut &&
+                item.HasImage(ImageType.Primary) &&
                 (provider is ILocalImageProvider || provider is IRemoteImageProvider) &&
-                refreshOptions is MetadataRefreshOptions && !refreshOptions.ReplaceAllImages &&
-                item.HasImage(ImageType.Primary))
+                (IsExclusiveFeatureSelected(ExclusiveControl.CatchAllBlock) ||
+                 !IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) &&
+                 refreshOptions is MetadataRefreshOptions && !refreshOptions.ReplaceAllImages))
             {
                 __result = false;
                 return false;
