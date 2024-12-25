@@ -378,21 +378,16 @@ namespace StrmAssistant
         {
             var suppressLogger = _currentSuppressOnOptionsSaved;
             
+            _currentCatchupMode = options.GeneralOptions.CatchupMode;
+            UpdateCatchupScope();
             if (!suppressLogger)
             {
                 logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
                 var catchupTaskScope = GetSelectedCatchupTaskDescription();
-                logger.Info("CatchupTaskScope is set to {0}", string.IsNullOrEmpty(catchupTaskScope) ? "EMPTY" : catchupTaskScope);
+                logger.Info("CatchupTaskScope is set to {0}",
+                    string.IsNullOrEmpty(catchupTaskScope) ? "EMPTY" : catchupTaskScope);
             }
-            _currentCatchupMode = options.GeneralOptions.CatchupMode;
-
-            if (_currentCatchupScope != options.GeneralOptions.CatchupTaskScope)
-            {
-                _currentCatchupScope = options.GeneralOptions.CatchupTaskScope;
-
-                if (_currentCatchupMode) UpdateCatchupScope();
-            }
-
+            
             if (!suppressLogger)
             {
                 logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
@@ -488,19 +483,12 @@ namespace StrmAssistant
                 }
             }
 
+            UpdateExclusiveControlFeatures();
             if (!suppressLogger)
             {
                 var controlFeatures = GetSelectedExclusiveFeatureDescription();
                 logger.Info("ExclusiveExtract - ControlFeatures is set to {0}",
                     string.IsNullOrEmpty(controlFeatures) ? "EMPTY" : controlFeatures);
-            }
-
-            if (_currentExclusiveControlFeatures !=
-                options.MediaInfoExtractOptions.ExclusiveControlFeatures)
-            {
-                _currentExclusiveControlFeatures = options.MediaInfoExtractOptions.ExclusiveControlFeatures;
-
-                if (_currentExclusiveExtract) UpdateExclusiveControlFeatures();
             }
             
             if (!suppressLogger)
@@ -667,6 +655,20 @@ namespace StrmAssistant
                 {
                     ApplicationHost.NotifyPendingRestart();
                 }
+            }
+
+            EnhanceChineseSearch.UpdateSearchScope();
+            if (!suppressLogger)
+            {
+                var searchScope = string.Join(", ",
+                    options.ModOptions.SearchScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(s =>
+                            Enum.TryParse(s.Trim(), true, out SearchItemType type)
+                                ? EnumExtensions.GetDescription(type)
+                                : null)
+                        .Where(d => d != null) ?? Array.Empty<string>());
+                logger.Info("EnhanceChineseSearch - SearchScope is set to {0}",
+                    string.IsNullOrEmpty(searchScope) ? "ALL" : searchScope);
             }
 
             if (!suppressLogger)
@@ -840,25 +842,6 @@ namespace StrmAssistant
             }
             FingerprintApi.UpdateLibraryPathsInScope();
             FingerprintApi.UpdateLibraryIntroDetectionFingerprintLength();
-
-            if (!suppressLogger)
-            {
-                var searchScope = string.Join(", ",
-                    options.ModOptions.SearchScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(s =>
-                            Enum.TryParse(s.Trim(), true, out SearchItemType type)
-                                ? EnumExtensions.GetDescription(type)
-                                : null)
-                        .Where(d => d != null) ?? Array.Empty<string>());
-                logger.Info("EnhanceChineseSearch - SearchScope is set to {0}",
-                        string.IsNullOrEmpty(searchScope) ? "ALL" : searchScope);
-            }
-            if (_currentSearchScope != options.ModOptions.SearchScope)
-            {
-                _currentSearchScope = options.ModOptions.SearchScope;
-
-                if (options.ModOptions.EnhanceChineseSearch) EnhanceChineseSearch.UpdateSearchScope();
-            }
 
             if (suppressLogger) _currentSuppressOnOptionsSaved = false;
 
