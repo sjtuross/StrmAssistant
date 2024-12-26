@@ -443,4 +443,10 @@
   <data name="GeneralOptions_CatchupScope_Catchup_Scope" xml:space="preserve">
     <value>追更任务范围</value>
   </data>
+  <data name="IntroSkipOptions_ClientScope_Client_Scope" xml:space="preserve">
+    <value>允许的客户端</value>
+  </data>
+  <data name="IntroSkipOptions_ClientScope_Allowed_clients__Default_is_Emby_Infuse_SenPlayer" xml:space="preserve">
+    <value>允许的客户端，客户端名关键字以逗号或分号隔开，通过第三方客户端探测可能不准，默认值为 Emby,Infuse,SenPlayer</value>
+  </data>
 </root>

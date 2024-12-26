@@ -80,6 +80,13 @@ namespace StrmAssistant.Options.Store
                         Plugin.PlaySessionMonitor.UpdateUsersInScope(options.UserScope);
                 }
 
+                if (changedProperties.Contains(nameof(IntroSkipOptions.ClientScope)) ||
+                    changedProperties.Contains(nameof(IntroSkipOptions.EnableIntroSkip)))
+                {
+                    if (options.EnableIntroSkip)
+                        Plugin.PlaySessionMonitor.UpdateClientInScope(options.ClientScope);
+                }
+
                 if (changedProperties.Contains(nameof(IntroSkipOptions.UnlockIntroSkip)) && options.IsModSupported)
                 {
                     if (options.UnlockIntroSkip)
@@ -134,6 +141,8 @@ namespace StrmAssistant.Options.Store
                             ?.Name) ?? Enumerable.Empty<string>());
                 _logger.Info("IntroSkip - UserScope is set to {0}",
                     string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
+
+                _logger.Info("IntroSkip - ClientScope is set to {0}", options.ClientScope);
 
                 _logger.Info("UnlockIntroSkip is set to {0}", options.UnlockIntroSkip);
                 _logger.Info("IntroDetectionFingerprintMinutes is set to {0}",

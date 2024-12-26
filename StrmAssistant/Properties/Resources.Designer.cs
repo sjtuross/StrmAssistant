@@ -79,7 +79,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Behavior-based Intro Sync.
+        ///   Looks up a localized string similar to Behavior-based Marker Sync.
         /// </summary>
         public static string CatchupTask_IntroSkip_IntroSkip {
             get {
@@ -197,7 +197,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Catchup Scope.
+        ///   Looks up a localized string similar to Catchup Task Scope.
         /// </summary>
         public static string GeneralOptions_CatchupScope_Catchup_Scope {
             get {
@@ -230,6 +230,24 @@ namespace StrmAssistant.Properties {
         public static string GeneralOptions_MergeMultiVersion_Merge_Multiple_Versions {
             get {
                 return ResourceManager.GetString("GeneralOptions_MergeMultiVersion_Merge_Multiple_Versions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allowed clients. Default is Emby,Infuse,SenPlayer.
+        /// </summary>
+        public static string IntroSkipOptions_ClientScope_Allowed_clients__Default_is_Emby_Infuse_SenPlayer {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_ClientScope_Allowed_clients__Default_is_Emby_Infuse_SenPlayer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Allowed Clients.
+        /// </summary>
+        public static string IntroSkipOptions_ClientScope_Client_Scope {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_ClientScope_Client_Scope", resourceCulture);
             }
         }
         
@@ -881,7 +899,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Support http(s) proxy server. Latency to Google must be less than 500 milliseconds. Disabled if unavailabe or leave blank. Restart if any changes..
+        ///   Looks up a localized string similar to Support http(s) proxy server. Latency to Google must be less than 666 milliseconds. Disabled if unavailabe or leave blank. Restart if any changes..
         /// </summary>
         public static string ModOptions_ProxyServer_Enable_http_proxy_server__Blank_is_OFF_ {
             get {
@@ -1043,7 +1061,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Extract media info for newly added items and sync behaviour-based intro and credits markers. Default is OFF..
+        ///   Looks up a localized string similar to Extract media info for newly added items and intro marker detection or sync in near real-time. Default is OFF..
         /// </summary>
         public static string PluginOptions_CatchupMode_Catch_up_users_favorites__exclusive_to_Strm___Default_is_False_ {
             get {
@@ -1301,7 +1319,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Experience Enhance.
+        ///   Looks up a localized string similar to UI Functions.
         /// </summary>
         public static string UIFunctionOptions_EditorTitle_UI_Functions {
             get {
