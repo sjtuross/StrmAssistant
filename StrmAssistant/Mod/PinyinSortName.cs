@@ -1,7 +1,6 @@
 using HarmonyLib;
 using MediaBrowser.Controller.Entities;
-using MediaBrowser.Controller.Entities.Movies;
-using MediaBrowser.Controller.Entities.TV;
+using MediaBrowser.Controller.Entities.Audio;
 using MediaBrowser.Model.Entities;
 using System;
 using System.Reflection;
@@ -50,7 +49,7 @@ namespace StrmAssistant.Mod
                     if (!IsPatched(_sortNameGetter, typeof(PinyinSortName)))
                     {
                         HarmonyMod.Patch(_sortNameGetter,
-                            prefix: new HarmonyMethod(typeof(PinyinSortName).GetMethod("SortNameGetterPrefix",
+                            postfix: new HarmonyMethod(typeof(PinyinSortName).GetMethod("SortNameGetterPostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.Logger.Debug("Patch SortNameGetter Success by Harmony");
                     }
@@ -74,7 +73,7 @@ namespace StrmAssistant.Mod
                     if (IsPatched(_sortNameGetter, typeof(PinyinSortName)))
                     {
                         HarmonyMod.Unpatch(_sortNameGetter,
-                            AccessTools.Method(typeof(PinyinSortName), "SortNameGetterPrefix"));
+                            AccessTools.Method(typeof(PinyinSortName), "SortNameGetterPostfix"));
                         Plugin.Instance.Logger.Debug("Unpatch SortNameGetter Success by Harmony");
                     }
                 }
@@ -87,19 +86,21 @@ namespace StrmAssistant.Mod
             }
         }
 
-        [HarmonyPrefix]
-        private static bool SortNameGetterPrefix(BaseItem __instance, ref string __result)
+        [HarmonyPostfix]
+        private static void SortNameGetterPostfix(BaseItem __instance, ref string __result)
         {
-            if (!(__instance is Movie || __instance is Series || __instance is BoxSet)) return true;
+            if (__instance.SupportsUserData && __instance.EnableAlphaNumericSorting && !(__instance is IHasSeries) &&
+                (__instance is Video || __instance is Audio || __instance is IItemByName ||
+                 __instance is Folder && !__instance.IsTopParent))
+            {
+                if (__instance.IsFieldLocked(MetadataFields.SortName) || IsJapanese(__instance.Name) ||
+                    !IsChinese(__instance.Name)) return;
 
-            if (__instance.IsFieldLocked(MetadataFields.SortName) || !IsChinese(__instance.Name) ||
-                IsJapanese(__instance.Name)) return true;
+                var nameToProcess =
+                    __instance is BoxSet ? RemoveDefaultCollectionName(__instance.Name) : __instance.Name;
 
-            var nameToProcess = __instance is BoxSet ? RemoveDefaultCollectionName(__instance.Name) : __instance.Name;
-
-            __result = ConvertToPinyinInitials(nameToProcess);
-
-            return false;
+                __result = ConvertToPinyinInitials(nameToProcess);
+            }
         }
     }
 }
