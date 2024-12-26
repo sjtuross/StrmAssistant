@@ -129,7 +129,13 @@ namespace StrmAssistant.Options.Store
                 {
                     if (options.NetworkOptions.EnableProxyServer &&
                         options.NetworkOptions.ProxyServerStatus.Status == ItemStatus.Succeeded)
+                    {
                         Plugin.Instance.ApplicationHost.NotifyPendingRestart();
+                    }
+                    else if (!options.NetworkOptions.EnableProxyServer)
+                    {
+                        Plugin.Instance.ApplicationHost.NotifyPendingRestart();
+                    }
                 }
             }
         }
