@@ -86,8 +86,6 @@ namespace StrmAssistant
 
         public bool IsLibraryInScope(BaseItem item)
         {
-            if (!(item is Episode || item is Season || item is Series)) return false;
-
             if (string.IsNullOrEmpty(item.ContainingFolderPath)) return false;
 
             var isLibraryInScope = LibraryPathsInScope.Any(l => item.ContainingFolderPath.StartsWith(l));
@@ -136,19 +134,18 @@ namespace StrmAssistant
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
 
             var includeFavorites = libraryIds?.Contains("-1") == true;
-            var catchupMode = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.CatchupMode;
 
             var resultItems = new List<Episode>();
             var incomingItems = items.OfType<Episode>().ToList();
 
-            if (catchupMode && IsCatchupTaskSelected(GeneralOptions.CatchupTask.Fingerprint))
+            if (IsCatchupTaskSelected(GeneralOptions.CatchupTask.Fingerprint) && LibraryPathsInScope.Any())
             {
                 if (includeFavorites)
                 {
                     resultItems = Plugin.LibraryApi.ExpandFavorites(items, true, null).OfType<Episode>().ToList();
                 }
 
-                if (libraryIds?.Any(id => id != "-1") == true && LibraryPathsInScope.Any())
+                if (libraryIds is null || !libraryIds.Any() || libraryIds.Any(id => id != "-1"))
                 {
                     var filteredItems = incomingItems
                         .Where(i => LibraryPathsInScope.Any(p => i.ContainingFolderPath.StartsWith(p)))

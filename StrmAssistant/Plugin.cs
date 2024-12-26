@@ -140,7 +140,7 @@ namespace StrmAssistant
         {
             if (MainOptionsStore.PluginOptions.GeneralOptions.CatchupMode &&
                 IntroSkipStore.IntroSkipOptions.UnlockIntroSkip && IsCatchupTaskSelected(CatchupTask.Fingerprint) &&
-                FingerprintApi.IsLibraryInScope(e.Item))
+                FingerprintApi.IsLibraryInScope(e.Item) && e.Item is Episode)
             {
                 QueueManager.FingerprintItemQueue.Enqueue(e.Item);
             }
@@ -199,7 +199,7 @@ namespace StrmAssistant
             {
                 if (MainOptionsStore.PluginOptions.GeneralOptions.CatchupMode &&
                     IntroSkipStore.IntroSkipOptions.UnlockIntroSkip && IsCatchupTaskSelected(CatchupTask.Fingerprint) &&
-                    FingerprintApi.IsLibraryInScope(e.Item))
+                    FingerprintApi.IsLibraryInScope(e.Item) && (e.Item is Series || e.Item is Episode))
                 {
                     QueueManager.FingerprintItemQueue.Enqueue(e.Item);
                 }
