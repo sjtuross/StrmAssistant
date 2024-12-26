@@ -134,7 +134,7 @@ namespace StrmAssistant
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
         {
             if (_currentCatchupMode && _currentUnlockIntroSkip && IsCatchupTaskSelected(CatchupTask.Fingerprint) &&
-                FingerprintApi.IsLibraryInScope(e.Item))
+                FingerprintApi.IsLibraryInScope(e.Item) && e.Item is Episode)
             {
                 QueueManager.FingerprintItemQueue.Enqueue(e.Item);
             }
@@ -175,7 +175,7 @@ namespace StrmAssistant
             if (e.UserData.IsFavorite)
             {
                 if (_currentUnlockIntroSkip && _currentCatchupMode && IsCatchupTaskSelected(CatchupTask.Fingerprint) &&
-                    FingerprintApi.IsLibraryInScope(e.Item))
+                    FingerprintApi.IsLibraryInScope(e.Item) && (e.Item is Episode || e.Item is Series))
                 {
                     QueueManager.FingerprintItemQueue.Enqueue(e.Item);
                 }
