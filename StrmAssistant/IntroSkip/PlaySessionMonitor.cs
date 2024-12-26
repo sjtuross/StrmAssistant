@@ -35,6 +35,7 @@ namespace StrmAssistant
 
         public static List<string> LibraryPathsInScope;
         public static User[] UsersInScope;
+        public static HashSet<string> ClientsInScope;
 
         public PlaySessionMonitor(ILibraryManager libraryManager, IUserManager userManager,
             ISessionManager sessionManager)
@@ -46,6 +47,7 @@ namespace StrmAssistant
 
             UpdateLibraryPathsInScope();
             UpdateUsersInScope();
+            UpdateClientInScope();
         }
 
         public void UpdateLibraryPathsInScope()
@@ -84,6 +86,14 @@ namespace StrmAssistant
             }
         }
 
+        public void UpdateClientInScope()
+        {
+            ClientsInScope = new HashSet<string>(
+                Plugin.Instance.GetPluginOptions().IntroSkipOptions.ClientScope
+                    .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(p => p.Trim()), StringComparer.OrdinalIgnoreCase);
+        }
+
         public void Initialize()
         {
             Dispose();
@@ -102,11 +112,13 @@ namespace StrmAssistant
         {
             if (!e.PlaybackPositionTicks.HasValue || e.Item is null) return;
 
+            _logger.Info("IntroSkip - Client Name: " + e.ClientName);
+            _logger.Info("IntroSkip - Allowed Clients: " +
+                         Plugin.Instance.GetPluginOptions().IntroSkipOptions.ClientScope);
+
             _playSessionData.TryRemove(e.PlaySessionId, out _);
             var playSessionData = GetPlaySessionData(e);
             if (playSessionData is null) return;
-
-            _logger.Info("IntroSkip - Client Name: " + e.ClientName);
 
             playSessionData.PlaybackStartTicks = e.PlaybackPositionTicks.Value;
             playSessionData.PreviousPositionTicks = e.PlaybackPositionTicks.Value;
@@ -299,7 +311,7 @@ namespace StrmAssistant
 
         public bool IsClientInScope(string clientName)
         {
-            return clientName.StartsWith("Emby");
+            return ClientsInScope.Any(c => clientName.Contains(c, StringComparison.OrdinalIgnoreCase));
         }
 
         private void UpdateIntroTask(Episode episode, SessionInfo session, long introStartPositionTicks,

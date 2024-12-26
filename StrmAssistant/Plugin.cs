@@ -334,9 +334,12 @@ namespace StrmAssistant
                             ?.Name) ?? Enumerable.Empty<string>());
                 logger.Info("IntroSkip - UserScope is set to {0}",
                         string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
+
+                logger.Info("IntroSkip - ClientScope is set to {0}", options.IntroSkipOptions.ClientScope);
             }
             PlaySessionMonitor.UpdateLibraryPathsInScope();
             PlaySessionMonitor.UpdateUsersInScope();
+            PlaySessionMonitor.UpdateClientInScope();
             
             if (!suppressLogger)
             {

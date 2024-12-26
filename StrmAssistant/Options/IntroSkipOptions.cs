@@ -12,6 +12,32 @@ namespace StrmAssistant
     {
         [DisplayNameL("PluginOptions_IntroSkipOptions_Intro_Credits_Detection", typeof(Resources))]
         public override string EditorTitle => Resources.PluginOptions_IntroSkipOptions_Intro_Credits_Detection;
+        
+        [DisplayNameL("IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced", typeof(Resources))]
+        [DescriptionL("IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection", typeof(Resources))]
+        [Required]
+        public bool UnlockIntroSkip { get; set; } = false;
+
+        [DisplayNameL("IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes", typeof(Resources))]
+        [MinValue(2), MaxValue(20)]
+        [Required]
+        [VisibleCondition(nameof(UnlockIntroSkip), SimpleCondition.IsTrue)]
+        public int IntroDetectionFingerprintMinutes { get; set; } = 10;
+
+        [Browsable(false)]
+        public IEnumerable<EditorSelectOption> MarkerEnabledLibraryList { get; set; }
+
+        [DisplayNameL("IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope", typeof(Resources))]
+        [DescriptionL("IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_", typeof(Resources))]
+        [EditMultilSelect]
+        [SelectItemsSource(nameof(MarkerEnabledLibraryList))]
+        [VisibleCondition(nameof(UnlockIntroSkip), SimpleCondition.IsTrue)]
+        [Browsable(false)]
+        public string MarkerEnabledLibraryScope
+        {
+            get => string.Empty;
+            set { }
+        }
 
         [DisplayNameL("PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_", typeof(Resources))]
         [DescriptionL("PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__Default_is_False_", typeof(Resources))]
@@ -55,30 +81,10 @@ namespace StrmAssistant
         [VisibleCondition(nameof(EnableIntroSkip), SimpleCondition.IsTrue)]
         public string UserScope { get; set; } = string.Empty;
 
-        [DisplayNameL("IntroSkipOptions_UnlockIntroSkip_Built_in_Intro_Skip_Enhanced", typeof(Resources))]
-        [DescriptionL("IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection", typeof(Resources))]
+        [DisplayNameL("IntroSkipOptions_ClientScope_Client_Scope", typeof(Resources))]
+        [DescriptionL("IntroSkipOptions_ClientScope_Allowed_clients__Default_is_Emby_Infuse_SenPlayer", typeof(Resources))]
         [Required]
-        public bool UnlockIntroSkip { get; set; } = false;
-
-        [DisplayNameL("IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes", typeof(Resources))]
-        [MinValue(2), MaxValue(20)]
-        [Required]
-        [VisibleCondition(nameof(UnlockIntroSkip), SimpleCondition.IsTrue)]
-        public int IntroDetectionFingerprintMinutes { get; set; } = 10;
-
-        [Browsable(false)]
-        public IEnumerable<EditorSelectOption> MarkerEnabledLibraryList { get; set; }
-
-        [DisplayNameL("IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope", typeof(Resources))]
-        [DescriptionL("IntroSkipOptions_MarkerEnabledLibraryScope_Intro_detection_enabled_library_scope__Blank_includes_all_", typeof(Resources))]
-        [EditMultilSelect]
-        [SelectItemsSource(nameof(MarkerEnabledLibraryList))]
-        [VisibleCondition(nameof(UnlockIntroSkip), SimpleCondition.IsTrue)]
-        [Browsable(false)]
-        public string MarkerEnabledLibraryScope
-        {
-            get => string.Empty;
-            set { }
-        }
+        [VisibleCondition(nameof(EnableIntroSkip), SimpleCondition.IsTrue)]
+        public string ClientScope { get; set; } = "Emby,Infuse,SenPlayer";
     }
 }

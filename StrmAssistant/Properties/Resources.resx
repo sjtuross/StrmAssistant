@@ -527,4 +527,10 @@
   <data name="GeneralOptions_CatchupScope_Catchup_Scope" xml:space="preserve">
     <value>Catchup Task Scope</value>
   </data>
+  <data name="IntroSkipOptions_ClientScope_Client_Scope" xml:space="preserve">
+    <value>Allowed Clients</value>
+  </data>
+  <data name="IntroSkipOptions_ClientScope_Allowed_clients__Default_is_Emby_Infuse_SenPlayer" xml:space="preserve">
+    <value>Allowed clients. Client name keywords separated by comma or semicolon. Detection via 3rd-party clients might not work properly. Default is Emby,Infuse,SenPlayer</value>
+  </data>
 </root>
