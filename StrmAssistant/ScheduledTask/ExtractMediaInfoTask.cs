@@ -74,7 +74,7 @@ namespace StrmAssistant.ScheduledTask
                 var taskItem = item;
                 var task = Task.Run(async () =>
                 {
-                    var success = false;
+                    bool? result = null;
 
                     try
                     {
@@ -84,11 +84,11 @@ namespace StrmAssistant.ScheduledTask
                             return;
                         }
 
-                        success = await Plugin.LibraryApi
+                        result = await Plugin.LibraryApi
                             .OrchestrateMediaInfoProcessAsync(taskItem,directoryService, "MediaInfoExtract Task",
                                 cancellationToken).ConfigureAwait(false);
 
-                        if (!success)
+                        if (result is null)
                         {
                             _logger.Info("MediaInfoExtract - Item skipped: " + taskItem.Name + " - " + taskItem.Path);
                             return;
@@ -114,7 +114,7 @@ namespace StrmAssistant.ScheduledTask
                     }
                     finally
                     {
-                        if (success && cooldownSeconds.HasValue)
+                        if (result is true && cooldownSeconds.HasValue)
                         {
                             try
                             {

@@ -144,23 +144,25 @@ namespace StrmAssistant.Common
                                 Source = "MediaInfoExtract",
                                 Action = async () =>
                                 {
+                                    bool? result = null;
+
                                     try
                                     {
                                         if (cancellationToken.IsCancellationRequested)
                                         {
                                             _logger.Info("MediaInfoExtract - Item Cancelled: " + taskItem.Name + " - " +
                                                          taskItem.Path);
-                                            return false;
+                                            return null;
                                         }
 
-                                        var success = await Plugin.LibraryApi
+                                        result = await Plugin.LibraryApi
                                             .OrchestrateMediaInfoProcessAsync(taskItem, "MediaInfoExtract Catchup",
                                                 cancellationToken).ConfigureAwait(false);
 
-                                        if (!success)
+                                        if (result is null)
                                         {
                                             _logger.Info("MediaInfoExtract - Item Skipped: " + taskItem.Name + " - " + taskItem.Path);
-                                            return false;
+                                            return null;
                                         }
 
                                         if (IsCatchupTaskSelected(GeneralOptions.CatchupTask.IntroSkip) &&
@@ -171,8 +173,6 @@ namespace StrmAssistant.Common
 
                                         _logger.Info("MediaInfoExtract - Item Processed: " + taskItem.Name + " - " +
                                                      taskItem.Path);
-
-                                        return true;
                                     }
                                     catch (TaskCanceledException)
                                     {
@@ -186,7 +186,7 @@ namespace StrmAssistant.Common
                                         _logger.Debug(e.StackTrace);
                                     }
 
-                                    return false;
+                                    return result;
                                 }
                             });
                         }
@@ -308,7 +308,7 @@ namespace StrmAssistant.Common
                         }
                         finally
                         {
-                            if (result is bool success && success && cooldownSeconds.HasValue)
+                            if (result is true && cooldownSeconds.HasValue)
                             {
                                 try
                                 {
@@ -428,7 +428,7 @@ namespace StrmAssistant.Common
 
                                     var task = Task.Run(async () =>
                                     {
-                                        var result1 = false;
+                                        bool? result1 = null;
                                         Tuple<string, bool> result2 = null;
 
                                         try
@@ -446,7 +446,7 @@ namespace StrmAssistant.Common
                                                     .OrchestrateMediaInfoProcessAsync(taskItem, "Fingerprint Catchup",
                                                         cancellationToken).ConfigureAwait(false);
 
-                                                if (!result1)
+                                                if (result1 is null)
                                                 {
                                                     _logger.Info("Fingerprint - Item Skipped: " + taskItem.Name +
                                                                  " - " + taskItem.Path);
@@ -481,7 +481,7 @@ namespace StrmAssistant.Common
                                         }
                                         finally
                                         {
-                                            if ((result1 || result2?.Item2 == true) && cooldownSeconds.HasValue)
+                                            if ((result1 is true || result2?.Item2 is true) && cooldownSeconds.HasValue)
                                             {
                                                 try
                                                 {

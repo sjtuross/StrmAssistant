@@ -619,7 +619,7 @@ namespace StrmAssistant.Common
             return false;
         }
 
-        public async Task<bool> OrchestrateMediaInfoProcessAsync(BaseItem taskItem, IDirectoryService directoryService,
+        public async Task<bool?> OrchestrateMediaInfoProcessAsync(BaseItem taskItem, IDirectoryService directoryService,
             string source, CancellationToken cancellationToken)
         {
             var persistMediaInfo = Plugin.Instance.MediaInfoExtractStore.GetOptions().PersistMediaInfo;
@@ -636,7 +636,7 @@ namespace StrmAssistant.Common
                 filePath = await GetStrmMountPath(filePath).ConfigureAwait(false);
             }
             var fileExtension = Path.GetExtension(filePath).TrimStart('.');
-            if (ExcludeMediaExtensions.Contains(fileExtension)) return false;
+            if (ExcludeMediaExtensions.Contains(fileExtension)) return null;
 
             var imageCapture = false;
 
@@ -682,10 +682,10 @@ namespace StrmAssistant.Common
                 }
             }
 
-            return true;
+            return !deserializeResult;
         }
 
-        public async Task<bool> OrchestrateMediaInfoProcessAsync(BaseItem taskItem, string source,
+        public async Task<bool?> OrchestrateMediaInfoProcessAsync(BaseItem taskItem, string source,
             CancellationToken cancellationToken)
         {
             var directoryService = new DirectoryService(_logger, _fileSystem);
