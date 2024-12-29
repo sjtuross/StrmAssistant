@@ -206,7 +206,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cooldown Time (Seconds), Default is 0.
+        ///   Looks up a localized string similar to Cooldown Duration (Seconds), Default is 0.
         /// </summary>
         public static string GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0 {
             get {
@@ -243,7 +243,26 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allowed clients. Client name keywords separated by comma or semicolon. Detection via 3rd-party clients might not work properly. Default is Emby,Infuse,SenPlayer.
+        ///   Looks up a localized string similar to List of Series Id or Season Id separated by comma or semicolon. Default is EMPTY.
+        /// </summary>
+        public static string IntroSkipOptions_BlacklistShows_List_of_Series_Id_or_Season_Id_separated_by_comma_or_semicolon__Default_is_EMPTY {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_BlacklistShows_List_of_Series_Id_or_Season_Id_separated_by_comma" +
+                        "_or_semicolon__Default_is_EMPTY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Optional Blacklist Shows.
+        /// </summary>
+        public static string IntroSkipOptions_BlacklistShows_Optional_Blacklist_Shows {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_BlacklistShows_Optional_Blacklist_Shows", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client name keywords separated by comma or semicolon. Detection via 3rd-party clients might not work properly. Default is Emby,Infuse,SenPlayer.
         /// </summary>
         public static string IntroSkipOptions_ClientScope_Allowed_clients__Default_is_Emby_Infuse_SenPlayer {
             get {
@@ -396,6 +415,15 @@ namespace StrmAssistant.Properties {
         public static string InvalidAltMovieDbImageUrl {
             get {
                 return ResourceManager.GetString("InvalidAltMovieDbImageUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Blacklist series or season id is invalid: {0}.
+        /// </summary>
+        public static string InvalidBlacklistShowIds {
+            get {
+                return ResourceManager.GetString("InvalidBlacklistShowIds", resourceCulture);
             }
         }
         
@@ -890,7 +918,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Auto generate pinyin initials as sort title when library scan. Default is OFF..
+        ///   Looks up a localized string similar to Auto generate pinyin initials as sort title. Default is OFF..
         /// </summary>
         public static string ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title {
             get {

@@ -1,12 +1,16 @@
 ﻿using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Common;
+using Emby.Web.GenericEdit.Elements;
+using Emby.Web.GenericEdit.Elements.List;
 using Emby.Web.GenericEdit.Validation;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Attributes;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.LocalizationAttributes;
 using StrmAssistant.Common;
 using StrmAssistant.Properties;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -39,6 +43,15 @@ namespace StrmAssistant.Options
         [SelectItemsSource(nameof(MarkerEnabledLibraryList))]
         [VisibleCondition(nameof(UnlockIntroSkip), SimpleCondition.IsTrue)]
         public string MarkerEnabledLibraryScope { get; set; } = string.Empty;
+
+        [DisplayNameL("IntroSkipOptions_BlacklistShows_Optional_Blacklist_Shows", typeof(Resources))]
+        [DescriptionL("IntroSkipOptions_BlacklistShows_List_of_Series_Id_or_Season_Id_separated_by_comma_or_semicolon__Default_is_EMPTY", typeof(Resources))]
+        public string FingerprintBlacklistShows { get; set; } = string.Empty;
+
+        [VisibleCondition(nameof(UnlockIntroSkip), SimpleCondition.IsTrue)]
+        public GenericItemList FingerprintBlacklistShowsResult { get; set; } = new GenericItemList();
+
+        public SpacerItem Separator { get; set; } = new SpacerItem(SpacerSize.Medium);
 
         [DisplayNameL("PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_", typeof(Resources))]
         [DescriptionL("PluginOptions_EnableIntroSkip_Enable_intro_skip_and_credits_skip_for_episodes__Default_is_False_", typeof(Resources))]
@@ -97,6 +110,33 @@ namespace StrmAssistant.Options
                 MarkerEnabledLibraryScope.Contains("-1"))
             {
                 context.AddValidationError(Resources.InvalidMarkerEnabledLibraryScope);
+            }
+
+            if (!string.IsNullOrWhiteSpace(FingerprintBlacklistShows))
+            {
+                var ids = FingerprintBlacklistShows.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(id => id.Trim())
+                    .ToArray();
+
+                var allInvalidIds = new List<string>();
+
+                var invalidIds = ids.Where(id => !long.TryParse(id, out _));
+                allInvalidIds.AddRange(invalidIds);
+
+                var validIds = ids.Where(id => long.TryParse(id, out _)).Select(long.Parse).ToArray();
+                var items = Plugin.LibraryApi.GetItemsByIds(validIds);
+
+                var missingItems = validIds.Where(id => items.All(item => item.InternalId != id));
+                allInvalidIds.AddRange(missingItems.Select(id => id.ToString()));
+
+                var invalidItemTypes = items.Where(i => !(i is Season || i is Series))
+                    .Select(i => i.InternalId.ToString());
+                allInvalidIds.AddRange(invalidItemTypes);
+
+                if (allInvalidIds.Any())
+                {
+                    context.AddValidationError(string.Format(Resources.InvalidBlacklistShowIds, string.Join(", ", allInvalidIds)));
+                }
             }
         }
 

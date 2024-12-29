@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using static StrmAssistant.Options.Utility;
+using CollectionExtensions = System.Collections.Generic.CollectionExtensions;
 
 namespace StrmAssistant.Common
 {
@@ -920,7 +921,9 @@ namespace StrmAssistant.Common
 
             var dict = items.ToDictionary(i => i.InternalId, i => i);
 
-            return itemIds.Select(id => dict[id]).ToArray();
+            return itemIds.Select(id => CollectionExtensions.GetValueOrDefault(dict, id))
+                .Where(item => item != null)
+                .ToArray();
         }
 
         public void UpdateSeriesPeople(Series series)

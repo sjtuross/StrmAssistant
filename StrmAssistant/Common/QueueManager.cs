@@ -412,7 +412,8 @@ namespace StrmAssistant.Common
 
                                     var task = Task.Run(async () =>
                                     {
-                                        var success = false;
+                                        var result1 = false;
+                                        Tuple<string, bool> result2 = null;
 
                                         try
                                         {
@@ -425,11 +426,11 @@ namespace StrmAssistant.Common
 
                                             if (Plugin.LibraryApi.IsExtractNeeded(taskItem))
                                             {
-                                                success = await Plugin.LibraryApi
+                                                result1 = await Plugin.LibraryApi
                                                     .OrchestrateMediaInfoProcessAsync(taskItem, "Fingerprint Catchup",
                                                         cancellationToken).ConfigureAwait(false);
 
-                                                if (!success)
+                                                if (!result1)
                                                 {
                                                     _logger.Info("Fingerprint - Item Skipped: " + taskItem.Name +
                                                                  " - " + taskItem.Path);
@@ -443,7 +444,7 @@ namespace StrmAssistant.Common
                                                 }
                                             }
 
-                                            await Plugin.FingerprintApi
+                                            result2 = await Plugin.FingerprintApi
                                                 .ExtractIntroFingerprint(taskItem, cancellationToken)
                                                 .ConfigureAwait(false);
 
@@ -464,7 +465,7 @@ namespace StrmAssistant.Common
                                         }
                                         finally
                                         {
-                                            if (success && cooldownSeconds.HasValue)
+                                            if ((result1 || result2?.Item2 == true) && cooldownSeconds.HasValue)
                                             {
                                                 try
                                                 {
@@ -496,8 +497,7 @@ namespace StrmAssistant.Common
 
                                         if (seasonSkip)
                                         {
-                                            _logger.Info("Fingerprint - Season Skipped: " + taskSeason.Name + " - " +
-                                                         taskSeason.Path);
+                                            _logger.Info("Fingerprint - Season Skipped: " + taskSeason.Name + " - " + taskSeason.Path);
                                             return;
                                         }
 
@@ -509,13 +509,11 @@ namespace StrmAssistant.Common
                                     }
                                     catch (TaskCanceledException)
                                     {
-                                        _logger.Info("Fingerprint - Season Cancelled: " + taskSeason.Name + " - " +
-                                                     taskSeason.Path);
+                                        _logger.Info("Fingerprint - Season Cancelled: " + taskSeason.Name + " - " + taskSeason.Path);
                                     }
                                     catch (Exception e)
                                     {
-                                        _logger.Error("Fingerprint - Season Failed: " + taskSeason.Name + " - " +
-                                                      taskSeason.Path);
+                                        _logger.Error("Fingerprint - Season Failed: " + taskSeason.Name + " - " + taskSeason.Path);
                                         _logger.Error(e.Message);
                                         _logger.Debug(e.StackTrace);
                                     }

@@ -452,4 +452,13 @@
   <data name="GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0" xml:space="preserve">
     <value>冷卻時間 (秒)，預設為 0</value>
   </data>
+  <data name="InvalidBlacklistShowIds" xml:space="preserve">
+    <value>黑名單電視節目或播出季 ID 無效: {0}</value>
+  </data>
+  <data name="IntroSkipOptions_BlacklistShows_Optional_Blacklist_Shows" xml:space="preserve">
+    <value>可選黑名單</value>
+  </data>
+  <data name="IntroSkipOptions_BlacklistShows_List_of_Series_Id_or_Season_Id_separated_by_comma_or_semicolon__Default_is_EMPTY" xml:space="preserve">
+    <value>電視節目或播出季的 ID 列表，逗號或分號分隔，預設為空。</value>
+  </data>
 </root>

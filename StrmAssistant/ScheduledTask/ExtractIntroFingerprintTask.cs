@@ -127,7 +127,7 @@ namespace StrmAssistant.ScheduledTask
 
             var markerTask = _taskManager.ScheduledTasks.FirstOrDefault(t =>
                 t.Name.Equals("Detect Episode Intros", StringComparison.OrdinalIgnoreCase));
-            if (markerTask != null)
+            if (markerTask != null && items.Count > 0 && !cancellationToken.IsCancellationRequested)
             {
                 _ = _taskManager.Execute(markerTask, new TaskOptions());
             }

@@ -2,6 +2,7 @@
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Configuration;
+using StrmAssistant.Common;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -181,6 +182,9 @@ namespace StrmAssistant.Mod
                     __result.PathStartsWithAny = FingerprintApi.LibraryPathsInScope.ToArray();
                 }
             }
+
+            var blackListSeasons = Plugin.FingerprintApi.GetAllBlacklistSeasons().ToArray();
+            if (blackListSeasons.Any()) __result.ExcludeParentIds = blackListSeasons;
 
             __result.HasIntroDetectionFailure = null;
         }

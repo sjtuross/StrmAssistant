@@ -1,5 +1,8 @@
-﻿using Emby.Web.GenericEdit.PropertyDiff;
+﻿using Emby.Web.GenericEdit.Elements;
+using Emby.Web.GenericEdit.Elements.List;
+using Emby.Web.GenericEdit.PropertyDiff;
 using MediaBrowser.Common;
+using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Logging;
 using StrmAssistant.Mod;
 using StrmAssistant.Options.UIBaseClasses.Store;
@@ -50,6 +53,37 @@ namespace StrmAssistant.Options.Store
                                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                                 .Where(v => options.MarkerEnabledLibraryList.Any(option =>
                                     option.Value == v)) ?? Enumerable.Empty<string>());
+
+                var blacklistShowIds = options.FingerprintBlacklistShows
+                    .Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                    .Select(part => long.TryParse(part.Trim(), out var id) ? id : (long?)null)
+                    .Where(id => id.HasValue)
+                    .Select(id => id.Value)
+                    .ToArray();
+
+                var items = Plugin.LibraryApi.GetItemsByIds(blacklistShowIds);
+
+                options.FingerprintBlacklistShowsResult.Clear();
+
+                foreach (var item in items.Where(item => item is Series || item is Season))
+                {
+                    var listItem = new GenericListItem();
+    
+                    if (item is Series series)
+                    {
+                        listItem.PrimaryText = $"{series.Name} ({series.InternalId}) - {series.ContainingFolderPath}";
+                    }
+                    else if (item is Season season)
+                    {
+                        listItem.PrimaryText =
+                            $"{season.SeriesName} - {season.Name} ({season.InternalId}) - {season.ContainingFolderPath}";
+                    }
+
+                    listItem.Icon = IconNames.block;
+                    listItem.IconMode = ItemListIconMode.SmallRegular;
+
+                    options.FingerprintBlacklistShowsResult.Add(listItem);
+                }
 
                 var changes = PropertyChangeDetector.DetectObjectPropertyChanges(IntroSkipOptions, options);
                 var changedProperties = new HashSet<string>(changes.Select(c => c.PropertyName));
@@ -120,6 +154,22 @@ namespace StrmAssistant.Options.Store
         {
             if (e.Options is IntroSkipOptions options)
             {
+                _logger.Info("UnlockIntroSkip is set to {0}", options.UnlockIntroSkip);
+                _logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
+                    options.IntroDetectionFingerprintMinutes);
+
+                var markerEnabledLibraryScope = string.Join(", ",
+                    options.MarkerEnabledLibraryScope
+                        ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v =>
+                            options.MarkerEnabledLibraryList
+                                .FirstOrDefault(option => option.Value == v)?.Name) ?? Enumerable.Empty<string>());
+                _logger.Info("MarkerEnabledLibraryScope is set to {0}",
+                    string.IsNullOrEmpty(markerEnabledLibraryScope)
+                        ? options.MarkerEnabledLibraryList.Any(o => o.Value != "-1") ? "ALL" : "EMPTY"
+                        : markerEnabledLibraryScope);
+
+                _logger.Info("FingerprintBlacklistShows is set to {0}", options.FingerprintBlacklistShows);
+
                 _logger.Info("EnableIntroSkip is set to {0}", options.EnableIntroSkip);
                 _logger.Info("MaxIntroDurationSeconds is set to {0}", options.MaxIntroDurationSeconds);
                 _logger.Info("MaxCreditsDurationSeconds is set to {0}", options.MaxCreditsDurationSeconds);
@@ -143,20 +193,6 @@ namespace StrmAssistant.Options.Store
                     string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
 
                 _logger.Info("IntroSkip - ClientScope is set to {0}", options.ClientScope);
-
-                _logger.Info("UnlockIntroSkip is set to {0}", options.UnlockIntroSkip);
-                _logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
-                    options.IntroDetectionFingerprintMinutes);
-
-                var markerEnabledLibraryScope = string.Join(", ",
-                    options.MarkerEnabledLibraryScope
-                        ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v =>
-                            options.MarkerEnabledLibraryList
-                                .FirstOrDefault(option => option.Value == v)?.Name) ?? Enumerable.Empty<string>());
-                _logger.Info("MarkerEnabledLibraryScope is set to {0}",
-                    string.IsNullOrEmpty(markerEnabledLibraryScope)
-                        ? options.MarkerEnabledLibraryList.Any(o => o.Value != "-1") ? "ALL" : "EMPTY"
-                        : markerEnabledLibraryScope);
             }
         }
     }
