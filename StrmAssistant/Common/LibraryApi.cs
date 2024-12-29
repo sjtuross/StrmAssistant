@@ -239,6 +239,19 @@ namespace StrmAssistant.Common
             return typeOptions?.ImageFetchers?.Contains("Image Capture") == true;
         }
 
+        private List<VirtualFolderInfo> GetLibrariesWithImageCapture(List<VirtualFolderInfo> libraries)
+        {
+            var librariesWithImageCapture = libraries.Where(l => l.LibraryOptions.TypeOptions.Any(t =>
+                    t.ImageFetchers.Contains("Image Capture") &&
+                    ((l.CollectionType == "tvshows" && t.Type == "Episode") ||
+                     (l.CollectionType == "movies" && t.Type == "Movie") ||
+                     (l.CollectionType == null &&
+                      (t.Type == "Episode" || t.Type == "Movie")))))
+                .ToList();
+
+            return librariesWithImageCapture;
+        }
+
         public List<BaseItem> FetchExtractQueueItems(List<BaseItem> items)
         {
             var libraryIds = Plugin.Instance.MediaInfoExtractStore.GetOptions().LibraryScope
@@ -291,8 +304,7 @@ namespace StrmAssistant.Common
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
             var libraries = _libraryManager.GetVirtualFolders()
                 .Where(f => !libraryIds.Any() || libraryIds.Contains(f.Id)).ToList();
-            var librariesWithImageCapture = libraries.Where(l =>
-                l.LibraryOptions.TypeOptions.Any(t => t.ImageFetchers.Contains("Image Capture"))).ToList();
+            var librariesWithImageCapture = GetLibrariesWithImageCapture(libraries);
 
             _logger.Info("MediaInfoExtract - LibraryScope: " +
                          (libraryIds.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "ALL"));
@@ -501,7 +513,7 @@ namespace StrmAssistant.Common
             if (item.MediaContainer.HasValue && ExcludeMediaContainers.Contains(item.MediaContainer.Value))
                 return false;
 
-            return !HasMediaInfo(item) || !item.HasImage(ImageType.Primary);
+            return !HasMediaInfo(item) || (!item.HasImage(ImageType.Primary) && ImageCaptureEnabled(item));
         }
 
         public List<BaseItem> ExpandFavorites(List<BaseItem> items, bool filterNeeded, bool? preExtract)
