@@ -444,7 +444,7 @@ namespace StrmAssistant.Mod
                 }
                 else if (!Plugin.LibraryApi.HasMediaInfo(__instance))
                 {
-                    Task.Run(() => Plugin.LibraryApi.DeserializeMediaInfo(__instance, CancellationToken.None));
+                    Task.Run(() => Plugin.LibraryApi.DeserializeMediaInfo(__instance, "Exclusive Restore", CancellationToken.None));
                 }
                 else
                 {

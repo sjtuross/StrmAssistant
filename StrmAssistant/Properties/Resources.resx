@@ -312,7 +312,7 @@
     <value>Pinyin Initials Sort Title</value>
   </data>
   <data name="ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title" xml:space="preserve">
-    <value>Auto generate pinyin initials as sort title when library scan. Default is OFF.</value>
+    <value>Auto generate pinyin initials as sort title. Default is OFF.</value>
   </data>
   <data name="PluginOptions_MetadataEnhanceOptions_Metadata_Enhance" xml:space="preserve">
     <value>Metadata Enhance</value>
@@ -534,6 +534,9 @@
     <value>Allowed Clients</value>
   </data>
   <data name="IntroSkipOptions_ClientScope_Allowed_clients__Default_is_Emby_Infuse_SenPlayer" xml:space="preserve">
-    <value>Allowed clients. Client name keywords separated by comma or semicolon. Detection via 3rd-party clients might not work properly. Default is Emby,Infuse,SenPlayer</value>
+    <value>Client name keywords separated by comma or semicolon. Detection via 3rd-party clients might not work properly. Default is Emby,Infuse,SenPlayer</value>
+  </data>
+  <data name="GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0" xml:space="preserve">
+    <value>Cooldown Duration (Seconds), Default is 0</value>
   </data>
 </root>

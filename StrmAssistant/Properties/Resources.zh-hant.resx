@@ -225,7 +225,7 @@
     <value>拼音首字母排序</value>
   </data>
   <data name="ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title" xml:space="preserve">
-    <value>掃庫時自動把標題中的中文轉換為拼音首字母作為排序標題，預設為關閉。</value>
+    <value>自動把標題中的中文轉換為拼音首字母作為排序標題，預設為關閉。</value>
   </data>
   <data name="PluginOptions_MetadataEnhanceOptions_Metadata_Enhance" xml:space="preserve">
     <value>元資料增強</value>
@@ -447,6 +447,9 @@
     <value>允許的客戶端</value>
   </data>
   <data name="IntroSkipOptions_ClientScope_Allowed_clients__Default_is_Emby_Infuse_SenPlayer" xml:space="preserve">
-    <value>允許的客戶端，客戶端名關鍵字以逗號或分號隔開，透過第三方客戶端探測可能不准，預設值為 Emby,Infuse,SenPlayer</value>
+    <value>客戶端名關鍵字以逗號或分號隔開，透過第三方客戶端探測可能不准，預設值為 Emby,Infuse,SenPlayer</value>
+  </data>
+  <data name="GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0" xml:space="preserve">
+    <value>冷卻時間 (秒)，預設為 0</value>
   </data>
 </root>

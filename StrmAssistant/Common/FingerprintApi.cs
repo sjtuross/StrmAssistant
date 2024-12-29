@@ -211,12 +211,14 @@ namespace StrmAssistant
             }
         }
 
-        public async Task ExtractIntroFingerprint(Episode item, IDirectoryService directoryService,
+        public async Task<Tuple<string, bool>> ExtractIntroFingerprint(Episode item, IDirectoryService directoryService,
             CancellationToken cancellationToken)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
-            await ((Task<Tuple<string, bool>>)CreateTitleFingerprint.Invoke(AudioFingerprintManager,
+            var result = await ((Task<Tuple<string, bool>>)CreateTitleFingerprint.Invoke(AudioFingerprintManager,
                 new object[] { item, libraryOptions, directoryService, cancellationToken })).ConfigureAwait(false);
+
+            return result;
         }
 
         public async Task ExtractIntroFingerprint(Episode item, CancellationToken cancellationToken)

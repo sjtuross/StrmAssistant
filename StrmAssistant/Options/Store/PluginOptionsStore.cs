@@ -84,6 +84,18 @@ namespace StrmAssistant.Options.Store
                 var changes = PropertyChangeDetector.DetectObjectPropertyChanges(PluginOptions, options);
                 var changedProperties = new HashSet<string>(changes.Select(c => c.PropertyName));
 
+                if (changedProperties.Contains(nameof(PluginOptions.GeneralOptions.CatchupMode)))
+                {
+                    if (options.GeneralOptions.CatchupMode)
+                    {
+                        QueueManager.Initialize();
+                    }
+                    else
+                    {
+                        QueueManager.Dispose();
+                    }
+                }
+
                 if (changedProperties.Contains(nameof(PluginOptions.GeneralOptions.CatchupMode)) ||
                     changedProperties.Contains(nameof(PluginOptions.GeneralOptions.CatchupTaskScope)))
                 {
@@ -154,6 +166,8 @@ namespace StrmAssistant.Options.Store
                         string.IsNullOrEmpty(catchupTaskScope) ? "EMPTY" : catchupTaskScope);
 
                     _logger.Info("MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
+                    _logger.Info("CooldownDurationSeconds is set to {0}", options.GeneralOptions.CooldownDurationSeconds);
+                    
                     _logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
 
                     _logger.Info("EnhanceChineseSearch is set to {0}", options.ModOptions.EnhanceChineseSearch);

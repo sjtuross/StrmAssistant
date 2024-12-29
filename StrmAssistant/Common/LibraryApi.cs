@@ -497,9 +497,10 @@ namespace StrmAssistant.Common
 
         public bool IsExtractNeeded(BaseItem item)
         {
-            return !HasMediaInfo(item) || !item.HasImage(ImageType.Primary) &&
-                !(HasMediaInfo(item) && item.MediaContainer.HasValue &&
-                  ExcludeMediaContainers.Contains(item.MediaContainer.Value));
+            if (item.MediaContainer.HasValue && ExcludeMediaContainers.Contains(item.MediaContainer.Value))
+                return false;
+
+            return !HasMediaInfo(item) || !item.HasImage(ImageType.Primary);
         }
 
         public List<BaseItem> ExpandFavorites(List<BaseItem> items, bool filterNeeded, bool? preExtract)
@@ -605,6 +606,81 @@ namespace StrmAssistant.Common
             return false;
         }
 
+        public async Task<bool> OrchestrateMediaInfoProcessAsync(BaseItem taskItem, IDirectoryService directoryService,
+            string source, CancellationToken cancellationToken)
+        {
+            var persistMediaInfo = Plugin.Instance.MediaInfoExtractStore.GetOptions().PersistMediaInfo;
+            var enableImageCapture = Plugin.Instance.MediaInfoExtractStore.GetOptions().EnableImageCapture;
+            var exclusiveExtract = Plugin.Instance.MediaInfoExtractStore.GetOptions().ExclusiveExtract;
+
+            if (exclusiveExtract) ExclusiveExtract.AllowExtractInstance(taskItem);
+
+            if (persistMediaInfo) ChapterChangeTracker.BypassInstance(taskItem);
+
+            var filePath = taskItem.Path;
+            if (taskItem.IsShortcut)
+            {
+                filePath = await GetStrmMountPath(filePath).ConfigureAwait(false);
+            }
+            var fileExtension = Path.GetExtension(filePath).TrimStart('.');
+            if (ExcludeMediaExtensions.Contains(fileExtension)) return false;
+
+            var imageCapture = false;
+
+            if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
+            {
+                if (taskItem.IsShortcut)
+                {
+                    EnableImageCapture.AllowImageCaptureInstance(taskItem);
+                }
+
+                imageCapture = true;
+                var refreshOptions = ImageCaptureRefreshOptions;
+                await taskItem.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
+            }
+
+            var deserializeResult = false;
+
+            if (!imageCapture)
+            {
+                if (persistMediaInfo)
+                {
+                    deserializeResult =
+                        await DeserializeMediaInfo(taskItem, directoryService, source, cancellationToken)
+                            .ConfigureAwait(false);
+                }
+
+                if (!deserializeResult)
+                {
+                    await ProbeMediaInfo(taskItem, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            if (persistMediaInfo)
+            {
+                if (!deserializeResult)
+                {
+                    await SerializeMediaInfo(taskItem, directoryService, true, source, cancellationToken)
+                        .ConfigureAwait(false);
+                }
+                else if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))
+                {
+                    await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken).ConfigureAwait(false);
+                }
+            }
+
+            return true;
+        }
+
+        public async Task<bool> OrchestrateMediaInfoProcessAsync(BaseItem taskItem, string source,
+            CancellationToken cancellationToken)
+        {
+            var directoryService = new DirectoryService(_logger, _fileSystem);
+
+            return await OrchestrateMediaInfoProcessAsync(taskItem, directoryService, source, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
         private string GetMediaInfoJsonPath(BaseItem item)
         {
             var jsonRootFolder = Plugin.Instance.MediaInfoExtractStore.GetOptions().MediaInfoJsonRootFolder;
@@ -697,7 +773,7 @@ namespace StrmAssistant.Common
                 .ConfigureAwait(false);
         }
 
-        public async Task<bool> DeserializeMediaInfo(BaseItem item, IDirectoryService directoryService,
+        public async Task<bool> DeserializeMediaInfo(BaseItem item, IDirectoryService directoryService, string source,
             CancellationToken cancellationToken)
         {
             var mediaInfoJsonPath = GetMediaInfoJsonPath(item);
@@ -733,16 +809,16 @@ namespace StrmAssistant.Common
                             _itemRepository.SaveChapters(workItem.InternalId, true, mediaSourceWithChapters.Chapters);
                         }
 
-                        _logger.Info("MediaInfoPersist - Deserialization Success: " + mediaInfoJsonPath);
+                        _logger.Info("MediaInfoPersist - Deserialization Success (" + source + "): " + mediaInfoJsonPath);
 
                         return true;
                     }
 
-                    _logger.Info("MediaInfoPersist - Deserialization Skipped: " + mediaInfoJsonPath);
+                    _logger.Info("MediaInfoPersist - Deserialization Skipped (" + source + "): " + mediaInfoJsonPath);
                 }
                 catch (Exception e)
                 {
-                    _logger.Error("MediaInfoPersist - Deserialization Failed: " + mediaInfoJsonPath);
+                    _logger.Error("MediaInfoPersist - Deserialization Failed (" + source + "): " + mediaInfoJsonPath);
                     _logger.Error(e.Message);
                     _logger.Debug(e.StackTrace);
                 }
@@ -751,11 +827,11 @@ namespace StrmAssistant.Common
             return false;
         }
 
-        public async Task<bool> DeserializeMediaInfo(BaseItem item, CancellationToken cancellationToken)
+        public async Task<bool> DeserializeMediaInfo(BaseItem item, string source, CancellationToken cancellationToken)
         {
             var directoryService = new DirectoryService(_logger, _fileSystem);
 
-            return await DeserializeMediaInfo(item, directoryService, cancellationToken).ConfigureAwait(false);
+            return await DeserializeMediaInfo(item, directoryService, source, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task DeleteMediaInfoJson(BaseItem item, CancellationToken cancellationToken)
@@ -781,7 +857,7 @@ namespace StrmAssistant.Common
             }
         }
 
-        public async Task ProbeMediaInfo(BaseItem item, CancellationToken cancellationToken)
+        private async Task ProbeMediaInfo(BaseItem item, CancellationToken cancellationToken)
         {
             var options = _libraryManager.GetLibraryOptions(item);
             var probeMediaSources = item.GetMediaSources(false, false, options);

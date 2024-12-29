@@ -1,17 +1,12 @@
-using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Providers;
-using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
 using StrmAssistant.Common;
-using StrmAssistant.Mod;
 using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,14 +26,20 @@ namespace StrmAssistant.ScheduledTask
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             _logger.Info("MediaInfoExtract - Scheduled Task Execute");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
+
+            var maxConcurrentCount = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount;
+            _logger.Info("Max Concurrent Count: " + maxConcurrentCount);
+            var cooldownSeconds = maxConcurrentCount == 1
+                ? Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.CooldownDurationSeconds
+                : (int?)null;
+            if (cooldownSeconds.HasValue) _logger.Info("Cooldown Duration Seconds: " + cooldownSeconds.Value);
+
             var persistMediaInfo = Plugin.Instance.MediaInfoExtractStore.GetOptions().PersistMediaInfo;
             _logger.Info("Persist Media Info: " + persistMediaInfo);
             var enableImageCapture = Plugin.Instance.MediaInfoExtractStore.GetOptions().EnableImageCapture;
             _logger.Info("Enable Image Capture: " + enableImageCapture);
             var enableIntroSkip = Plugin.Instance.IntroSkipStore.GetOptions().EnableIntroSkip;
             _logger.Info("Intro Skip Enabled: " + enableIntroSkip);
-            var exclusiveExtract = Plugin.Instance.MediaInfoExtractStore.GetOptions().ExclusiveExtract;
 
             var items = Plugin.LibraryApi.FetchPreExtractTaskItems();
 
@@ -73,6 +74,8 @@ namespace StrmAssistant.ScheduledTask
                 var taskItem = item;
                 var task = Task.Run(async () =>
                 {
+                    var success = false;
+
                     try
                     {
                         if (cancellationToken.IsCancellationRequested)
@@ -81,50 +84,14 @@ namespace StrmAssistant.ScheduledTask
                             return;
                         }
 
-                        if (exclusiveExtract) ExclusiveExtract.AllowExtractInstance(taskItem);
+                        success = await Plugin.LibraryApi
+                            .OrchestrateMediaInfoProcessAsync(taskItem,directoryService, "MediaInfoExtract Task",
+                                cancellationToken).ConfigureAwait(false);
 
-                        if (persistMediaInfo) ChapterChangeTracker.BypassInstance(taskItem);
-
-                        var imageCapture = false;
-
-                        if (enableImageCapture && !taskItem.HasImage(ImageType.Primary))
+                        if (!success)
                         {
-                            var filePath = taskItem.Path;
-                            if (taskItem.IsShortcut)
-                            {
-                                filePath = await Plugin.LibraryApi.GetStrmMountPath(filePath).ConfigureAwait(false);
-                            }
-
-                            var fileExtension = Path.GetExtension(filePath).TrimStart('.');
-                            if (!LibraryApi.ExcludeMediaExtensions.Contains(fileExtension))
-                            {
-                                if (taskItem.IsShortcut)
-                                {
-                                    EnableImageCapture.AllowImageCaptureInstance(taskItem);
-                                }
-
-                                imageCapture = true;
-                                var refreshOptions = LibraryApi.ImageCaptureRefreshOptions;
-                                await taskItem.RefreshMetadata(refreshOptions, cancellationToken).ConfigureAwait(false);
-                            }
-                        }
-
-                        var deserializeResult = false;
-
-                        if (!imageCapture)
-                        {
-                            if (persistMediaInfo)
-                            {
-                                deserializeResult = await Plugin.LibraryApi
-                                    .DeserializeMediaInfo(taskItem, directoryService, cancellationToken)
-                                    .ConfigureAwait(false);
-                            }
-
-                            if (!deserializeResult)
-                            {
-                                await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken)
-                                    .ConfigureAwait(false);
-                            }
+                            _logger.Info("MediaInfoExtract - Item skipped: " + taskItem.Name + " - " + taskItem.Path);
+                            return;
                         }
 
                         if (enableIntroSkip && Plugin.PlaySessionMonitor.IsLibraryInScope(taskItem))
@@ -132,22 +99,6 @@ namespace StrmAssistant.ScheduledTask
                             if (taskItem is Episode episode && Plugin.ChapterApi.SeasonHasIntroCredits(episode))
                             {
                                 QueueManager.IntroSkipItemQueue.Enqueue(episode);
-                            }
-                        }
-
-                        if (persistMediaInfo)
-                        {
-                            if (!deserializeResult)
-                            {
-                                await Plugin.LibraryApi
-                                    .SerializeMediaInfo(taskItem, directoryService, true, "Extract MediaInfo Task",
-                                        cancellationToken)
-                                    .ConfigureAwait(false);
-                            }
-                            else if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))
-                            {
-                                await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
-                                    .ConfigureAwait(false);
                             }
                         }
                     }
@@ -163,6 +114,18 @@ namespace StrmAssistant.ScheduledTask
                     }
                     finally
                     {
+                        if (success && cooldownSeconds.HasValue)
+                        {
+                            try
+                            {
+                                await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken);
+                            }
+                            catch
+                            {
+                                // ignored
+                            }
+                        }
+
                         QueueManager.SemaphoreMaster.Release();
 
                         var currentCount = Interlocked.Increment(ref current);

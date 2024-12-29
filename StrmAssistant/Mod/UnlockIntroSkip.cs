@@ -3,7 +3,6 @@ using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Model.Configuration;
 using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;

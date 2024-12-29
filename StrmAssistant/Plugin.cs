@@ -109,9 +109,11 @@ namespace StrmAssistant
 
             PatchManager.Initialize();
             if (MainOptionsStore.GetOptions().GeneralOptions.CatchupMode)
+            {
                 UpdateCatchupScope(MainOptionsStore.GetOptions().GeneralOptions.CatchupTaskScope);
+                QueueManager.Initialize();
+            }
             if (IntroSkipStore.GetOptions().EnableIntroSkip) PlaySessionMonitor.Initialize();
-            QueueManager.Initialize();
 
             _libraryManager.ItemAdded += OnItemAdded;
             _libraryManager.ItemUpdated += OnItemUpdated;

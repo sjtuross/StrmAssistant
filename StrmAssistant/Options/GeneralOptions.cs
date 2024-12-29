@@ -44,6 +44,11 @@ namespace StrmAssistant.Options
         [Required, MinValue(1), MaxValue(20)]
         public int MaxConcurrentCount { get; set; } = 1;
 
+        [DisplayNameL("GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0", typeof(Resources))]
+        [VisibleCondition(nameof(MaxConcurrentCount), ValueCondition.IsEqual, 1)]
+        [Required, MinValue(0), MaxValue(60)]
+        public int CooldownDurationSeconds { get; set; } = 0;
+
         public void Initialize()
         {
             CatchupTaskList.Clear();

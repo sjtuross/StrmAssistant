@@ -206,6 +206,15 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cooldown Time (Seconds), Default is 0.
+        /// </summary>
+        public static string GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0 {
+            get {
+                return ResourceManager.GetString("GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to General.
         /// </summary>
         public static string GeneralOptions_EditorTitle_General_Options {
@@ -234,7 +243,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allowed clients. Default is Emby,Infuse,SenPlayer.
+        ///   Looks up a localized string similar to Allowed clients. Client name keywords separated by comma or semicolon. Detection via 3rd-party clients might not work properly. Default is Emby,Infuse,SenPlayer.
         /// </summary>
         public static string IntroSkipOptions_ClientScope_Allowed_clients__Default_is_Emby_Infuse_SenPlayer {
             get {

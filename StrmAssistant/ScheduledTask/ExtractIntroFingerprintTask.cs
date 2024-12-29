@@ -28,7 +28,14 @@ namespace StrmAssistant.ScheduledTask
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             _logger.Info("IntroFingerprintExtract - Scheduled Task Execute");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
+            
+            var maxConcurrentCount = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount;
+            _logger.Info("Max Concurrent Count: " + maxConcurrentCount);
+            var cooldownSeconds = maxConcurrentCount == 1
+                ? Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.CooldownDurationSeconds
+                : (int?)null;
+            if (cooldownSeconds.HasValue) _logger.Info("Cooldown Duration Seconds: " + cooldownSeconds.Value);
+
             _logger.Info("Intro Detection Fingerprint Length (Minutes): " + Plugin.Instance.IntroSkipStore.GetOptions().IntroDetectionFingerprintMinutes);
 
             var items = Plugin.FingerprintApi.FetchIntroFingerprintTaskItems();
@@ -63,6 +70,8 @@ namespace StrmAssistant.ScheduledTask
                 var taskItem = item;
                 var task = Task.Run(async () =>
                 {
+                    Tuple<string, bool> result = null;
+
                     try
                     {
                         if (cancellationToken.IsCancellationRequested)
@@ -71,7 +80,8 @@ namespace StrmAssistant.ScheduledTask
                             return;
                         }
 
-                        await Plugin.FingerprintApi.ExtractIntroFingerprint(item, directoryService, cancellationToken)
+                        result = await Plugin.FingerprintApi
+                            .ExtractIntroFingerprint(item, directoryService, cancellationToken)
                             .ConfigureAwait(false);
                     }
                     catch (TaskCanceledException)
@@ -86,6 +96,18 @@ namespace StrmAssistant.ScheduledTask
                     }
                     finally
                     {
+                        if (result?.Item2 == true && cooldownSeconds.HasValue)
+                        {
+                            try
+                            {
+                                await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken);
+                            }
+                            catch
+                            {
+                                // ignored
+                            }
+                        }
+
                         QueueManager.SemaphoreMaster.Release();
 
                         var currentCount = Interlocked.Increment(ref current);
