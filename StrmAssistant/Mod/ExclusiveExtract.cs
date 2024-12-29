@@ -363,7 +363,13 @@ namespace StrmAssistant.Mod
                 return true;
             }
 
-            if (IsExclusiveFeatureSelected(ExclusiveControl.CatchAllBlock))
+            if (IsExclusiveFeatureSelected(ExclusiveControl.CatchAllBlock) &&
+                !(CurrentRefreshContext.Value != null && CurrentRefreshContext.Value.InternalId == item.InternalId &&
+                  CurrentRefreshContext.Value.MetadataRefreshOptions.MetadataRefreshMode ==
+                  MetadataRefreshMode.FullRefresh &&
+                  CurrentRefreshContext.Value.MetadataRefreshOptions.ImageRefreshMode == MetadataRefreshMode.Default &&
+                  !CurrentRefreshContext.Value.MetadataRefreshOptions.ReplaceAllMetadata &&
+                  !CurrentRefreshContext.Value.MetadataRefreshOptions.ReplaceAllImages))
             {
                 return false;
             }
