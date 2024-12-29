@@ -35,7 +35,6 @@
     </PackageReference>
     <PackageReference Include="Resource.Embedder" Version="2.2.0" />
     <PackageReference Include="System.Memory" Version="4.6.0" />
-    <PackageReference Include="System.Text.Json" Version="4.7.2" />
     <PackageReference Include="SQLitePCL.pretty.core" Version="1.2.2" />
     <PackageReference Include="TinyPinyin" Version="1.1.0">
       <GeneratePathProperty>True</GeneratePathProperty>
