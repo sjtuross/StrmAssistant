@@ -157,7 +157,8 @@ namespace StrmAssistant.Common
                 }
             }
 
-            resultItems = resultItems.GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
+            resultItems = resultItems.Where(i => !i.IsShortcut).GroupBy(i => i.InternalId).Select(g => g.First())
+                .ToList();
 
             return resultItems;
         }
@@ -189,7 +190,8 @@ namespace StrmAssistant.Common
                 itemsFingerprintQuery.PathStartsWithAny = LibraryPathsInScope.ToArray();
             }
 
-            var items = _libraryManager.GetItemList(itemsFingerprintQuery).OfType<Episode>().ToList();
+            var items = _libraryManager.GetItemList(itemsFingerprintQuery).Where(i => !i.IsShortcut).OfType<Episode>()
+                .ToList();
 
             return items;
         }
