@@ -2,6 +2,7 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Common;
 using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
@@ -17,14 +18,15 @@ namespace StrmAssistant
 
         public PersistMediaInfoTask(IFileSystem fileSystem)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _fileSystem = fileSystem;
         }
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             _logger.Info("MediaInfoPersist - Scheduled Task Execute");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
+            _logger.Info("Tier2 Max Concurrent Count: " +
+                         Plugin.Instance.GetPluginOptions().GeneralOptions.Tier2MaxConcurrentCount);
 
             await Task.Yield();
             progress.Report(0);
@@ -42,21 +44,22 @@ namespace StrmAssistant
 
             foreach (var item in items)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    _logger.Info("MediaInfoPersist - Scheduled Task Cancelled");
-                    break;
-                }
-
                 try
                 {
-                    await QueueManager.SemaphoreLocal.WaitAsync(cancellationToken);
+                    await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken);
                 }
                 catch
                 {
                     break;
                 }
-                
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    QueueManager.Tier2Semaphore.Release();
+                    _logger.Info("MediaInfoPersist - Scheduled Task Cancelled");
+                    break;
+                }
+
                 var taskIndex = ++index;
                 var taskItem = item;
                 var task = Task.Run(async () =>
@@ -85,7 +88,7 @@ namespace StrmAssistant
                     }
                     finally
                     {
-                        QueueManager.SemaphoreLocal.Release();
+                        QueueManager.Tier2Semaphore.Release();
 
                         var currentCount = Interlocked.Increment(ref current);
                         progress.Report(currentCount / total * 100);

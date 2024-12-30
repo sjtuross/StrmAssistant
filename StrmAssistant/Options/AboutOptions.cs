@@ -1,10 +1,10 @@
-﻿using Emby.Web.GenericEdit;
+using Emby.Web.GenericEdit;
 using Emby.Web.GenericEdit.Elements.List;
 using MediaBrowser.Model.LocalizationAttributes;
 using StrmAssistant.Properties;
 using System.ComponentModel;
 
-namespace StrmAssistant
+namespace StrmAssistant.Options
 {
     public class AboutOptions : EditableOptionsBase
     {

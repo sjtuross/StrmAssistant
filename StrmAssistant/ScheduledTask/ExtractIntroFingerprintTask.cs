@@ -1,7 +1,8 @@
-﻿using MediaBrowser.Controller.Providers;
+using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Common;
 using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.ScheduledTask
 {
     public class ExtractIntroFingerprintTask : IScheduledTask
     {
@@ -19,7 +20,7 @@ namespace StrmAssistant
 
         public ExtractIntroFingerprintTask(IFileSystem fileSystem, ITaskManager taskManager)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _fileSystem = fileSystem;
             _taskManager = taskManager;
         }
@@ -27,8 +28,16 @@ namespace StrmAssistant
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             _logger.Info("IntroFingerprintExtract - Scheduled Task Execute");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
-            _logger.Info("Intro Detection Fingerprint Length (Minutes): " + Plugin.Instance.GetPluginOptions().IntroSkipOptions.IntroDetectionFingerprintMinutes);
+            
+            var maxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
+            _logger.Info("Master Max Concurrent Count: " + maxConcurrentCount);
+            var cooldownSeconds = maxConcurrentCount == 1
+                ? Plugin.Instance.GetPluginOptions().GeneralOptions.CooldownDurationSeconds
+                : (int?)null;
+            if (cooldownSeconds.HasValue) _logger.Info("Cooldown Duration Seconds: " + cooldownSeconds.Value);
+
+            _logger.Info("Intro Detection Fingerprint Length (Minutes): " + Plugin.Instance.GetPluginOptions()
+                .IntroSkipOptions.IntroDetectionFingerprintMinutes);
 
             var items = Plugin.FingerprintApi.FetchIntroFingerprintTaskItems();
             _logger.Info("IntroFingerprintExtract - Number of items: " + items.Count);
@@ -38,23 +47,24 @@ namespace StrmAssistant
             double total = items.Count;
             var index = 0;
             var current = 0;
-            
+
             var tasks = new List<Task>();
 
             foreach (var item in items)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    _logger.Info("IntroFingerprintExtract - Scheduled Task Cancelled");
-                    break;
-                }
-
                 try
                 {
-                    await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                    await QueueManager.MasterSemaphore.WaitAsync(cancellationToken);
                 }
                 catch
                 {
+                    break;
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    QueueManager.MasterSemaphore.Release();
+                    _logger.Info("IntroFingerprintExtract - Scheduled Task Cancelled");
                     break;
                 }
 
@@ -62,6 +72,8 @@ namespace StrmAssistant
                 var taskItem = item;
                 var task = Task.Run(async () =>
                 {
+                    Tuple<string, bool> result = null;
+
                     try
                     {
                         if (cancellationToken.IsCancellationRequested)
@@ -70,7 +82,8 @@ namespace StrmAssistant
                             return;
                         }
 
-                        await Plugin.FingerprintApi.ExtractIntroFingerprint(item, directoryService, cancellationToken)
+                        result = await Plugin.FingerprintApi
+                            .ExtractIntroFingerprint(item, directoryService, cancellationToken)
                             .ConfigureAwait(false);
                     }
                     catch (TaskCanceledException)
@@ -85,7 +98,19 @@ namespace StrmAssistant
                     }
                     finally
                     {
-                        QueueManager.SemaphoreMaster.Release();
+                        if (result?.Item2 == true && cooldownSeconds.HasValue)
+                        {
+                            try
+                            {
+                                await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken);
+                            }
+                            catch
+                            {
+                                // ignored
+                            }
+                        }
+
+                        QueueManager.MasterSemaphore.Release();
 
                         var currentCount = Interlocked.Increment(ref current);
                         progress.Report(currentCount / total * 100);
@@ -97,14 +122,14 @@ namespace StrmAssistant
                 tasks.Add(task);
             }
             await Task.WhenAll(tasks);
-            
+
             progress.Report(100.0);
 
             _logger.Info("IntroFingerprintExtract - Trigger Detect Episode Intros to import fingerprints");
 
             var markerTask = _taskManager.ScheduledTasks.FirstOrDefault(t =>
                 t.Name.Equals("Detect Episode Intros", StringComparison.OrdinalIgnoreCase));
-            if (markerTask != null)
+            if (markerTask != null && items.Count > 0 && !cancellationToken.IsCancellationRequested)
             {
                 _ = _taskManager.Execute(markerTask, new TaskOptions());
             }

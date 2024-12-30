@@ -10,6 +10,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Serialization;
+using StrmAssistant.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,7 +20,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static StrmAssistant.Options.Utility;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public class FingerprintApi
     {
@@ -39,7 +40,7 @@ namespace StrmAssistant
             IMediaMountManager mediaMountManager, IJsonSerializer jsonSerializer,
             IServerApplicationHost serverApplicationHost)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
 
@@ -125,12 +126,14 @@ namespace StrmAssistant
 
             var expanded = Plugin.LibraryApi.ExpandFavorites(favorites, false, null).OfType<Episode>();
 
-            return expanded.GroupBy(e => e.ParentId).Select(g => g.Key).ToArray();
+            var result = expanded.GroupBy(e => e.ParentId).Select(g => g.Key).ToArray();
+
+            return result;
         }
 
         public List<Episode> FetchFingerprintQueueItems(List<BaseItem> items)
         {
-            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.MarkerEnabledLibraryScope?
+            var libraryIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.LibraryScope?
                 .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
 
             var includeFavorites = libraryIds?.Contains("-1") == true;
@@ -187,7 +190,7 @@ namespace StrmAssistant
             }
 
             var items = _libraryManager.GetItemList(itemsFingerprintQuery).OfType<Episode>().ToList();
-            
+
             return items;
         }
 
@@ -212,19 +215,21 @@ namespace StrmAssistant
             }
         }
 
-        public async Task ExtractIntroFingerprint(Episode item, IDirectoryService directoryService,
+        public async Task<Tuple<string, bool>> ExtractIntroFingerprint(Episode item, IDirectoryService directoryService,
             CancellationToken cancellationToken)
         {
             var libraryOptions = _libraryManager.GetLibraryOptions(item);
-            await ((Task<Tuple<string, bool>>)CreateTitleFingerprint.Invoke(AudioFingerprintManager,
+            var result = await ((Task<Tuple<string, bool>>)CreateTitleFingerprint.Invoke(AudioFingerprintManager,
                 new object[] { item, libraryOptions, directoryService, cancellationToken })).ConfigureAwait(false);
+
+            return result;
         }
 
-        public async Task ExtractIntroFingerprint(Episode item, CancellationToken cancellationToken)
+        public async Task<Tuple<string, bool>> ExtractIntroFingerprint(Episode item, CancellationToken cancellationToken)
         {
             var directoryService = new DirectoryService(_logger, _fileSystem);
 
-            await ExtractIntroFingerprint(item, directoryService, cancellationToken).ConfigureAwait(false);
+            return await ExtractIntroFingerprint(item, directoryService, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task UpdateIntroMarkerForSeason(Season season, CancellationToken cancellationToken)
@@ -235,26 +240,17 @@ namespace StrmAssistant
             var libraryOptions = _libraryManager.GetLibraryOptions(season);
             var directoryService = new DirectoryService(_logger, _fileSystem);
 
-            var episodesWithoutMarkers = season.GetEpisodes(new InternalItemsQuery
-                {
-                    GroupByPresentationUniqueKey = false,
-                    EnableTotalRecordCount = false,
-                    WithoutChapterMarkers = new[] { MarkerType.IntroStart },
-                    MinRunTimeTicks = TimeSpan.FromMinutes(introDetectionFingerprintMinutes).Ticks,
-                    HasAudioStream = true
-                })
-                .Items.OfType<Episode>()
-                .ToArray();
-
-            var allEpisodes = season.GetEpisodes(new InternalItemsQuery
-                {
+            var episodeQuery = new InternalItemsQuery
+            {
                 GroupByPresentationUniqueKey = false,
-                    EnableTotalRecordCount = false,
-                    MinRunTimeTicks = TimeSpan.FromMinutes(introDetectionFingerprintMinutes).Ticks,
-                    HasAudioStream = true
-                })
-                .Items.OfType<Episode>()
-                .ToArray();
+                EnableTotalRecordCount = false,
+                MinRunTimeTicks = TimeSpan.FromMinutes(introDetectionFingerprintMinutes).Ticks,
+                HasAudioStream = true
+            };
+            var allEpisodes = season.GetEpisodes(episodeQuery).Items.OfType<Episode>().ToArray();
+
+            episodeQuery.WithoutChapterMarkers = new[] { MarkerType.IntroStart };
+            var episodesWithoutMarkers = season.GetEpisodes(episodeQuery).Items.OfType<Episode>().ToArray();
 
             var task = (Task)GetAllFingerprintFilesForSeason.Invoke(AudioFingerprintManager,
                 new object[] { season, allEpisodes, libraryOptions, directoryService, cancellationToken });

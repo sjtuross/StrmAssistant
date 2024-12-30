@@ -1,7 +1,7 @@
 using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
 using System.Text.RegularExpressions;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public static class LanguageUtility
     {

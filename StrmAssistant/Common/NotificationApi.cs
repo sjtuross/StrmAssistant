@@ -1,4 +1,4 @@
-﻿using Emby.Notifications;
+using Emby.Notifications;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
@@ -11,7 +11,7 @@ using System;
 using System.Linq;
 using System.Threading;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public class NotificationApi
     {
@@ -22,7 +22,7 @@ namespace StrmAssistant
 
         public NotificationApi(INotificationManager notificationManager, IUserManager userManager, ISessionManager sessionManager)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _notificationManager = notificationManager;
             _userManager = userManager;
             _sessionManager = sessionManager;

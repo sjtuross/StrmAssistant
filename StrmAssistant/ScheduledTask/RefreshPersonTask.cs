@@ -5,24 +5,25 @@ using MediaBrowser.Controller.Library;
 using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Common;
+using StrmAssistant.Options;
 using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static StrmAssistant.LanguageUtility;
-
-namespace StrmAssistant
+using static StrmAssistant.Common.LanguageUtility;
+namespace StrmAssistant.ScheduledTask
 {
-    public class RefreshPersonTask: IScheduledTask
+    public class RefreshPersonTask : IScheduledTask
     {
         private readonly ILogger _logger;
         private readonly ILibraryManager _libraryManager;
 
         public RefreshPersonTask(ILibraryManager libraryManager)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _libraryManager = libraryManager;
         }
 
@@ -117,7 +118,7 @@ namespace StrmAssistant
                 personQuery.Limit = batchSize;
                 personQuery.StartIndex = startIndex;
                 personItems = _libraryManager.GetItemList(personQuery).Cast<Person>().ToList();
-                
+
                 if (personItems.Count == 0) break;
 
                 foreach (var item in personItems)
@@ -128,9 +129,9 @@ namespace StrmAssistant
                                           IsChinese(taskItem.Name) && IsChinese(taskItem.Overview) &&
                                           taskItem.DateLastSaved >= DateTimeOffset.UtcNow.AddDays(-30);
                     var imageRefreshSkip = taskItem.HasImage(ImageType.Primary) ||
-                                           (refreshPersonMode == RefreshPersonMode.Default &&
+                                           refreshPersonMode == RefreshPersonMode.Default &&
                                             taskItem.DateLastRefreshed >=
-                                            DateTimeOffset.UtcNow.AddDays(-30));
+                                            DateTimeOffset.UtcNow.AddDays(-30);
 
                     if (nameRefreshSkip && imageRefreshSkip)
                     {
@@ -141,18 +142,19 @@ namespace StrmAssistant
                         continue;
                     }
 
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        _logger.Info("RefreshPerson - Task Cancelled");
-                        break;
-                    }
-
                     try
                     {
-                        await QueueManager.SemaphoreLocal.WaitAsync(cancellationToken);
+                        await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken);
                     }
                     catch
                     {
+                        break;
+                    }
+                    
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        QueueManager.Tier2Semaphore.Release();
+                        _logger.Info("RefreshPerson - Task Cancelled");
                         break;
                     }
 
@@ -210,7 +212,7 @@ namespace StrmAssistant
                         }
                         finally
                         {
-                            QueueManager.SemaphoreLocal.Release();
+                            QueueManager.Tier2Semaphore.Release();
 
                             var currentCount = Interlocked.Increment(ref current);
                             progress.Report(currentCount / total * 100);

@@ -7,27 +7,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using static StrmAssistant.GeneralOptions;
+using static StrmAssistant.Options.GeneralOptions;
 using static StrmAssistant.Options.Utility;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public static class QueueManager
     {
         private static ILogger _logger;
-        private static readonly ConcurrentQueue<Func<Task>> _taskQueue = new ConcurrentQueue<Func<Task>>();
+
+        internal class TaskWrapper<T>
+        {
+            public string Source { get; set; }
+            public Func<Task<T>> Action { get; set; }
+        }
+
+        private static readonly ConcurrentQueue<TaskWrapper<object>> TaskQueue = new ConcurrentQueue<TaskWrapper<object>>();
         private static readonly object _lock = new object();
         private static DateTime _mediaInfoProcessLastRunTime = DateTime.MinValue;
         private static DateTime _introSkipProcessLastRunTime = DateTime.MinValue;
         private static DateTime _fingerprintProcessLastRunTime = DateTime.MinValue;
         private static readonly TimeSpan ThrottleInterval = TimeSpan.FromSeconds(30);
-        private static int _currentMaxConcurrentCount;
+        private static int _currentMasterMaxConcurrentCount;
+        private static int _currentTier2MaxConcurrentCount;
 
         public static CancellationTokenSource MediaInfoTokenSource;
         public static CancellationTokenSource IntroSkipTokenSource;
         public static CancellationTokenSource FingerprintTokenSource;
-        public static SemaphoreSlim SemaphoreMaster;
-        public static SemaphoreSlim SemaphoreLocal;
+        public static SemaphoreSlim MasterSemaphore;
+        public static SemaphoreSlim Tier2Semaphore;
         public static ConcurrentQueue<BaseItem> MediaInfoExtractItemQueue = new ConcurrentQueue<BaseItem>();
         public static ConcurrentQueue<BaseItem> ExternalSubtitleItemQueue = new ConcurrentQueue<BaseItem>();
         public static ConcurrentQueue<Episode> IntroSkipItemQueue = new ConcurrentQueue<Episode>();
@@ -37,12 +45,22 @@ namespace StrmAssistant
 
         public static bool IsMediaInfoProcessTaskRunning { get; private set; }
 
+        static QueueManager()
+        {
+            _logger = Plugin.Instance.Logger;
+            _currentMasterMaxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
+            _currentTier2MaxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.Tier2MaxConcurrentCount;
+
+            MasterSemaphore = new SemaphoreSlim(_currentMasterMaxConcurrentCount);
+            Tier2Semaphore = new SemaphoreSlim(_currentTier2MaxConcurrentCount);
+        }
+
         public static void Initialize()
         {
-            _logger = Plugin.Instance.logger;
-            _currentMaxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
-            SemaphoreMaster = new SemaphoreSlim(_currentMaxConcurrentCount);
-            SemaphoreLocal = new SemaphoreSlim(_currentMaxConcurrentCount);
+            TaskQueue.Clear();
+            MediaInfoExtractItemQueue.Clear();
+            ExternalSubtitleItemQueue.Clear();
+            FingerprintItemQueue.Clear();
 
             if (MediaInfoProcessTask is null || MediaInfoProcessTask.IsCompleted)
             {
@@ -55,21 +73,29 @@ namespace StrmAssistant
             }
         }
 
-        public static void UpdateSemaphore(int maxConcurrentCount)
+        public static void UpdateMasterSemaphore(int maxConcurrentCount)
         {
-            if (_currentMaxConcurrentCount != maxConcurrentCount)
+            if (_currentMasterMaxConcurrentCount != maxConcurrentCount)
             {
-                _currentMaxConcurrentCount = maxConcurrentCount;
+                _currentMasterMaxConcurrentCount = maxConcurrentCount;
 
-                var newSemaphoreMaster = new SemaphoreSlim(maxConcurrentCount);
-                var oldSemaphoreMaster = SemaphoreMaster;
-                SemaphoreMaster = newSemaphoreMaster;
-                oldSemaphoreMaster.Dispose();
+                var newMasterSemaphore = new SemaphoreSlim(maxConcurrentCount);
+                var oldMasterSemaphore = MasterSemaphore;
+                MasterSemaphore = newMasterSemaphore;
+                oldMasterSemaphore.Dispose();
+            }
+        }
 
-                var newSemaphoreLocal = new SemaphoreSlim(maxConcurrentCount);
-                var oldSemaphoreLocal = SemaphoreLocal;
-                SemaphoreLocal = newSemaphoreLocal;
-                oldSemaphoreLocal.Dispose();
+        public static void UpdateTier2Semaphore(int maxConcurrentCount)
+        {
+            if (_currentTier2MaxConcurrentCount != maxConcurrentCount)
+            {
+                _currentTier2MaxConcurrentCount = maxConcurrentCount;
+
+                var newTier2Semaphore = new SemaphoreSlim(maxConcurrentCount);
+                var oldTier2Semaphore = Tier2Semaphore;
+                Tier2Semaphore = newTier2Semaphore;
+                oldTier2Semaphore.Dispose();
             }
         }
 
@@ -113,37 +139,54 @@ namespace StrmAssistant
                         foreach (var item in mediaInfoItems)
                         {
                             var taskItem = item;
-                            _taskQueue.Enqueue(async () =>
+                            TaskQueue.Enqueue(new TaskWrapper<object>
                             {
-                                var deserializeResult = false;
-
-                                try
+                                Source = "MediaInfoExtract",
+                                Action = async () =>
                                 {
-                                    if (cancellationToken.IsCancellationRequested)
+                                    bool? result = null;
+
+                                    try
+                                    {
+                                        if (cancellationToken.IsCancellationRequested)
+                                        {
+                                            _logger.Info("MediaInfoExtract - Item Cancelled: " + taskItem.Name + " - " +
+                                                         taskItem.Path);
+                                            return null;
+                                        }
+
+                                        result = await Plugin.LibraryApi
+                                            .OrchestrateMediaInfoProcessAsync(taskItem, "MediaInfoExtract Catchup",
+                                                cancellationToken).ConfigureAwait(false);
+
+                                        if (result is null)
+                                        {
+                                            _logger.Info("MediaInfoExtract - Item Skipped: " + taskItem.Name + " - " + taskItem.Path);
+                                            return null;
+                                        }
+
+                                        if (IsCatchupTaskSelected(CatchupTask.IntroSkip) &&
+                                            Plugin.PlaySessionMonitor.IsLibraryInScope(taskItem))
+                                        {
+                                            IntroSkipItemQueue.Enqueue(taskItem as Episode);
+                                        }
+
+                                        _logger.Info("MediaInfoExtract - Item Processed: " + taskItem.Name + " - " +
+                                                     taskItem.Path);
+                                    }
+                                    catch (TaskCanceledException)
                                     {
                                         _logger.Info("MediaInfoExtract - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
-                                        return;
                                     }
-
-                                    await InternalMediaInfoProcessAsync(taskItem, cancellationToken).ConfigureAwait(false);
-
-                                    if (IsCatchupTaskSelected(CatchupTask.IntroSkip) &&
-                                        Plugin.PlaySessionMonitor.IsLibraryInScope(taskItem))
+                                    catch (Exception e)
                                     {
-                                        IntroSkipItemQueue.Enqueue(taskItem as Episode);
+                                        _logger.Error("MediaInfoExtract - Item Failed: " + taskItem.Name + " - " +
+                                                      taskItem.Path);
+                                        _logger.Error(e.Message);
+                                        _logger.Debug(e.StackTrace);
                                     }
 
-                                    _logger.Info("MediaInfoExtract - Item Processed: " + taskItem.Name + " - " + taskItem.Path);
-                                }
-                                catch (TaskCanceledException)
-                                {
-                                    _logger.Info("MediaInfoExtract - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
-                                }
-                                catch (Exception e)
-                                {
-                                    _logger.Error("MediaInfoExtract - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
-                                    _logger.Error(e.Message);
-                                    _logger.Debug(e.StackTrace);
+                                    return result;
                                 }
                             });
                         }
@@ -167,30 +210,36 @@ namespace StrmAssistant
                         foreach (var item in subtitleItems)
                         {
                             var taskItem = item;
-                            _taskQueue.Enqueue(async () =>
+                            TaskQueue.Enqueue(new TaskWrapper<object>
                             {
-                                try
+                                Source = "ExternalSubtitle",
+                                Action = async () =>
                                 {
-                                    if (cancellationToken.IsCancellationRequested)
+                                    try
+                                    {
+                                        if (cancellationToken.IsCancellationRequested)
+                                        {
+                                            _logger.Info("ExternalSubtitle - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
+                                            return null;
+                                        }
+
+                                        await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
+                                            .ConfigureAwait(false);
+
+                                        _logger.Info("ExternalSubtitle - Item Processed: " + taskItem.Name + " - " + taskItem.Path);
+                                    }
+                                    catch (TaskCanceledException)
                                     {
                                         _logger.Info("ExternalSubtitle - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
-                                        return;
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        _logger.Error("ExternalSubtitle - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
+                                        _logger.Error(e.Message);
+                                        _logger.Debug(e.StackTrace);
                                     }
 
-                                    await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
-                                        .ConfigureAwait(false);
-
-                                    _logger.Info("ExternalSubtitle - Item Processed: " + taskItem.Name + " - " + taskItem.Path);
-                                }
-                                catch (TaskCanceledException)
-                                {
-                                    _logger.Info("ExternalSubtitle - Item Cancelled: " + taskItem.Name + " - " + taskItem.Path);
-                                }
-                                catch (Exception e)
-                                {
-                                    _logger.Error("ExternalSubtitle - Item Failed: " + taskItem.Name + " - " + taskItem.Path);
-                                    _logger.Error(e.Message);
-                                    _logger.Debug(e.StackTrace);
+                                    return null;
                                 }
                             });
                         }
@@ -222,30 +271,62 @@ namespace StrmAssistant
         private static async Task MediaInfo_ProcessTaskQueueAsync(CancellationToken cancellationToken)
         {
             _logger.Info("MediaInfo - ProcessTaskQueueAsync Started");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
+
+            var maxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
+            _logger.Info("Master Max Concurrent Count: " + maxConcurrentCount);
+            var cooldownSeconds = maxConcurrentCount == 1
+                ? Plugin.Instance.GetPluginOptions().GeneralOptions.CooldownDurationSeconds
+                : (int?)null;
+            if (cooldownSeconds.HasValue) _logger.Info("Cooldown Duration Seconds: " + cooldownSeconds.Value);
+            _logger.Info("Tier2 Max Concurrent Count: " +
+                         Plugin.Instance.GetPluginOptions().GeneralOptions.Tier2MaxConcurrentCount);
 
             while (!cancellationToken.IsCancellationRequested)
             {
-                if (_taskQueue.TryDequeue(out Func<Task> action))
+                if (TaskQueue.TryDequeue(out var taskWrapper))
                 {
+                    var selectedSemaphore = taskWrapper.Source == "ExternalSubtitle"
+                        ? Tier2Semaphore
+                        : MasterSemaphore;
+
                     try
                     {
-                        await SemaphoreMaster.WaitAsync(cancellationToken);
+                        await selectedSemaphore.WaitAsync(cancellationToken);
                     }
                     catch
                     {
                         break;
                     }
 
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        selectedSemaphore.Release();
+                        break;
+                    }
+
                     var task = Task.Run(async () =>
                     {
+                        object result = null;
+
                         try
                         {
-                            await action();
+                            result = await taskWrapper.Action();
                         }
                         finally
                         {
-                            SemaphoreMaster.Release();
+                            if (result is true && cooldownSeconds.HasValue)
+                            {
+                                try
+                                {
+                                    await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken);
+                                }
+                                catch
+                                {
+                                    // ignored
+                                }
+                            }
+
+                            selectedSemaphore.Release();
                         }
                     }, cancellationToken);
                 }
@@ -258,47 +339,13 @@ namespace StrmAssistant
             lock (_lock)
             {
                 IsMediaInfoProcessTaskRunning = false;
-                if (_taskQueue.IsEmpty)
+                if (TaskQueue.IsEmpty)
                 {
                     _logger.Info("MediaInfo - ProcessTaskQueueAsync Stopped");
                 }
                 else
                 {
                     _logger.Info("MediaInfo - ProcessTaskQueueAsync Cancelled");
-                }
-            }
-        }
-
-        private static async Task InternalMediaInfoProcessAsync(BaseItem taskItem, CancellationToken cancellationToken)
-        {
-            var persistMediaInfo = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.PersistMediaInfo;
-            
-            var deserializeResult = false;
-
-            if (persistMediaInfo)
-            {
-                deserializeResult = await Plugin.LibraryApi
-                    .DeserializeMediaInfo(taskItem, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-            if (!deserializeResult)
-            {
-                await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken)
-                    .ConfigureAwait(false);
-            }
-
-            if (persistMediaInfo)
-            {
-                if (!deserializeResult)
-                {
-                    await Plugin.LibraryApi
-                        .SerializeMediaInfo(taskItem, true, "Extract MediaInfo Catchup", cancellationToken)
-                        .ConfigureAwait(false);
-                }
-                else if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))
-                {
-                    await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
-                        .ConfigureAwait(false);
                 }
             }
         }
@@ -350,110 +397,165 @@ namespace StrmAssistant
 
                         _logger.Info("Fingerprint - Number of items: " + episodes.Count);
 
-                        var groupedBySeason = episodes.GroupBy(e => e.Season).ToList();
-
-                        foreach (var season in groupedBySeason)
+                        if (episodes.Count > 0)
                         {
-                            if (cancellationToken.IsCancellationRequested)
+                            var maxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions
+                                .MaxConcurrentCount;
+                            _logger.Info("Master Max Concurrent Count: " + maxConcurrentCount);
+                            var cooldownSeconds = maxConcurrentCount == 1
+                                ? Plugin.Instance.GetPluginOptions().GeneralOptions.CooldownDurationSeconds
+                                : (int?)null;
+                            if (cooldownSeconds.HasValue) _logger.Info("Cooldown Duration Seconds: " + cooldownSeconds.Value);
+
+                            var groupedBySeason = episodes.GroupBy(e => e.Season).ToList();
+                            var seasonTasks = new List<Task>();
+
+                            foreach (var season in groupedBySeason)
                             {
-                                break;
-                            }
+                                var episodeTasks = new List<Task>();
+                                var seasonSkip = false;
 
-                            var episodeTasks = new List<Task>();
-
-                            foreach (var episode in season)
-                            {
-                                var taskItem = episode;
-
-                                try
+                                foreach (var episode in season)
                                 {
-                                    await SemaphoreMaster.WaitAsync(cancellationToken);
-                                }
-                                catch
-                                {
-                                    break;
-                                }
+                                    var taskItem = episode;
 
-                                var task = Task.Run(async () =>
-                                {
                                     try
                                     {
-                                        if (cancellationToken.IsCancellationRequested)
+                                        await MasterSemaphore.WaitAsync(cancellationToken);
+                                    }
+                                    catch
+                                    {
+                                        break;
+                                    }
+
+                                    if (cancellationToken.IsCancellationRequested)
+                                    {
+                                        MasterSemaphore.Release();
+                                        break;
+                                    }
+
+                                    var task = Task.Run(async () =>
+                                    {
+                                        bool? result1 = null;
+                                        Tuple<string, bool> result2 = null;
+
+                                        try
+                                        {
+                                            if (cancellationToken.IsCancellationRequested)
+                                            {
+                                                _logger.Info("Fingerprint - Item Cancelled: " + taskItem.Name + " - " +
+                                                             taskItem.Path);
+                                                return;
+                                            }
+
+                                            if (Plugin.LibraryApi.IsExtractNeeded(taskItem))
+                                            {
+                                                result1 = await Plugin.LibraryApi
+                                                    .OrchestrateMediaInfoProcessAsync(taskItem, "Fingerprint Catchup",
+                                                        cancellationToken).ConfigureAwait(false);
+
+                                                if (result1 is null)
+                                                {
+                                                    _logger.Info("Fingerprint - Item Skipped: " + taskItem.Name +
+                                                                 " - " + taskItem.Path);
+                                                    seasonSkip = true;
+                                                    return;
+                                                }
+
+                                                if (cooldownSeconds.HasValue)
+                                                {
+                                                    await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken);
+                                                }
+                                            }
+
+                                            var dateCreated = taskItem.DateCreated;
+                                            taskItem.DateCreated = new DateTimeOffset(
+                                                new DateTime(dateCreated.Year, dateCreated.Month, dateCreated.Day,
+                                                    dateCreated.Hour, dateCreated.Minute, dateCreated.Second),
+                                                dateCreated.Offset);
+
+                                            result2 = await Plugin.FingerprintApi
+                                                .ExtractIntroFingerprint(taskItem, cancellationToken)
+                                                .ConfigureAwait(false);
+
+                                            _logger.Info("Fingerprint - Item Processed: " + taskItem.Name + " - " +
+                                                         taskItem.Path);
+                                        }
+                                        catch (TaskCanceledException)
                                         {
                                             _logger.Info("Fingerprint - Item Cancelled: " + taskItem.Name + " - " +
                                                          taskItem.Path);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            _logger.Error("Fingerprint - Item Failed: " + taskItem.Name + " - " +
+                                                          taskItem.Path);
+                                            _logger.Error(e.Message);
+                                            _logger.Debug(e.StackTrace);
+                                        }
+                                        finally
+                                        {
+                                            if ((result1 is true || result2?.Item2 is true) && cooldownSeconds.HasValue)
+                                            {
+                                                try
+                                                {
+                                                    await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken);
+                                                }
+                                                catch
+                                                {
+                                                    // ignored
+                                                }
+                                            }
+
+                                            MasterSemaphore.Release();
+                                        }
+                                    }, cancellationToken);
+                                    episodeTasks.Add(task);
+                                }
+
+                                var taskSeason = season.Key;
+                                var seasonTask = Task.Run(async () =>
+                                {
+                                    try
+                                    {
+                                        await Task.WhenAll(episodeTasks);
+
+                                        if (cancellationToken.IsCancellationRequested)
+                                        {
                                             return;
                                         }
 
-                                        if (Plugin.LibraryApi.IsExtractNeeded(taskItem))
+                                        if (seasonSkip)
                                         {
-                                            await InternalMediaInfoProcessAsync(taskItem, cancellationToken)
-                                                .ConfigureAwait(false);
+                                            _logger.Info("Fingerprint - Season Skipped: " + taskSeason.Name + " - " + taskSeason.Path);
+                                            return;
                                         }
 
-                                        await Plugin.FingerprintApi.ExtractIntroFingerprint(taskItem, cancellationToken)
-                                            .ConfigureAwait(false);
+                                        await Tier2Semaphore.WaitAsync(cancellationToken);
 
-                                        _logger.Info("Fingerprint - Item Processed: " + taskItem.Name + " - " +
-                                                     taskItem.Path);
+                                        await Plugin.FingerprintApi
+                                            .UpdateIntroMarkerForSeason(taskSeason, cancellationToken)
+                                            .ConfigureAwait(false);
                                     }
                                     catch (TaskCanceledException)
                                     {
-                                        _logger.Info("Fingerprint - Item Cancelled: " + taskItem.Name + " - " +
-                                                     taskItem.Path);
+                                        _logger.Info("Fingerprint - Season Cancelled: " + taskSeason.Name + " - " + taskSeason.Path);
                                     }
                                     catch (Exception e)
                                     {
-                                        _logger.Error("Fingerprint - Item Failed: " + taskItem.Name + " - " +
-                                                      taskItem.Path);
+                                        _logger.Error("Fingerprint - Season Failed: " + taskSeason.Name + " - " + taskSeason.Path);
                                         _logger.Error(e.Message);
                                         _logger.Debug(e.StackTrace);
                                     }
                                     finally
                                     {
-                                        SemaphoreMaster.Release();
+                                        Tier2Semaphore.Release();
                                     }
                                 }, cancellationToken);
-                                episodeTasks.Add(task);
+                                seasonTasks.Add(seasonTask);
                             }
-
-                            var taskSeason = season.Key;
-                            var seasonTask = Task.Run(async () =>
-                            {
-                                try
-                                {
-                                    await Task.WhenAll(episodeTasks);
-
-                                    if (cancellationToken.IsCancellationRequested)
-                                    {
-                                        return;
-                                    }
-
-                                    await SemaphoreLocal.WaitAsync(cancellationToken);
-
-                                    await Plugin.FingerprintApi
-                                        .UpdateIntroMarkerForSeason(taskSeason, cancellationToken)
-                                        .ConfigureAwait(false);
-                                }
-                                catch (TaskCanceledException)
-                                {
-                                    _logger.Info("Fingerprint - Item Cancelled: " + taskSeason.Name + " - " +
-                                                 taskSeason.Path);
-                                }
-                                catch (Exception e)
-                                {
-                                    _logger.Error("Fingerprint - Item Failed: " + taskSeason.Name + " - " +
-                                                  taskSeason.Path);
-                                    _logger.Error(e.Message);
-                                    _logger.Debug(e.StackTrace);
-                                }
-                                finally
-                                {
-                                    SemaphoreLocal.Release();
-                                }
-                            }, cancellationToken);
+                            await Task.WhenAll(seasonTasks);
                         }
-
                         _logger.Info("Fingerprint - Clear Item Queue Stopped");
                     }
                 }

@@ -1,27 +1,28 @@
-﻿using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Common;
 using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.ScheduledTask
 {
-    public class ScanExternalSubtitleTask: IScheduledTask
+    public class ScanExternalSubtitleTask : IScheduledTask
     {
         private readonly ILogger _logger;
 
         public ScanExternalSubtitleTask()
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
         }
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             _logger.Info("ExternalSubtitle - Scan Task Execute");
-            _logger.Info(
-                "Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
+            _logger.Info("Tier2 Max Concurrent Count: " +
+                         Plugin.Instance.GetPluginOptions().GeneralOptions.Tier2MaxConcurrentCount);
 
             await Task.Yield();
             progress.Report(0);
@@ -37,18 +38,19 @@ namespace StrmAssistant
 
             foreach (var item in items)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    _logger.Info("ExternalSubtitle - Scan Task Cancelled");
-                    break;
-                }
-
                 try
                 {
-                    await QueueManager.SemaphoreLocal.WaitAsync(cancellationToken);
+                    await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken);
                 }
                 catch
                 {
+                    break;
+                }
+                
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    QueueManager.Tier2Semaphore.Release();
+                    _logger.Info("ExternalSubtitle - Scan Task Cancelled");
                     break;
                 }
 
@@ -83,7 +85,7 @@ namespace StrmAssistant
                     }
                     finally
                     {
-                        QueueManager.SemaphoreLocal.Release();
+                        QueueManager.Tier2Semaphore.Release();
 
                         var currentCount = Interlocked.Increment(ref current);
                         progress.Report(currentCount / total * 100);

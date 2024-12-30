@@ -6,9 +6,9 @@ using StrmAssistant.Properties;
 using System.Collections.Generic;
 using System.ComponentModel;
 
-namespace StrmAssistant
+namespace StrmAssistant.Options
 {
-    public class IntroSkipOptions: EditableOptionsBase
+    public class IntroSkipOptions : EditableOptionsBase
     {
         [DisplayNameL("PluginOptions_IntroSkipOptions_Intro_Credits_Detection", typeof(Resources))]
         public override string EditorTitle => Resources.PluginOptions_IntroSkipOptions_Intro_Credits_Detection;

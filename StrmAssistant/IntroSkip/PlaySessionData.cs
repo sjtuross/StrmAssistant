@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace StrmAssistant
+namespace StrmAssistant.IntroSkip
 {
     public class PlaySessionData
     {

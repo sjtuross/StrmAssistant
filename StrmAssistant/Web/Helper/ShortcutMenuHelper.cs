@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace StrmAssistant.Web
+namespace StrmAssistant.Web.Helper
 {
     internal static class ShortcutMenuHelper
     {
@@ -22,9 +22,9 @@ namespace StrmAssistant.Web
             }
             catch (Exception e)
             {
-                Plugin.Instance.logger.Debug("ShortcutMenuHelper - Init Failed");
-                Plugin.Instance.logger.Debug(e.Message);
-                Plugin.Instance.logger.Debug(e.StackTrace);
+                Plugin.Instance.Logger.Debug("ShortcutMenuHelper - Init Failed");
+                Plugin.Instance.Logger.Debug(e.Message);
+                Plugin.Instance.Logger.Debug(e.StackTrace);
             }
         }
 

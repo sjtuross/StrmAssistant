@@ -55,6 +55,8 @@
 28. 支持对外`HTTP`请求使用代理服务器
 29. 支持`TMDB`剧集组刮削，用指定的剧集组刮削剧集，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/TMDB-剧集组刮削-(Episode-Group))
 30. 保存或加载剧集组至/自 JSON 文件，说明查看 [Wiki](https://github.com/sjtuross/StrmAssistant/wiki/本地剧集组刮削)
+31. 原生片头探测剧集黑名单
+32. 支持单线程冷却时间 (默认最小为 0, 最大为 60)
 
 ## 安装
 

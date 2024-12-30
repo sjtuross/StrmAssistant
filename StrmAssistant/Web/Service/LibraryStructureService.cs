@@ -3,9 +3,10 @@ using MediaBrowser.Controller.Net;
 using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Services;
+using StrmAssistant.Web.Api;
 using System;
 
-namespace StrmAssistant.Web
+namespace StrmAssistant.Web.Service
 {
     [Authenticated]
     public class LibraryStructureService : IService, IRequiresRequest
@@ -15,7 +16,7 @@ namespace StrmAssistant.Web
 
         public LibraryStructureService(ILibraryManager libraryManager)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _libraryManager = libraryManager;
         }
 

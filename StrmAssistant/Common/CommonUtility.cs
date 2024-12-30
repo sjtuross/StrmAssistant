@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public static class CommonUtility
     {

@@ -4,7 +4,7 @@ using MediaBrowser.Model.LocalizationAttributes;
 using StrmAssistant.Properties;
 using System.ComponentModel;
 
-namespace StrmAssistant
+namespace StrmAssistant.Options
 {
     public enum RefreshPersonMode
     {
@@ -12,7 +12,7 @@ namespace StrmAssistant
         FullRefresh
     }
 
-    public class MetadataEnhanceOptions: EditableOptionsBase
+    public class MetadataEnhanceOptions : EditableOptionsBase
     {
         [DisplayNameL("PluginOptions_MetadataEnhanceOptions_Metadata_Enhance", typeof(Resources))]
         public override string EditorTitle => Resources.PluginOptions_MetadataEnhanceOptions_Metadata_Enhance;

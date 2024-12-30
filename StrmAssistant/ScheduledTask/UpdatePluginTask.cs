@@ -4,6 +4,7 @@ using MediaBrowser.Common.Net;
 using MediaBrowser.Controller;
 using MediaBrowser.Model.Activity;
 using MediaBrowser.Model.Logging;
+using MediaBrowser.Model.Serialization;
 using MediaBrowser.Model.Tasks;
 using StrmAssistant.Properties;
 using System;
@@ -11,29 +12,30 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.ScheduledTask
 {
-    public class UpdatePluginTask: IScheduledTask
+    public class UpdatePluginTask : IScheduledTask
     {
         private readonly ILogger _logger;
         private readonly IApplicationHost _applicationHost;
         private readonly IApplicationPaths _applicationPaths;
         private readonly IHttpClient _httpClient;
+        private readonly IJsonSerializer _jsonSerializer;
         private readonly IActivityManager _activityManager;
         private readonly IServerApplicationHost _serverApplicationHost;
 
         public UpdatePluginTask(IApplicationHost applicationHost, IApplicationPaths applicationPaths,
-            IHttpClient httpClient, IActivityManager activityManager, IServerApplicationHost serverApplicationHost)
+            IHttpClient httpClient, IJsonSerializer jsonSerializer, IActivityManager activityManager,
+            IServerApplicationHost serverApplicationHost)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _applicationHost = applicationHost;
             _applicationPaths = applicationPaths;
             _httpClient = httpClient;
+            _jsonSerializer = jsonSerializer;
             _activityManager = activityManager;
             _serverApplicationHost = serverApplicationHost;
         }
@@ -73,34 +75,35 @@ namespace StrmAssistant
             {
                 var githubToken= Plugin.Instance.GetPluginOptions().AboutOptions.GitHubToken;
 
-                var stream = await _httpClient.Get(new HttpRequestOptions
+                using var response = await _httpClient.SendAsync(new HttpRequestOptions
+                {
+                    Url = RepoReleaseUrl,
+                    CancellationToken = cancellationToken,
+                    AcceptHeader = "application/json",
+                    UserAgent = Plugin.Instance.UserAgent,
+                    EnableDefaultUserAgent = false,
+                    RequestHeaders =
                     {
-                        Url = RepoReleaseUrl,
-                        CancellationToken = cancellationToken,
-                        AcceptHeader = "application/json",
-                        UserAgent = Plugin.Instance.UserAgent,
-                        EnableDefaultUserAgent = false,
-                        RequestHeaders =
-                        {
-                            ["Authorization"] = !string.IsNullOrWhiteSpace(githubToken)
-                                ? $"token {githubToken}"
-                                : null
-                        }
-                    })
-                    .ConfigureAwait(false);
+                        ["Authorization"] = !string.IsNullOrWhiteSpace(githubToken)
+                            ? $"token {githubToken}"
+                            : null
+                    }
+                }, "GET").ConfigureAwait(false);
 
-                var apiResult = await JsonSerializer.DeserializeAsync<ApiResponseInfo>(stream, null, cancellationToken);
-                
+                await using var contentStream = response.Content;
+
+                var apiResult = _jsonSerializer.DeserializeFromStream<ApiResponseInfo>(contentStream);
+
                 var currentVersion = ParseVersion(Plugin.Instance.CurrentVersion);
-                var remoteVersion = ParseVersion(apiResult?.TagName);
+                var remoteVersion = ParseVersion(apiResult?.tag_name);
 
                 if (currentVersion.CompareTo(remoteVersion) < 0)
                 {
                     _logger.Info("Found new plugin version: {0}", remoteVersion);
 
-                    var url = (apiResult?.Assets ?? Array.Empty<ApiAssetInfo>())
-                        .FirstOrDefault(asset => asset.Name == PluginAssemblyFilename)
-                        ?.BrowserDownloadUrl;
+                    var url = (apiResult?.assets ?? new List<ApiAssetInfo>())
+                        .FirstOrDefault(asset => asset.name == PluginAssemblyFilename)
+                        ?.browser_download_url;
                     if (!Uri.IsWellFormedUriString(url, UriKind.Absolute)) throw new Exception("Invalid download url");
 
                     var githubProxy = Plugin.Instance.GetPluginOptions().AboutOptions.GitHubProxy;
@@ -180,22 +183,18 @@ namespace StrmAssistant
             return new Version(v.StartsWith("v") ? v.Substring(1) : v);
         }
 
-        private class ApiResponseInfo
+        internal class ApiResponseInfo
         {
-            [JsonPropertyName("tag_name")]
-            public string TagName { get; set; }
+            public string tag_name { get; set; }
 
-            [JsonPropertyName("assets")]
-            public ApiAssetInfo[] Assets { get; set; }
+            public List<ApiAssetInfo> assets { get; set; }
         }
 
-        private class ApiAssetInfo
+        internal class ApiAssetInfo
         {
-            [JsonPropertyName("name")]
-            public string Name { get; set; }
+            public string name { get; set; }
 
-            [JsonPropertyName("browser_download_url")]
-            public string BrowserDownloadUrl { get; set; }
+            public string browser_download_url { get; set; }
         }
     }
 }

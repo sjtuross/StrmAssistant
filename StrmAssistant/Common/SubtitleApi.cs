@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Controller.Entities;
+using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Persistence;
@@ -16,7 +16,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public class SubtitleApi
     {
@@ -40,10 +40,10 @@ namespace StrmAssistant
             ILocalizationManager localizationManager,
             IItemRepository itemRepository)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _libraryManager = libraryManager;
             _fileSystem = fileSystem;
-            _itemRepository= itemRepository;
+            _itemRepository = itemRepository;
 
             try
             {

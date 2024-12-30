@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public class ChapterApi
     {
@@ -23,7 +23,7 @@ namespace StrmAssistant
 
         public ChapterApi(ILibraryManager libraryManager, IItemRepository itemRepository)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _libraryManager = libraryManager;
             _itemRepository = itemRepository;
         }
@@ -300,7 +300,7 @@ namespace StrmAssistant
                 IncludeItemTypes = new[] { nameof(Episode) },
                 HasPath = true,
                 MediaTypes = new[] { MediaType.Video },
-                ParentIds = new[]{ item.ParentId }
+                ParentIds = new[] { item.ParentId }
             };
 
             var allEpisodesInSeason = _libraryManager.GetItemList(query);
@@ -451,7 +451,7 @@ namespace StrmAssistant
                     var lastEpisodeChapters = _itemRepository.GetChapters(lastCreditsEpisode);
                     var lastEpisodeCreditsStart = lastEpisodeChapters.FirstOrDefault(c => c.MarkerType == MarkerType.CreditsStart);
 
-                    if (lastEpisodeCreditsStart !=null)
+                    if (lastEpisodeCreditsStart != null)
                     {
                         var creditsDurationTicks = lastCreditsEpisode.RunTimeTicks.Value - lastEpisodeCreditsStart.StartPositionTicks;
                         if (creditsDurationTicks > 0)

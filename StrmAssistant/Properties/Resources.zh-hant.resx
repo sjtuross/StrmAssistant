@@ -33,10 +33,10 @@
     <value>媒體庫範圍，留空包含所有。</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count" xml:space="preserve">
-    <value>最大線程數</value>
+    <value>主最大並發線程數</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
-    <value>最大並發的執行緒數，所有任務共享。必須在 1 至 20 之間，預設為 1。</value>
+    <value>提取媒體訊息，視訊截圖和聲紋任務共享，必須在 1 至 20 之間，預設為 1。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
     <value>僅支援 STRM，關閉後支援所有，預設開啟。</value>
@@ -108,7 +108,7 @@
     <value>自動合併同目錄影片為多版本，不需符合官方嚴格的命名要求，預設為關閉。</value>
   </data>
   <data name="PluginOptions_ModOptions_Mod_Features" xml:space="preserve">
-    <value>魔改</value>
+    <value>搜尋</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Chinese_MovieDb" xml:space="preserve">
     <value>自訂 TMDB 備選語言</value>
@@ -225,7 +225,7 @@
     <value>拼音首字母排序</value>
   </data>
   <data name="ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title" xml:space="preserve">
-    <value>掃庫時自動把標題中的中文轉換為拼音首字母作為排序標題，預設為關閉。</value>
+    <value>自動把標題中的中文轉換為拼音首字母作為排序標題，預設為關閉。</value>
   </data>
   <data name="PluginOptions_MetadataEnhanceOptions_Metadata_Enhance" xml:space="preserve">
     <value>元資料增強</value>
@@ -428,6 +428,9 @@
   <data name="MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group" xml:space="preserve">
     <value>啟用本地劇集組 TMDB</value>
   </data>
+  <data name="ExperienceEnhanceOptions_EditorTitle_Experience_Enhance" xml:space="preserve">
+    <value>體驗增強</value>
+  </data>
   <data name="CatchupTask_MediaInfo_MediaInfo" xml:space="preserve">
     <value>媒體資訊擷取</value>
   </data>
@@ -444,6 +447,27 @@
     <value>允許的客戶端</value>
   </data>
   <data name="IntroSkipOptions_ClientScope_Allowed_clients__Default_is_Emby_Infuse_SenPlayer" xml:space="preserve">
-    <value>允許的客戶端，客戶端名關鍵字以逗號或分號隔開，透過第三方客戶端探測可能不准，預設值為 Emby,Infuse,SenPlayer</value>
+    <value>客戶端名關鍵字以逗號或分號隔開，透過第三方客戶端探測可能不准，預設值為 Emby,Infuse,SenPlayer</value>
+  </data>
+  <data name="GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0" xml:space="preserve">
+    <value>主線程冷卻時間 (秒)</value>
+  </data>
+  <data name="InvalidBlacklistShowIds" xml:space="preserve">
+    <value>黑名單電視節目或播出季 ID 無效: {0}</value>
+  </data>
+  <data name="IntroSkipOptions_BlacklistShows_Optional_Blacklist_Shows" xml:space="preserve">
+    <value>可選黑名單</value>
+  </data>
+  <data name="IntroSkipOptions_BlacklistShows_List_of_Series_Id_or_Season_Id_separated_by_comma_or_semicolon__Default_is_EMPTY" xml:space="preserve">
+    <value>電視節目或播出季的 ID 列表，逗號或分號分隔，預設為空。</value>
+  </data>
+  <data name="GeneralOptions_Tier2MaxConcurrentCount_Tier_2_Max_Concurrent_Count" xml:space="preserve">
+    <value>次最大並發線程數</value>
+  </data>
+  <data name="GeneralOptions_Tier2MaxConcurrentCount_Refresh_metadata__subtitle__local_tasks__Default_is_1_" xml:space="preserve">
+    <value>刷新演員，掃外掛字幕，處理本地任務等共享，必須在 1 至 20 之間，預設為 1。</value>
+  </data>
+  <data name="GeneralOptions_CooldownDurationSeconds_Applicable_to_single_thread_mode__Default_is_0_" xml:space="preserve">
+    <value>單線程模式有效，必須在 0 至 60 之間，預設為 0。</value>
   </data>
 </root>

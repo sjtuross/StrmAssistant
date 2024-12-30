@@ -3,29 +3,37 @@ using MediaBrowser.Controller.Providers;
 using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Tasks;
+using StrmAssistant.Common;
 using StrmAssistant.Properties;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.ScheduledTask
 {
-    public class ExtractMediaInfoTask: IScheduledTask
+    public class ExtractMediaInfoTask : IScheduledTask
     {
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
         public ExtractMediaInfoTask(IFileSystem fileSystem)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _fileSystem = fileSystem;
         }
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             _logger.Info("MediaInfoExtract - Scheduled Task Execute");
-            _logger.Info("Max Concurrent Count: " + Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount);
+
+            var maxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
+            _logger.Info("Master Max Concurrent Count: " + maxConcurrentCount);
+            var cooldownSeconds = maxConcurrentCount == 1
+                ? Plugin.Instance.GetPluginOptions().GeneralOptions.CooldownDurationSeconds
+                : (int?)null;
+            if (cooldownSeconds.HasValue) _logger.Info("Cooldown Duration Seconds: " + cooldownSeconds.Value);
+
             var persistMediaInfo = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.PersistMediaInfo;
             _logger.Info("Persist Media Info: " + persistMediaInfo);
             var enableImageCapture = Plugin.Instance.GetPluginOptions().MediaInfoExtractOptions.EnableImageCapture;
@@ -42,31 +50,33 @@ namespace StrmAssistant
             double total = items.Count;
             var index = 0;
             var current = 0;
-            
+
             var tasks = new List<Task>();
 
             foreach (var item in items)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    _logger.Info("MediaInfoExtract - Scheduled Task Cancelled");
-                    break;
-                }
-
                 try
                 {
-                    await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                    await QueueManager.MasterSemaphore.WaitAsync(cancellationToken);
                 }
                 catch
                 {
                     break;
                 }
-                
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    QueueManager.MasterSemaphore.Release();
+                    _logger.Info("MediaInfoExtract - Scheduled Task Cancelled");
+                    break;
+                }
+
                 var taskIndex = ++index;
                 var taskItem = item;
                 var task = Task.Run(async () =>
                 {
-                    var deserializeResult = false;
+                    bool? result = null;
+
                     try
                     {
                         if (cancellationToken.IsCancellationRequested)
@@ -75,15 +85,14 @@ namespace StrmAssistant
                             return;
                         }
 
-                        if (persistMediaInfo)
+                        result = await Plugin.LibraryApi
+                            .OrchestrateMediaInfoProcessAsync(taskItem,directoryService, "MediaInfoExtract Task",
+                                cancellationToken).ConfigureAwait(false);
+
+                        if (result is null)
                         {
-                            deserializeResult = await Plugin.LibraryApi
-                                .DeserializeMediaInfo(taskItem, directoryService, cancellationToken)
-                                .ConfigureAwait(false);
-                        }
-                        if (!deserializeResult)
-                        {
-                            await Plugin.LibraryApi.ProbeMediaInfo(taskItem, cancellationToken).ConfigureAwait(false);
+                            _logger.Info("MediaInfoExtract - Item skipped: " + taskItem.Name + " - " + taskItem.Path);
+                            return;
                         }
 
                         if (enableIntroSkip && Plugin.PlaySessionMonitor.IsLibraryInScope(taskItem))
@@ -91,22 +100,6 @@ namespace StrmAssistant
                             if (taskItem is Episode episode && Plugin.ChapterApi.SeasonHasIntroCredits(episode))
                             {
                                 QueueManager.IntroSkipItemQueue.Enqueue(episode);
-                            }
-                        }
-
-                        if (persistMediaInfo)
-                        {
-                            if (!deserializeResult)
-                            {
-                                await Plugin.LibraryApi
-                                    .SerializeMediaInfo(taskItem, directoryService, true, "Extract MediaInfo Task",
-                                        cancellationToken)
-                                    .ConfigureAwait(false);
-                            }
-                            else if (Plugin.SubtitleApi.HasExternalSubtitleChanged(taskItem))
-                            {
-                                await Plugin.SubtitleApi.UpdateExternalSubtitles(taskItem, cancellationToken)
-                                    .ConfigureAwait(false);
                             }
                         }
                     }
@@ -122,7 +115,19 @@ namespace StrmAssistant
                     }
                     finally
                     {
-                        QueueManager.SemaphoreMaster.Release();
+                        if (result is true && cooldownSeconds.HasValue)
+                        {
+                            try
+                            {
+                                await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken);
+                            }
+                            catch
+                            {
+                                // ignored
+                            }
+                        }
+
+                        QueueManager.MasterSemaphore.Release();
 
                         var currentCount = Interlocked.Increment(ref current);
                         progress.Report(currentCount / total * 100);

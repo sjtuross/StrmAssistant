@@ -6,6 +6,7 @@ using MediaBrowser.Model.Entities;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Querying;
 using MediaBrowser.Model.Session;
+using StrmAssistant.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace StrmAssistant
+namespace StrmAssistant.IntroSkip
 {
     public class PlaySessionMonitor
     {
@@ -40,7 +41,7 @@ namespace StrmAssistant
         public PlaySessionMonitor(ILibraryManager libraryManager, IUserManager userManager,
             ISessionManager sessionManager)
         {
-            _logger = Plugin.Instance.logger;
+            _logger = Plugin.Instance.Logger;
             _libraryManager = libraryManager;
             _userManager = userManager;
             _sessionManager = sessionManager;
@@ -69,7 +70,7 @@ namespace StrmAssistant
         {
             var userIds = Plugin.Instance.GetPluginOptions().IntroSkipOptions.UserScope
                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(long.Parse).ToArray();
-            
+
             var userQuery = new UserQuery
             {
                 IsDisabled = false
@@ -104,6 +105,7 @@ namespace StrmAssistant
 
             if (_introSkipProcessTask == null || _introSkipProcessTask.IsCompleted)
             {
+                QueueManager.IntroSkipItemQueue.Clear();
                 _introSkipProcessTask = Task.Run(QueueManager.IntroSkip_ProcessItemQueueAsync);
             }
         }
@@ -399,7 +401,7 @@ namespace StrmAssistant
                 }
             }
         }
-        
+
         public void Dispose()
         {
             _sessionManager.PlaybackStart -= OnPlaybackStart;

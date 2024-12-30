@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 
-namespace StrmAssistant
+namespace StrmAssistant.Common
 {
     public class LruCache
     {

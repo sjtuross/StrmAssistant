@@ -1,8 +1,8 @@
-﻿using Emby.Media.Common.Extensions;
+using Emby.Media.Common.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static StrmAssistant.GeneralOptions;
+using static StrmAssistant.Options.GeneralOptions;
 
 namespace StrmAssistant.Options
 {

@@ -10,6 +10,7 @@ using MediaBrowser.Controller;
 using MediaBrowser.Controller.Configuration;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Controller.Entities.Movies;
 using MediaBrowser.Controller.Entities.TV;
 using MediaBrowser.Controller.Library;
 using MediaBrowser.Controller.MediaEncoding;
@@ -24,8 +25,11 @@ using MediaBrowser.Model.IO;
 using MediaBrowser.Model.Logging;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
+using StrmAssistant.Common;
+using StrmAssistant.IntroSkip;
+using StrmAssistant.Options;
 using StrmAssistant.Properties;
-using StrmAssistant.Web;
+using StrmAssistant.Web.Helper;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -34,7 +38,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using static StrmAssistant.GeneralOptions;
+using static StrmAssistant.Options.GeneralOptions;
 using static StrmAssistant.Options.Utility;
 
 namespace StrmAssistant
@@ -52,7 +56,7 @@ namespace StrmAssistant
 
         private readonly Guid _id = new Guid("63c322b7-a371-41a3-b11f-04f8418b37d8");
 
-        public readonly ILogger logger;
+        public readonly ILogger Logger;
         public readonly IApplicationHost ApplicationHost;
         public readonly IApplicationPaths ApplicationPaths;
 
@@ -62,6 +66,7 @@ namespace StrmAssistant
 
         private bool _currentSuppressOnOptionsSaved;
         private int _currentMaxConcurrentCount;
+        private int _currentTier2ConcurrentCount;
         private bool _currentPersistMediaInfo;
         private bool _currentCatchupMode;
         private bool _currentEnableIntroSkip;
@@ -77,8 +82,8 @@ namespace StrmAssistant
             IServerConfigurationManager configurationManager) : base(applicationHost)
         {
             Instance = this;
-            logger = logManager.GetLogger(Name);
-            logger.Info("Plugin is getting loaded.");
+            Logger = logManager.GetLogger(Name);
+            Logger.Info("Plugin is getting loaded.");
             ApplicationHost = applicationHost;
             ApplicationPaths = applicationPaths;
 
@@ -105,9 +110,12 @@ namespace StrmAssistant
                 jsonSerializer, httpClient);
             ShortcutMenuHelper.Initialize(configurationManager);
 
+            if (_currentCatchupMode)
+            {
+                UpdateCatchupScope();
+                QueueManager.Initialize();
+            }
             if (_currentEnableIntroSkip) PlaySessionMonitor.Initialize();
-            if (_currentCatchupMode) UpdateCatchupScope();
-            QueueManager.Initialize();
 
             _libraryManager.ItemAdded += OnItemAdded;
             _libraryManager.ItemRemoved += OnItemRemoved;
@@ -134,33 +142,39 @@ namespace StrmAssistant
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
         {
-            if (_currentCatchupMode && _currentUnlockIntroSkip && IsCatchupTaskSelected(CatchupTask.Fingerprint) &&
-                FingerprintApi.IsLibraryInScope(e.Item) && e.Item is Episode)
+            if ((e.Item is Video || e.Item is Audio) && _currentCatchupMode)
             {
-                QueueManager.FingerprintItemQueue.Enqueue(e.Item);
-            }
-            else
-            {
-                if (_currentCatchupMode && IsCatchupTaskSelected(CatchupTask.MediaInfo) && e.Item.IsShortcut)
+                if (_currentUnlockIntroSkip && IsCatchupTaskSelected(CatchupTask.Fingerprint) &&
+                    FingerprintApi.IsLibraryInScope(e.Item) && e.Item is Episode)
                 {
-                    QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+                    QueueManager.FingerprintItemQueue.Enqueue(e.Item);
                 }
-
-                if (_currentCatchupMode && IsCatchupTaskSelected(CatchupTask.IntroSkip) &&
-                    PlaySessionMonitor.IsLibraryInScope(e.Item))
+                else
                 {
-                    if (!LibraryApi.HasMediaInfo(e.Item))
+                    if (IsCatchupTaskSelected(CatchupTask.MediaInfo) && e.Item.IsShortcut)
                     {
                         QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
                     }
-                    else if (e.Item is Episode episode && ChapterApi.SeasonHasIntroCredits(episode))
+
+                    if (IsCatchupTaskSelected(CatchupTask.IntroSkip) &&
+                        PlaySessionMonitor.IsLibraryInScope(e.Item))
                     {
-                        QueueManager.IntroSkipItemQueue.Enqueue(episode);
+                        if (!LibraryApi.HasMediaInfo(e.Item))
+                        {
+                            QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
+                        }
+                        else if (e.Item is Episode episode && ChapterApi.SeasonHasIntroCredits(episode))
+                        {
+                            QueueManager.IntroSkipItemQueue.Enqueue(episode);
+                        }
                     }
                 }
             }
 
-            NotificationApi.FavoritesUpdateSendNotification(e.Item);
+            if (e.Item is Movie || e.Item is Series || e.Item is Episode)
+            {
+                NotificationApi.FavoritesUpdateSendNotification(e.Item);
+            }
         }
 
         private void OnItemRemoved(object sender, ItemChangeEventArgs e)
@@ -258,52 +272,74 @@ namespace StrmAssistant
         protected override void OnOptionsSaved(PluginOptions options)
         {
             var suppressLogger = _currentSuppressOnOptionsSaved;
-            
-            _currentCatchupMode = options.GeneralOptions.CatchupMode;
+
+            if (_currentCatchupMode != options.GeneralOptions.CatchupMode)
+            {
+                _currentCatchupMode = options.GeneralOptions.CatchupMode;
+                if (options.GeneralOptions.CatchupMode)
+                {
+                    QueueManager.Initialize();
+                }
+                else
+                {
+                    QueueManager.Dispose();
+                }
+            }
             UpdateCatchupScope();
+
             if (!suppressLogger)
             {
-                logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
+                Logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
                 var catchupTaskScope = GetSelectedCatchupTaskDescription();
-                logger.Info("CatchupTaskScope is set to {0}", string.IsNullOrEmpty(catchupTaskScope) ? "EMPTY" : catchupTaskScope);
+                Logger.Info("CatchupTaskScope is set to {0}", string.IsNullOrEmpty(catchupTaskScope) ? "EMPTY" : catchupTaskScope);
             }
 
             if (!suppressLogger)
             {
-                logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
-                logger.Info("MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
+                Logger.Info("IncludeExtra is set to {0}", options.MediaInfoExtractOptions.IncludeExtra);
+                Logger.Info("MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
+                Logger.Info("CooldownDurationSeconds is set to {0}", options.GeneralOptions.CooldownDurationSeconds);
+                Logger.Info("Tier2 MaxConcurrentCount is set to {0}", options.GeneralOptions.Tier2MaxConcurrentCount);
+
                 var libraryScope = string.Join(", ",
                     options.MediaInfoExtractOptions.LibraryScope
                         ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                         .Select(v =>
                             options.MediaInfoExtractOptions.LibraryList.FirstOrDefault(option => option.Value == v)
                                 ?.Name) ?? Enumerable.Empty<string>());
-                logger.Info("MediaInfoExtract - LibraryScope is set to {0}",
+                Logger.Info("MediaInfoExtract - LibraryScope is set to {0}",
                     string.IsNullOrEmpty(libraryScope) ? "ALL" : libraryScope);
             }
             if (_currentMaxConcurrentCount != options.GeneralOptions.MaxConcurrentCount)
             {
                 _currentMaxConcurrentCount = options.GeneralOptions.MaxConcurrentCount;
 
-                QueueManager.UpdateSemaphore(_currentMaxConcurrentCount);
+                QueueManager.UpdateMasterSemaphore(_currentMaxConcurrentCount);
+            }
+            if (_currentTier2ConcurrentCount != options.GeneralOptions.Tier2MaxConcurrentCount)
+            {
+                _currentTier2ConcurrentCount = options.GeneralOptions.Tier2MaxConcurrentCount;
+
+                QueueManager.UpdateMasterSemaphore(_currentTier2ConcurrentCount);
             }
             LibraryApi.UpdateLibraryPathsInScope();
 
             if (!suppressLogger)
             {
-                logger.Info("PersistMediaInfo is set to {0}", options.MediaInfoExtractOptions.PersistMediaInfo);
-                logger.Info("MediaInfoJsonRootFolder is set to {0}",
+                Logger.Info("PersistMediaInfo is set to {0}", options.MediaInfoExtractOptions.PersistMediaInfo);
+                Logger.Info("MediaInfoJsonRootFolder is set to {0}",
                     !string.IsNullOrEmpty(options.MediaInfoExtractOptions.MediaInfoJsonRootFolder)
                         ? options.MediaInfoExtractOptions.MediaInfoJsonRootFolder
                         : "EMPTY");
             }
+            _currentPersistMediaInfo = options.MediaInfoExtractOptions.PersistMediaInfo;
 
             if (!suppressLogger)
             {
-                logger.Info("EnableIntroSkip is set to {0}", options.IntroSkipOptions.EnableIntroSkip);
-                logger.Info("MaxIntroDurationSeconds is set to {0}", options.IntroSkipOptions.MaxIntroDurationSeconds);
-                logger.Info("MaxCreditsDurationSeconds is set to {0}", options.IntroSkipOptions.MaxCreditsDurationSeconds);
-                logger.Info("MinOpeningPlotDurationSeconds is set to {0}", options.IntroSkipOptions.MinOpeningPlotDurationSeconds);
+                Logger.Info("EnableIntroSkip is set to {0}", options.IntroSkipOptions.EnableIntroSkip);
+                Logger.Info("MaxIntroDurationSeconds is set to {0}", options.IntroSkipOptions.MaxIntroDurationSeconds);
+                Logger.Info("MaxCreditsDurationSeconds is set to {0}", options.IntroSkipOptions.MaxCreditsDurationSeconds);
+                Logger.Info("MinOpeningPlotDurationSeconds is set to {0}", options.IntroSkipOptions.MinOpeningPlotDurationSeconds);
             }
             if (_currentEnableIntroSkip != options.IntroSkipOptions.EnableIntroSkip)
             {
@@ -325,7 +361,7 @@ namespace StrmAssistant
                         .Select(v => options.IntroSkipOptions.LibraryList
                             .FirstOrDefault(option => option.Value == v)
                             ?.Name) ?? Enumerable.Empty<string>());
-                logger.Info("IntroSkip - LibraryScope is set to {0}",
+                Logger.Info("IntroSkip - LibraryScope is set to {0}",
                         string.IsNullOrEmpty(intoSkipLibraryScope) ? "ALL" : intoSkipLibraryScope);
 
                 var introSkipUserScope = string.Join(", ",
@@ -333,10 +369,10 @@ namespace StrmAssistant
                         .Select(v => options.IntroSkipOptions.UserList
                             .FirstOrDefault(option => option.Value == v)
                             ?.Name) ?? Enumerable.Empty<string>());
-                logger.Info("IntroSkip - UserScope is set to {0}",
+                Logger.Info("IntroSkip - UserScope is set to {0}",
                         string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
 
-                logger.Info("IntroSkip - ClientScope is set to {0}", options.IntroSkipOptions.ClientScope);
+                Logger.Info("IntroSkip - ClientScope is set to {0}", options.IntroSkipOptions.ClientScope);
             }
             PlaySessionMonitor.UpdateLibraryPathsInScope();
             PlaySessionMonitor.UpdateUsersInScope();
@@ -344,19 +380,20 @@ namespace StrmAssistant
             
             if (!suppressLogger)
             {
-                logger.Info("UnlockIntroSkip is set to {0}", options.IntroSkipOptions.UnlockIntroSkip);
+                Logger.Info("UnlockIntroSkip is set to {0}", options.IntroSkipOptions.UnlockIntroSkip);
                 var markerEnabledLibraryScope = string.Join(", ",
                     options.IntroSkipOptions.MarkerEnabledLibraryScope
                         ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v =>
                             options.IntroSkipOptions.MarkerEnabledLibraryList
                                 .FirstOrDefault(option => option.Value == v)?.Name) ?? Enumerable.Empty<string>());
-                logger.Info("MarkerEnabledLibraryScope is set to {0}",
+                Logger.Info("MarkerEnabledLibraryScope is set to {0}",
                     string.IsNullOrEmpty(markerEnabledLibraryScope)
                         ? options.IntroSkipOptions.MarkerEnabledLibraryList.Any(o => o.Value != "-1") ? "ALL" : "EMPTY"
                         : markerEnabledLibraryScope);
-                logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
+                Logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
                     options.IntroSkipOptions.IntroDetectionFingerprintMinutes);
             }
+            _currentUnlockIntroSkip = options.IntroSkipOptions.UnlockIntroSkip;
             FingerprintApi.UpdateLibraryPathsInScope();
             FingerprintApi.UpdateLibraryIntroDetectionFingerprintLength();
 

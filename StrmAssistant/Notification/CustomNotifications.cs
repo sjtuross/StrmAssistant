@@ -3,7 +3,7 @@ using MediaBrowser.Controller;
 using StrmAssistant.Properties;
 using System.Collections.Generic;
 
-namespace StrmAssistant
+namespace StrmAssistant.Notification
 {
     public class CustomNotifications : INotificationTypeFactory
     {

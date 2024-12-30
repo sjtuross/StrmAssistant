@@ -117,10 +117,10 @@
     <value>Include Strm only. Turn off to support all. Default is ON.</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count" xml:space="preserve">
-    <value>Max Concurrent Count</value>
+    <value>Master Max Concurrent Thread Count</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
-    <value>Max concurrent count of threads shared by all the tasks. It must be between 1 to 20. Default is 1.</value>
+    <value>Shared by media info, image capture and fingerprint processing tasks. It must be between 1 to 20. Default is 1.</value>
   </data>
   <data name="PluginOptions_EditorTitle_Strm_Extract" xml:space="preserve">
     <value>MediaInfo Extract</value>
@@ -195,7 +195,7 @@
     <value>Auto merge multiple versions stored in the same folder. Default is OFF.</value>
   </data>
   <data name="PluginOptions_ModOptions_Mod_Features" xml:space="preserve">
-    <value>Mod</value>
+    <value>Search</value>
   </data>
   <data name="ModOptions_ChineseMovieDb_Chinese_MovieDb" xml:space="preserve">
     <value>Customize MovieDb Fallback Language</value>
@@ -312,7 +312,7 @@
     <value>Pinyin Initials Sort Title</value>
   </data>
   <data name="ModOptions_PinyinSortName_Auto_generate_pinyin_initials_as_sort_title" xml:space="preserve">
-    <value>Auto generate pinyin initials as sort title when library scan. Default is OFF.</value>
+    <value>Auto generate pinyin initials as sort title. Default is OFF.</value>
   </data>
   <data name="PluginOptions_MetadataEnhanceOptions_Metadata_Enhance" xml:space="preserve">
     <value>Metadata Enhance</value>
@@ -515,6 +515,9 @@
   <data name="MetadataEnhanceOptions_LocalEpisodeGroup_Local_Episode_Group" xml:space="preserve">
     <value>Enable Local Episode Group</value>
   </data>
+  <data name="ExperienceEnhanceOptions_EditorTitle_Experience_Enhance" xml:space="preserve">
+    <value>Experience Enhance</value>
+  </data>
   <data name="CatchupTask_MediaInfo_MediaInfo" xml:space="preserve">
     <value>MediaInfo Extract</value>
   </data>
@@ -531,6 +534,27 @@
     <value>Allowed Clients</value>
   </data>
   <data name="IntroSkipOptions_ClientScope_Allowed_clients__Default_is_Emby_Infuse_SenPlayer" xml:space="preserve">
-    <value>Allowed clients. Client name keywords separated by comma or semicolon. Detection via 3rd-party clients might not work properly. Default is Emby,Infuse,SenPlayer</value>
+    <value>Client name keywords separated by comma or semicolon. Detection via 3rd-party clients might not work properly. Default is Emby,Infuse,SenPlayer</value>
+  </data>
+  <data name="GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0" xml:space="preserve">
+    <value>Master Cooldown Duration (Seconds)</value>
+  </data>
+  <data name="InvalidBlacklistShowIds" xml:space="preserve">
+    <value>Blacklist series or season id is invalid: {0}</value>
+  </data>
+  <data name="IntroSkipOptions_BlacklistShows_Optional_Blacklist_Shows" xml:space="preserve">
+    <value>Optional Blacklist</value>
+  </data>
+  <data name="IntroSkipOptions_BlacklistShows_List_of_Series_Id_or_Season_Id_separated_by_comma_or_semicolon__Default_is_EMPTY" xml:space="preserve">
+    <value>List of Series Id or Season Id separated by comma or semicolon. Default is EMPTY</value>
+  </data>
+  <data name="GeneralOptions_Tier2MaxConcurrentCount_Tier_2_Max_Concurrent_Count" xml:space="preserve">
+    <value>Tier 2 Max Concurrent Thread Count</value>
+  </data>
+  <data name="GeneralOptions_Tier2MaxConcurrentCount_Refresh_metadata__subtitle__local_tasks__Default_is_1_" xml:space="preserve">
+    <value>Shared by refreshing persons, external subtitles, local processing tasks, etc. It must be between 1 to 20. Default is 1.</value>
+  </data>
+  <data name="GeneralOptions_CooldownDurationSeconds_Applicable_to_single_thread_mode__Default_is_0_" xml:space="preserve">
+    <value>Applicable to single thread mode. It must be between 0 and 60. Default is 0.</value>
   </data>
 </root>
