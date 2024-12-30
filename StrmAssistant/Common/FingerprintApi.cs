@@ -206,8 +206,6 @@ namespace StrmAssistant.Common
                     : f.LibraryOptions.EnableMarkerDetection &&
                       (f.CollectionType == CollectionType.TvShows.ToString() || f.CollectionType is null))
                 .ToList();
-            _logger.Info("MarkerEnabledLibraryScope: " +
-                         (libraries.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "EMPTY"));
             
             var introDetectionFingerprintMinutes = Plugin.Instance.GetPluginOptions().IntroSkipOptions.IntroDetectionFingerprintMinutes;
 
