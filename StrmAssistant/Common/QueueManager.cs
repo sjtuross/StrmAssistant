@@ -28,13 +28,14 @@ namespace StrmAssistant.Common
         private static DateTime _introSkipProcessLastRunTime = DateTime.MinValue;
         private static DateTime _fingerprintProcessLastRunTime = DateTime.MinValue;
         private static readonly TimeSpan ThrottleInterval = TimeSpan.FromSeconds(30);
-        private static int _currentMaxConcurrentCount;
+        private static int _currentMasterMaxConcurrentCount;
+        private static int _currentTier2MaxConcurrentCount;
 
         public static CancellationTokenSource MediaInfoTokenSource;
         public static CancellationTokenSource IntroSkipTokenSource;
         public static CancellationTokenSource FingerprintTokenSource;
-        public static SemaphoreSlim SemaphoreMaster;
-        public static SemaphoreSlim SemaphoreLocal;
+        public static SemaphoreSlim MasterSemaphore;
+        public static SemaphoreSlim Tier2Semaphore;
         public static ConcurrentQueue<BaseItem> MediaInfoExtractItemQueue = new ConcurrentQueue<BaseItem>();
         public static ConcurrentQueue<BaseItem> ExternalSubtitleItemQueue = new ConcurrentQueue<BaseItem>();
         public static ConcurrentQueue<Episode> IntroSkipItemQueue = new ConcurrentQueue<Episode>();
@@ -44,13 +45,18 @@ namespace StrmAssistant.Common
 
         public static bool IsMediaInfoProcessTaskRunning { get; private set; }
 
-        public static void Initialize()
+        static QueueManager()
         {
             _logger = Plugin.Instance.Logger;
-            _currentMaxConcurrentCount = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount;
-            SemaphoreMaster = new SemaphoreSlim(_currentMaxConcurrentCount);
-            SemaphoreLocal = new SemaphoreSlim(_currentMaxConcurrentCount);
+            _currentMasterMaxConcurrentCount = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount;
+            _currentTier2MaxConcurrentCount = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.Tier2MaxConcurrentCount;
 
+            MasterSemaphore = new SemaphoreSlim(_currentMasterMaxConcurrentCount);
+            Tier2Semaphore = new SemaphoreSlim(_currentTier2MaxConcurrentCount);
+        }
+
+        public static void Initialize()
+        {
             TaskQueue.Clear();
             MediaInfoExtractItemQueue.Clear();
             ExternalSubtitleItemQueue.Clear();
@@ -67,21 +73,29 @@ namespace StrmAssistant.Common
             }
         }
 
-        public static void UpdateSemaphore(int maxConcurrentCount)
+        public static void UpdateMasterSemaphore(int maxConcurrentCount)
         {
-            if (_currentMaxConcurrentCount != maxConcurrentCount)
+            if (_currentMasterMaxConcurrentCount != maxConcurrentCount)
             {
-                _currentMaxConcurrentCount = maxConcurrentCount;
+                _currentMasterMaxConcurrentCount = maxConcurrentCount;
 
-                var newSemaphoreMaster = new SemaphoreSlim(maxConcurrentCount);
-                var oldSemaphoreMaster = SemaphoreMaster;
-                SemaphoreMaster = newSemaphoreMaster;
-                oldSemaphoreMaster.Dispose();
+                var newMasterSemaphore = new SemaphoreSlim(maxConcurrentCount);
+                var oldMasterSemaphore = MasterSemaphore;
+                MasterSemaphore = newMasterSemaphore;
+                oldMasterSemaphore.Dispose();
+            }
+        }
 
-                var newSemaphoreLocal = new SemaphoreSlim(maxConcurrentCount);
-                var oldSemaphoreLocal = SemaphoreLocal;
-                SemaphoreLocal = newSemaphoreLocal;
-                oldSemaphoreLocal.Dispose();
+        public static void UpdateTier2Semaphore(int maxConcurrentCount)
+        {
+            if (_currentTier2MaxConcurrentCount != maxConcurrentCount)
+            {
+                _currentTier2MaxConcurrentCount = maxConcurrentCount;
+
+                var newTier2Semaphore = new SemaphoreSlim(maxConcurrentCount);
+                var oldTier2Semaphore = Tier2Semaphore;
+                Tier2Semaphore = newTier2Semaphore;
+                oldTier2Semaphore.Dispose();
             }
         }
 
@@ -259,19 +273,21 @@ namespace StrmAssistant.Common
             _logger.Info("MediaInfo - ProcessTaskQueueAsync Started");
 
             var maxConcurrentCount = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount;
-            _logger.Info("Max Concurrent Count: " + maxConcurrentCount);
+            _logger.Info("Master Max Concurrent Count: " + maxConcurrentCount);
             var cooldownSeconds = maxConcurrentCount == 1
                 ? Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.CooldownDurationSeconds
                 : (int?)null;
             if (cooldownSeconds.HasValue) _logger.Info("Cooldown Duration Seconds: " + cooldownSeconds.Value);
+            _logger.Info("Tier2 Max Concurrent Count: " +
+                         Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.Tier2MaxConcurrentCount);
 
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (TaskQueue.TryDequeue(out var taskWrapper))
                 {
                     var selectedSemaphore = taskWrapper.Source == "ExternalSubtitle"
-                        ? SemaphoreLocal
-                        : SemaphoreMaster;
+                        ? Tier2Semaphore
+                        : MasterSemaphore;
 
                     try
                     {
@@ -379,7 +395,7 @@ namespace StrmAssistant.Common
                         {
                             var maxConcurrentCount = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions
                                 .MaxConcurrentCount;
-                            _logger.Info("Max Concurrent Count: " + maxConcurrentCount);
+                            _logger.Info("Master Max Concurrent Count: " + maxConcurrentCount);
                             var cooldownSeconds = maxConcurrentCount == 1
                                 ? Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.CooldownDurationSeconds
                                 : (int?)null;
@@ -403,7 +419,7 @@ namespace StrmAssistant.Common
 
                                     try
                                     {
-                                        await SemaphoreMaster.WaitAsync(cancellationToken);
+                                        await MasterSemaphore.WaitAsync(cancellationToken);
                                     }
                                     catch
                                     {
@@ -477,7 +493,7 @@ namespace StrmAssistant.Common
                                                 }
                                             }
 
-                                            SemaphoreMaster.Release();
+                                            MasterSemaphore.Release();
                                         }
                                     }, cancellationToken);
                                     episodeTasks.Add(task);
@@ -501,7 +517,7 @@ namespace StrmAssistant.Common
                                             return;
                                         }
 
-                                        await SemaphoreLocal.WaitAsync(cancellationToken);
+                                        await Tier2Semaphore.WaitAsync(cancellationToken);
 
                                         await Plugin.FingerprintApi
                                             .UpdateIntroMarkerForSeason(taskSeason, cancellationToken)
@@ -519,7 +535,7 @@ namespace StrmAssistant.Common
                                     }
                                     finally
                                     {
-                                        SemaphoreLocal.Release();
+                                        Tier2Semaphore.Release();
                                     }
                                 }, cancellationToken);
                             }

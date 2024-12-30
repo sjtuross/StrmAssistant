@@ -45,9 +45,15 @@ namespace StrmAssistant.Options
         public int MaxConcurrentCount { get; set; } = 1;
 
         [DisplayNameL("GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0", typeof(Resources))]
+        [DescriptionL("GeneralOptions_CooldownDurationSeconds_Applicable_to_single_thread_mode__Default_is_0_", typeof(Resources))]
         [VisibleCondition(nameof(MaxConcurrentCount), ValueCondition.IsEqual, 1)]
         [Required, MinValue(0), MaxValue(60)]
         public int CooldownDurationSeconds { get; set; } = 0;
+        
+        [DisplayNameL("GeneralOptions_Tier2MaxConcurrentCount_Tier_2_Max_Concurrent_Count", typeof(Resources))]
+        [DescriptionL("GeneralOptions_Tier2MaxConcurrentCount_Refresh_metadata__subtitle__local_tasks__Default_is_1_", typeof(Resources))]
+        [Required, MinValue(1), MaxValue(20)]
+        public int Tier2MaxConcurrentCount { get; set; } = 1;
 
         public void Initialize()
         {

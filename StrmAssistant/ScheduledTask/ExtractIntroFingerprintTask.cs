@@ -30,7 +30,7 @@ namespace StrmAssistant.ScheduledTask
             _logger.Info("IntroFingerprintExtract - Scheduled Task Execute");
             
             var maxConcurrentCount = Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount;
-            _logger.Info("Max Concurrent Count: " + maxConcurrentCount);
+            _logger.Info("Master Max Concurrent Count: " + maxConcurrentCount);
             var cooldownSeconds = maxConcurrentCount == 1
                 ? Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.CooldownDurationSeconds
                 : (int?)null;
@@ -59,7 +59,7 @@ namespace StrmAssistant.ScheduledTask
 
                 try
                 {
-                    await QueueManager.SemaphoreMaster.WaitAsync(cancellationToken);
+                    await QueueManager.MasterSemaphore.WaitAsync(cancellationToken);
                 }
                 catch
                 {
@@ -108,7 +108,7 @@ namespace StrmAssistant.ScheduledTask
                             }
                         }
 
-                        QueueManager.SemaphoreMaster.Release();
+                        QueueManager.MasterSemaphore.Release();
 
                         var currentCount = Interlocked.Increment(ref current);
                         progress.Report(currentCount / total * 100);

@@ -206,6 +206,16 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Applicable to single thread mode. Default is 0..
+        /// </summary>
+        public static string GeneralOptions_CooldownDurationSeconds_Applicable_to_single_thread_mode__Default_is_0_ {
+            get {
+                return ResourceManager.GetString("GeneralOptions_CooldownDurationSeconds_Applicable_to_single_thread_mode__Default_" +
+                        "is_0_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cooldown Duration (Seconds), Default is 0.
         /// </summary>
         public static string GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0 {
@@ -243,6 +253,25 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Shared by refreshing metadata, external subtitles, local processing tasks, etc. It must be between 1 to 20. Default is 1..
+        /// </summary>
+        public static string GeneralOptions_Tier2MaxConcurrentCount_Refresh_metadata__subtitle__local_tasks__Default_is_1_ {
+            get {
+                return ResourceManager.GetString("GeneralOptions_Tier2MaxConcurrentCount_Refresh_metadata__subtitle__local_tasks__D" +
+                        "efault_is_1_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tier 2 Max Concurrent Thread Count.
+        /// </summary>
+        public static string GeneralOptions_Tier2MaxConcurrentCount_Tier_2_Max_Concurrent_Count {
+            get {
+                return ResourceManager.GetString("GeneralOptions_Tier2MaxConcurrentCount_Tier_2_Max_Concurrent_Count", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to List of Series Id or Season Id separated by comma or semicolon. Default is EMPTY.
         /// </summary>
         public static string IntroSkipOptions_BlacklistShows_List_of_Series_Id_or_Season_Id_separated_by_comma_or_semicolon__Default_is_EMPTY {
@@ -253,7 +282,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Optional Blacklist Shows.
+        ///   Looks up a localized string similar to Optional Blacklist.
         /// </summary>
         public static string IntroSkipOptions_BlacklistShows_Optional_Blacklist_Shows {
             get {
@@ -1219,7 +1248,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Max Concurrent Count.
+        ///   Looks up a localized string similar to Master Max Concurrent Thread Count.
         /// </summary>
         public static string PluginOptions_MaxConcurrentCount_Max_Concurrent_Count {
             get {
@@ -1228,7 +1257,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Max concurrent count of threads shared by all the tasks. It must be between 1 to 20. Default is 1..
+        ///   Looks up a localized string similar to Shared by media info, image capture and fingerprint processing tasks. It must be between 1 to 20. Default is 1..
         /// </summary>
         public static string PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_ {
             get {

@@ -104,10 +104,15 @@ namespace StrmAssistant.Options.Store
 
                 if (changedProperties.Contains(nameof(PluginOptions.GeneralOptions.MaxConcurrentCount)))
                 {
-                    QueueManager.UpdateSemaphore(options.GeneralOptions.MaxConcurrentCount);
+                    QueueManager.UpdateMasterSemaphore(options.GeneralOptions.MaxConcurrentCount);
 
                     if (Plugin.Instance.MediaInfoExtractStore.GetOptions().EnableImageCapture)
                         EnableImageCapture.UpdateResourcePool(options.GeneralOptions.MaxConcurrentCount);
+                }
+
+                if (changedProperties.Contains(nameof(PluginOptions.GeneralOptions.Tier2MaxConcurrentCount)))
+                {
+                    QueueManager.UpdateTier2Semaphore(options.GeneralOptions.Tier2MaxConcurrentCount);
                 }
 
                 if (changedProperties.Contains(nameof(PluginOptions.ModOptions.EnhanceChineseSearch)) &&
@@ -165,8 +170,9 @@ namespace StrmAssistant.Options.Store
                     _logger.Info("CatchupTaskScope is set to {0}",
                         string.IsNullOrEmpty(catchupTaskScope) ? "EMPTY" : catchupTaskScope);
 
-                    _logger.Info("MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
+                    _logger.Info("Master MaxConcurrentCount is set to {0}", options.GeneralOptions.MaxConcurrentCount);
                     _logger.Info("CooldownDurationSeconds is set to {0}", options.GeneralOptions.CooldownDurationSeconds);
+                    _logger.Info("Tier2 MaxConcurrentCount is set to {0}", options.GeneralOptions.Tier2MaxConcurrentCount);
                     
                     _logger.Info("CatchupMode is set to {0}", options.GeneralOptions.CatchupMode);
 

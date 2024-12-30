@@ -33,10 +33,10 @@
     <value>媒體庫範圍，留空包含所有。</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count" xml:space="preserve">
-    <value>最大線程數</value>
+    <value>主最大並發線程數</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
-    <value>最大並發的執行緒數，所有任務共享。必須在 1 至 20 之間，預設為 1。</value>
+    <value>提取媒體訊息，視訊截圖和聲紋任務共享，必須在 1 至 20 之間，預設為 1。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
     <value>僅支援 STRM，關閉後支援所有，預設開啟。</value>
@@ -450,7 +450,7 @@
     <value>客戶端名關鍵字以逗號或分號隔開，透過第三方客戶端探測可能不准，預設值為 Emby,Infuse,SenPlayer</value>
   </data>
   <data name="GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0" xml:space="preserve">
-    <value>冷卻時間 (秒)，預設為 0</value>
+    <value>主線程冷卻時間 (秒)</value>
   </data>
   <data name="InvalidBlacklistShowIds" xml:space="preserve">
     <value>黑名單電視節目或播出季 ID 無效: {0}</value>
@@ -460,5 +460,14 @@
   </data>
   <data name="IntroSkipOptions_BlacklistShows_List_of_Series_Id_or_Season_Id_separated_by_comma_or_semicolon__Default_is_EMPTY" xml:space="preserve">
     <value>電視節目或播出季的 ID 列表，逗號或分號分隔，預設為空。</value>
+  </data>
+  <data name="GeneralOptions_Tier2MaxConcurrentCount_Tier_2_Max_Concurrent_Count" xml:space="preserve">
+    <value>次最大並發線程數</value>
+  </data>
+  <data name="GeneralOptions_Tier2MaxConcurrentCount_Refresh_metadata__subtitle__local_tasks__Default_is_1_" xml:space="preserve">
+    <value>刷新演員，掃外掛字幕，處理本地任務等共享，必須在 1 至 20 之間，預設為 1。</value>
+  </data>
+  <data name="GeneralOptions_CooldownDurationSeconds_Applicable_to_single_thread_mode__Default_is_0_" xml:space="preserve">
+    <value>單線程模式有效，必須在 0 至 60 之間，預設為 0。</value>
   </data>
 </root>

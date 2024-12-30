@@ -21,8 +21,8 @@ namespace StrmAssistant.ScheduledTask
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
             _logger.Info("ExternalSubtitle - Scan Task Execute");
-            _logger.Info("Max Concurrent Count: " +
-                         Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.MaxConcurrentCount);
+            _logger.Info("Tier2 Max Concurrent Count: " +
+                         Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.Tier2MaxConcurrentCount);
 
             await Task.Yield();
             progress.Report(0);
@@ -46,7 +46,7 @@ namespace StrmAssistant.ScheduledTask
 
                 try
                 {
-                    await QueueManager.SemaphoreLocal.WaitAsync(cancellationToken);
+                    await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken);
                 }
                 catch
                 {
@@ -84,7 +84,7 @@ namespace StrmAssistant.ScheduledTask
                     }
                     finally
                     {
-                        QueueManager.SemaphoreLocal.Release();
+                        QueueManager.Tier2Semaphore.Release();
 
                         var currentCount = Interlocked.Increment(ref current);
                         progress.Report(currentCount / total * 100);
