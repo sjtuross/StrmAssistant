@@ -789,10 +789,14 @@ namespace StrmAssistant.Common
         public async Task<bool> DeserializeMediaInfo(BaseItem item, IDirectoryService directoryService, string source,
             CancellationToken cancellationToken)
         {
+            var workItem = _libraryManager.GetItemById(item.InternalId);
+            
+            if (HasMediaInfo(workItem)) return true;
+            
             var mediaInfoJsonPath = GetMediaInfoJsonPath(item);
             var file = directoryService.GetFile(mediaInfoJsonPath);
 
-            if (file?.Exists == true && !HasMediaInfo(item))
+            if (file?.Exists == true)
             {
                 try
                 {
@@ -805,8 +809,6 @@ namespace StrmAssistant.Common
                     {
                         _itemRepository.SaveMediaStreams(item.InternalId,
                             mediaSourceWithChapters.MediaSourceInfo.MediaStreams, cancellationToken);
-
-                        var workItem = _libraryManager.GetItemById(item.InternalId);
 
                         workItem.Size = mediaSourceWithChapters.MediaSourceInfo.Size.GetValueOrDefault();
                         workItem.RunTimeTicks = mediaSourceWithChapters.MediaSourceInfo.RunTimeTicks;

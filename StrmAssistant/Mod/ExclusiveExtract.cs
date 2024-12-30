@@ -435,7 +435,7 @@ namespace StrmAssistant.Mod
             if (Plugin.Instance.MediaInfoExtractStore.GetOptions().PersistMediaInfo &&
                 (__instance is Video || __instance is Audio) && Plugin.LibraryApi.IsLibraryInScope(__instance) &&
                 CurrentRefreshContext.Value != null &&
-                CurrentRefreshContext.Value.InternalId == __instance.InternalId)
+                CurrentRefreshContext.Value.InternalId == __instance.InternalId && ExclusiveItem.Value == 0)
             {
                 if (CurrentRefreshContext.Value.MediaInfoNeedsUpdate)
                 {
@@ -445,12 +445,16 @@ namespace StrmAssistant.Mod
                     }
                     else
                     {
-                        Task.Run(() => Plugin.LibraryApi.SerializeMediaInfo(__instance, true,"Exclusive Overwrite", CancellationToken.None));
+                        Task.Run(() =>
+                            Plugin.LibraryApi.SerializeMediaInfo(__instance, true, "Exclusive Overwrite",
+                                CancellationToken.None));
                     }
                 }
                 else if (!Plugin.LibraryApi.HasMediaInfo(__instance))
                 {
-                    Task.Run(() => Plugin.LibraryApi.DeserializeMediaInfo(__instance, "Exclusive Restore", CancellationToken.None));
+                    Task.Run(() =>
+                        Plugin.LibraryApi.DeserializeMediaInfo(__instance, "Exclusive Restore",
+                            CancellationToken.None));
                 }
                 else
                 {
