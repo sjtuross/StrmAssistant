@@ -57,18 +57,18 @@ namespace StrmAssistant.ScheduledTask
             {
                 try
                 {
-                    await QueueManager.MasterSemaphore.WaitAsync(cancellationToken);
+                    await QueueManager.MasterSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch
                 {
-                    break;
+                    return;
                 }
 
                 if (cancellationToken.IsCancellationRequested)
                 {
                     QueueManager.MasterSemaphore.Release();
                     _logger.Info("MediaInfoExtract - Scheduled Task Cancelled");
-                    break;
+                    return;
                 }
 
                 var taskIndex = ++index;
@@ -119,7 +119,7 @@ namespace StrmAssistant.ScheduledTask
                         {
                             try
                             {
-                                await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken);
+                                await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken).ConfigureAwait(false);
                             }
                             catch
                             {
@@ -138,7 +138,7 @@ namespace StrmAssistant.ScheduledTask
                 }, cancellationToken);
                 tasks.Add(task);
             }
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             if (items.Count > 0) IsRunning = false;
 

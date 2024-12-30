@@ -20,7 +20,7 @@ namespace StrmAssistant.ScheduledTask
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            _logger.Info("ExternalSubtitle - Scan Task Execute");
+            _logger.Info("ExternalSubtitle - Scheduled Task Execute");
             _logger.Info("Tier2 Max Concurrent Count: " +
                          Plugin.Instance.GetPluginOptions().GeneralOptions.Tier2MaxConcurrentCount);
 
@@ -40,18 +40,18 @@ namespace StrmAssistant.ScheduledTask
             {
                 try
                 {
-                    await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken);
+                    await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch
                 {
-                    break;
+                    return;
                 }
                 
                 if (cancellationToken.IsCancellationRequested)
                 {
                     QueueManager.Tier2Semaphore.Release();
-                    _logger.Info("ExternalSubtitle - Scan Task Cancelled");
-                    break;
+                    _logger.Info("ExternalSubtitle - Scheduled Task Cancelled");
+                    return;
                 }
 
                 var taskIndex = ++index;
@@ -62,7 +62,7 @@ namespace StrmAssistant.ScheduledTask
                     {
                         if (cancellationToken.IsCancellationRequested)
                         {
-                            _logger.Info("ExternalSubtitle - Scan Task Cancelled");
+                            _logger.Info("ExternalSubtitle - Scheduled Task Cancelled");
                             return;
                         }
 
@@ -96,10 +96,10 @@ namespace StrmAssistant.ScheduledTask
                 tasks.Add(task);
                 Task.Delay(10).Wait();
             }
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             progress.Report(100.0);
-            _logger.Info("ExternalSubtitle - Scan Task Complete");
+            _logger.Info("ExternalSubtitle - Scheduled Task Complete");
         }
 
         public string Category => Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",
