@@ -468,6 +468,12 @@ namespace StrmAssistant.Common
                                                 }
                                             }
 
+                                            var dateCreated = taskItem.DateCreated;
+                                            taskItem.DateCreated = new DateTimeOffset(
+                                                new DateTime(dateCreated.Year, dateCreated.Month, dateCreated.Day,
+                                                    dateCreated.Hour, dateCreated.Minute, dateCreated.Second),
+                                                dateCreated.Offset);
+
                                             result2 = await Plugin.FingerprintApi
                                                 .ExtractIntroFingerprint(taskItem, cancellationToken)
                                                 .ConfigureAwait(false);
