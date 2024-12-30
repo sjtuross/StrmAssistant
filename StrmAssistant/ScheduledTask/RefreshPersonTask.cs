@@ -31,7 +31,7 @@ namespace StrmAssistant.ScheduledTask
 
         public async Task Execute(CancellationToken cancellationToken, IProgress<double> progress)
         {
-            _logger.Info("RefreshPerson - Task Execute");
+            _logger.Info("RefreshPerson - Scheduled Task Execute");
             await Task.Yield();
             progress.Report(0);
 
@@ -43,7 +43,7 @@ namespace StrmAssistant.ScheduledTask
             {
                 progress.Report(100.0);
                 _logger.Warn("Server Preferred Metadata Language is not set to Chinese.");
-                _logger.Warn("RefreshPerson - Task Aborted");
+                _logger.Warn("RefreshPerson - Scheduled Task Aborted");
                 return;
             }
 
@@ -121,8 +121,8 @@ namespace StrmAssistant.ScheduledTask
             {
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    _logger.Info("RefreshPerson - Task Cancelled");
-                    break;
+                    _logger.Info("RefreshPerson - Scheduled Task Cancelled");
+                    return;
                 }
 
                 personQuery.Limit = batchSize;
@@ -154,18 +154,18 @@ namespace StrmAssistant.ScheduledTask
 
                     try
                     {
-                        await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken);
+                        await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                     }
                     catch
                     {
-                        break;
+                        return;
                     }
                     
                     if (cancellationToken.IsCancellationRequested)
                     {
                         QueueManager.Tier2Semaphore.Release();
-                        _logger.Info("RefreshPerson - Task Cancelled");
-                        break;
+                        _logger.Info("RefreshPerson - Scheduled Task Cancelled");
+                        return;
                     }
 
                     var task = Task.Run(async () =>
@@ -174,7 +174,7 @@ namespace StrmAssistant.ScheduledTask
                         {
                             if (cancellationToken.IsCancellationRequested)
                             {
-                                _logger.Info("RefreshPerson - Task Cancelled");
+                                _logger.Info("RefreshPerson - Scheduled Task Cancelled");
                                 return;
                             }
 
@@ -233,7 +233,7 @@ namespace StrmAssistant.ScheduledTask
                     tasks.Add(task);
                     Task.Delay(10).Wait();
                 }
-                await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks).ConfigureAwait(false);
                 tasks.Clear();
                 personItems.Clear();
             }
@@ -245,7 +245,7 @@ namespace StrmAssistant.ScheduledTask
             }
 
             progress.Report(100.0);
-            _logger.Info("RefreshPerson - Task Complete");
+            _logger.Info("RefreshPerson - Scheduled Task Complete");
         }
 
         public string Category => Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",

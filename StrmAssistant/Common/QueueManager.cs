@@ -112,7 +112,7 @@ namespace StrmAssistant.Common
                 {
                     try
                     {
-                        await Task.Delay(remainingTime, cancellationToken);
+                        await Task.Delay(remainingTime, cancellationToken).ConfigureAwait(false);
                     }
                     catch
                     {
@@ -281,6 +281,8 @@ namespace StrmAssistant.Common
             _logger.Info("Tier2 Max Concurrent Count: " +
                          Plugin.Instance.MainOptionsStore.GetOptions().GeneralOptions.Tier2MaxConcurrentCount);
 
+            var tasks = new List<Task>();
+
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (TaskQueue.TryDequeue(out var taskWrapper))
@@ -291,7 +293,7 @@ namespace StrmAssistant.Common
 
                     try
                     {
-                        await selectedSemaphore.WaitAsync(cancellationToken);
+                        await selectedSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                     }
                     catch
                     {
@@ -310,7 +312,7 @@ namespace StrmAssistant.Common
 
                         try
                         {
-                            result = await taskWrapper.Action();
+                            result = await taskWrapper.Action().ConfigureAwait(false);
                         }
                         finally
                         {
@@ -318,7 +320,8 @@ namespace StrmAssistant.Common
                             {
                                 try
                                 {
-                                    await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken);
+                                    await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken)
+                                        .ConfigureAwait(false);
                                 }
                                 catch
                                 {
@@ -329,12 +332,15 @@ namespace StrmAssistant.Common
                             selectedSemaphore.Release();
                         }
                     }, cancellationToken);
+                    tasks.Add(task);
                 }
                 else
                 {
                     break;
                 }
             }
+
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             lock (_lock)
             {
@@ -363,7 +369,7 @@ namespace StrmAssistant.Common
                 {
                     try
                     {
-                        await Task.Delay(remainingTime, cancellationToken);
+                        await Task.Delay(remainingTime, cancellationToken).ConfigureAwait(false);
                     }
                     catch
                     {
@@ -412,6 +418,14 @@ namespace StrmAssistant.Common
 
                             foreach (var season in groupedBySeason)
                             {
+                                var taskSeason = season.Key;
+
+                                if (cancellationToken.IsCancellationRequested)
+                                {
+                                    _logger.Info("Fingerprint - Season Cancelled: " + taskSeason.Name + " - " + taskSeason.Path);
+                                    break;
+                                }
+
                                 var episodeTasks = new List<Task>();
                                 var seasonSkip = false;
 
@@ -421,7 +435,7 @@ namespace StrmAssistant.Common
 
                                     try
                                     {
-                                        await MasterSemaphore.WaitAsync(cancellationToken);
+                                        await MasterSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                                     }
                                     catch
                                     {
@@ -443,7 +457,7 @@ namespace StrmAssistant.Common
                                         {
                                             if (cancellationToken.IsCancellationRequested)
                                             {
-                                                _logger.Info("Fingerprint - Item Cancelled: " + taskItem.Name + " - " +
+                                                _logger.Info("Fingerprint - Episode Cancelled: " + taskItem.Name + " - " +
                                                              taskItem.Path);
                                                 return;
                                             }
@@ -456,7 +470,7 @@ namespace StrmAssistant.Common
 
                                                 if (result1 is null)
                                                 {
-                                                    _logger.Info("Fingerprint - Item Skipped: " + taskItem.Name +
+                                                    _logger.Info("Fingerprint - Episode Skipped: " + taskItem.Name +
                                                                  " - " + taskItem.Path);
                                                     seasonSkip = true;
                                                     return;
@@ -464,7 +478,8 @@ namespace StrmAssistant.Common
 
                                                 if (cooldownSeconds.HasValue)
                                                 {
-                                                    await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken);
+                                                    await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken)
+                                                        .ConfigureAwait(false);
                                                 }
                                             }
 
@@ -478,17 +493,17 @@ namespace StrmAssistant.Common
                                                 .ExtractIntroFingerprint(taskItem, cancellationToken)
                                                 .ConfigureAwait(false);
 
-                                            _logger.Info("Fingerprint - Item Processed: " + taskItem.Name + " - " +
+                                            _logger.Info("Fingerprint - Episode Processed: " + taskItem.Name + " - " +
                                                          taskItem.Path);
                                         }
                                         catch (TaskCanceledException)
                                         {
-                                            _logger.Info("Fingerprint - Item Cancelled: " + taskItem.Name + " - " +
+                                            _logger.Info("Fingerprint - Episode Cancelled: " + taskItem.Name + " - " +
                                                          taskItem.Path);
                                         }
                                         catch (Exception e)
                                         {
-                                            _logger.Error("Fingerprint - Item Failed: " + taskItem.Name + " - " +
+                                            _logger.Error("Fingerprint - Episode Failed: " + taskItem.Name + " - " +
                                                           taskItem.Path);
                                             _logger.Error(e.Message);
                                             _logger.Debug(e.StackTrace);
@@ -499,7 +514,8 @@ namespace StrmAssistant.Common
                                             {
                                                 try
                                                 {
-                                                    await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken);
+                                                    await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken)
+                                                        .ConfigureAwait(false);
                                                 }
                                                 catch
                                                 {
@@ -513,15 +529,15 @@ namespace StrmAssistant.Common
                                     episodeTasks.Add(task);
                                 }
 
-                                var taskSeason = season.Key;
                                 var seasonTask = Task.Run(async () =>
                                 {
                                     try
                                     {
-                                        await Task.WhenAll(episodeTasks);
+                                        await Task.WhenAll(episodeTasks).ConfigureAwait(false);
 
                                         if (cancellationToken.IsCancellationRequested)
                                         {
+                                            _logger.Info("Fingerprint - Season Cancelled: " + taskSeason.Name + " - " + taskSeason.Path);
                                             return;
                                         }
 
@@ -531,7 +547,7 @@ namespace StrmAssistant.Common
                                             return;
                                         }
 
-                                        await Tier2Semaphore.WaitAsync(cancellationToken);
+                                        await Tier2Semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
 
                                         await Plugin.FingerprintApi
                                             .UpdateIntroMarkerForSeason(taskSeason, cancellationToken)
@@ -554,7 +570,7 @@ namespace StrmAssistant.Common
                                 }, cancellationToken);
                                 seasonTasks.Add(seasonTask);
                             }
-                            await Task.WhenAll(seasonTasks);
+                            await Task.WhenAll(seasonTasks).ConfigureAwait(false);
                         }
                         _logger.Info("Fingerprint - Clear Item Queue Stopped");
                     }
@@ -585,7 +601,7 @@ namespace StrmAssistant.Common
                 {
                     try
                     {
-                        await Task.Delay(remainingTime, cancellationToken);
+                        await Task.Delay(remainingTime, cancellationToken).ConfigureAwait(false);
                     }
                     catch
                     {

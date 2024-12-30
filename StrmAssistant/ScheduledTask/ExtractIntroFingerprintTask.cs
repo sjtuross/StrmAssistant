@@ -53,18 +53,18 @@ namespace StrmAssistant.ScheduledTask
             {
                 try
                 {
-                    await QueueManager.MasterSemaphore.WaitAsync(cancellationToken);
+                    await QueueManager.MasterSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch
                 {
-                    break;
+                    return;
                 }
 
                 if (cancellationToken.IsCancellationRequested)
                 {
                     QueueManager.MasterSemaphore.Release();
                     _logger.Info("IntroFingerprintExtract - Scheduled Task Cancelled");
-                    break;
+                    return;
                 }
 
                 var taskIndex = ++index;
@@ -101,7 +101,7 @@ namespace StrmAssistant.ScheduledTask
                         {
                             try
                             {
-                                await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken);
+                                await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken).ConfigureAwait(false);
                             }
                             catch
                             {
@@ -120,20 +120,19 @@ namespace StrmAssistant.ScheduledTask
                 }, cancellationToken);
                 tasks.Add(task);
             }
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             progress.Report(100.0);
-
-            _logger.Info("IntroFingerprintExtract - Trigger Detect Episode Intros to import fingerprints");
 
             var markerTask = _taskManager.ScheduledTasks.FirstOrDefault(t =>
                 t.Name.Equals("Detect Episode Intros", StringComparison.OrdinalIgnoreCase));
             if (markerTask != null && items.Count > 0 && !cancellationToken.IsCancellationRequested)
             {
                 _ = _taskManager.Execute(markerTask, new TaskOptions());
+                _logger.Info("IntroFingerprintExtract - Triggered Detect Episode Intros to import fingerprints");
             }
 
-            _logger.Info("IntroFingerprintExtract - Task Complete");
+            _logger.Info("IntroFingerprintExtract - Scheduled Task Complete");
         }
 
         public string Category => Resources.ResourceManager.GetString("PluginOptions_EditorTitle_Strm_Assistant",

@@ -46,18 +46,18 @@ namespace StrmAssistant
             {
                 try
                 {
-                    await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken);
+                    await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                 }
                 catch
                 {
-                    break;
+                    return;
                 }
 
                 if (cancellationToken.IsCancellationRequested)
                 {
                     QueueManager.Tier2Semaphore.Release();
                     _logger.Info("MediaInfoPersist - Scheduled Task Cancelled");
-                    break;
+                    return;
                 }
 
                 var taskIndex = ++index;
@@ -99,7 +99,7 @@ namespace StrmAssistant
                 tasks.Add(task);
                 Task.Delay(10).Wait();
             }
-            await Task.WhenAll(tasks);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
 
             progress.Report(100.0);
             _logger.Info("MediaInfoPersist - Scheduled Task Complete");
