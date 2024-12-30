@@ -28,7 +28,9 @@ namespace StrmAssistant.Options
         {
             return string.Join(", ",
                 _selectedExclusiveFeatures.Select(feature =>
-                    Enum.TryParse(feature.Trim(), true, out GeneralOptions.CatchupTask type) ? type.GetDescription() : null));
+                    Enum.TryParse(feature.Trim(), true, out MediaInfoExtractOptions.ExclusiveControl type)
+                        ? type.GetDescription()
+                        : null));
         }
 
         public static void UpdateCatchupScope(string currentScope)
@@ -47,7 +49,9 @@ namespace StrmAssistant.Options
         {
             return string.Join(", ",
                 _selectedCatchupTasks.Select(task =>
-                    Enum.TryParse(task.Trim(), true, out GeneralOptions.CatchupTask type) ? type.GetDescription() : null));
+                    Enum.TryParse(task.Trim(), true, out GeneralOptions.CatchupTask type)
+                        ? type.GetDescription()
+                        : null));
         }
     }
 }

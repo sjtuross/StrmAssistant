@@ -234,7 +234,8 @@ namespace StrmAssistant.Mod
         {
             if (item.Parent is null && item.ExtraType is null) return true;
 
-            if (Plugin.Instance.MetadataEnhanceStore.GetOptions().LocalEpisodeGroup)
+            if (provider is IRemoteMetadataProvider && provider.Name == "TheMovieDb" &&
+                Plugin.Instance.MetadataEnhanceStore.GetOptions().LocalEpisodeGroup)
             {
                 var providerName = provider.GetType().FullName;
 

@@ -402,6 +402,7 @@ namespace StrmAssistant.Common
                             if (cooldownSeconds.HasValue) _logger.Info("Cooldown Duration Seconds: " + cooldownSeconds.Value);
 
                             var groupedBySeason = episodes.GroupBy(e => e.Season).ToList();
+                            var seasonTasks = new List<Task>();
 
                             foreach (var season in groupedBySeason)
                             {
@@ -538,9 +539,10 @@ namespace StrmAssistant.Common
                                         Tier2Semaphore.Release();
                                     }
                                 }, cancellationToken);
+                                seasonTasks.Add(seasonTask);
                             }
+                            await Task.WhenAll(seasonTasks);
                         }
-
                         _logger.Info("Fingerprint - Clear Item Queue Stopped");
                     }
                 }

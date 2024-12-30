@@ -288,7 +288,8 @@ namespace StrmAssistant.Common
                 resultItems = resultItems.Concat(episodesIntroSkip).ToList();
             }
 
-            resultItems = resultItems.GroupBy(i => i.InternalId).Select(g => g.First()).ToList();
+            resultItems = resultItems.Where(i => i.ExtraType is null).GroupBy(i => i.InternalId).Select(g => g.First())
+                .ToList();
 
             var unprocessedItems = FilterUnprocessed(resultItems
                 .Concat(includeExtra ? resultItems.SelectMany(f => f.GetExtras(IncludeExtraTypes)) : Enumerable.Empty<BaseItem>())
