@@ -44,12 +44,6 @@ namespace StrmAssistant
 
             foreach (var item in items)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    _logger.Info("MediaInfoPersist - Scheduled Task Cancelled");
-                    break;
-                }
-
                 try
                 {
                     await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken);
@@ -58,7 +52,14 @@ namespace StrmAssistant
                 {
                     break;
                 }
-                
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    QueueManager.Tier2Semaphore.Release();
+                    _logger.Info("MediaInfoPersist - Scheduled Task Cancelled");
+                    break;
+                }
+
                 var taskIndex = ++index;
                 var taskItem = item;
                 var task = Task.Run(async () =>

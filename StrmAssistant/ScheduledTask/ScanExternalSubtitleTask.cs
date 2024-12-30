@@ -38,18 +38,19 @@ namespace StrmAssistant.ScheduledTask
 
             foreach (var item in items)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    _logger.Info("ExternalSubtitle - Scan Task Cancelled");
-                    break;
-                }
-
                 try
                 {
                     await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken);
                 }
                 catch
                 {
+                    break;
+                }
+                
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    QueueManager.Tier2Semaphore.Release();
+                    _logger.Info("ExternalSubtitle - Scan Task Cancelled");
                     break;
                 }
 

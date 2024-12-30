@@ -152,18 +152,19 @@ namespace StrmAssistant.ScheduledTask
                         continue;
                     }
 
-                    if (cancellationToken.IsCancellationRequested)
-                    {
-                        _logger.Info("RefreshPerson - Task Cancelled");
-                        break;
-                    }
-
                     try
                     {
                         await QueueManager.Tier2Semaphore.WaitAsync(cancellationToken);
                     }
                     catch
                     {
+                        break;
+                    }
+                    
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        QueueManager.Tier2Semaphore.Release();
+                        _logger.Info("RefreshPerson - Task Cancelled");
                         break;
                     }
 

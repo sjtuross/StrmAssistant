@@ -55,18 +55,19 @@ namespace StrmAssistant.ScheduledTask
 
             foreach (var item in items)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    _logger.Info("MediaInfoExtract - Scheduled Task Cancelled");
-                    break;
-                }
-
                 try
                 {
                     await QueueManager.MasterSemaphore.WaitAsync(cancellationToken);
                 }
                 catch
                 {
+                    break;
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    QueueManager.MasterSemaphore.Release();
+                    _logger.Info("MediaInfoExtract - Scheduled Task Cancelled");
                     break;
                 }
 

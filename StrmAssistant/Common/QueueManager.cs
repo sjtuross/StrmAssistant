@@ -298,6 +298,12 @@ namespace StrmAssistant.Common
                         break;
                     }
 
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        selectedSemaphore.Release();
+                        break;
+                    }
+
                     var task = Task.Run(async () =>
                     {
                         object result = null;
@@ -406,11 +412,6 @@ namespace StrmAssistant.Common
 
                             foreach (var season in groupedBySeason)
                             {
-                                if (cancellationToken.IsCancellationRequested)
-                                {
-                                    break;
-                                }
-
                                 var episodeTasks = new List<Task>();
                                 var seasonSkip = false;
 
@@ -424,6 +425,12 @@ namespace StrmAssistant.Common
                                     }
                                     catch
                                     {
+                                        break;
+                                    }
+
+                                    if (cancellationToken.IsCancellationRequested)
+                                    {
+                                        MasterSemaphore.Release();
                                         break;
                                     }
 
