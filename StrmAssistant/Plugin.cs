@@ -13,6 +13,7 @@ using MediaBrowser.Controller.MediaEncoding;
 using MediaBrowser.Controller.Notifications;
 using MediaBrowser.Controller.Persistence;
 using MediaBrowser.Controller.Session;
+using MediaBrowser.Model.Configuration;
 using MediaBrowser.Model.Drawing;
 using MediaBrowser.Model.Events;
 using MediaBrowser.Model.Globalization;
@@ -123,6 +124,7 @@ namespace StrmAssistant
             _userManager.UserDeleted += OnUserDeleted;
             _userManager.UserConfigurationUpdated += OnUserConfigurationUpdated;
             _userDataManager.UserDataSaved += OnUserDataSaved;
+            CollectionFolder.LibraryOptionsUpdated += OnLibraryOptionsUpdated;
         }
 
         private void OnUserCreated(object sender, GenericEventArgs<User> e)
@@ -138,6 +140,14 @@ namespace StrmAssistant
         private void OnUserConfigurationUpdated(object sender, GenericEventArgs<User> e)
         {
             if (e.Argument.Policy.IsAdministrator) LibraryApi.FetchAdminOrderedViews();
+        }
+        
+        private void OnLibraryOptionsUpdated(object sender, GenericEventArgs<Tuple<CollectionFolder, LibraryOptions>> e)
+        {
+            if (e.Argument.Item1.CollectionType == "tvshows" || e.Argument.Item1.CollectionType is null)
+            {
+                IntroSkipStore.SavePluginOptionsSuppress();
+            }
         }
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)

@@ -1,4 +1,4 @@
-﻿using MediaBrowser.Common.Configuration;
+using MediaBrowser.Common.Configuration;
 using MediaBrowser.Controller;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.TV;
@@ -237,9 +237,6 @@ namespace StrmAssistant.Common
                     : f.LibraryOptions.EnableMarkerDetection &&
                       (f.CollectionType == CollectionType.TvShows.ToString() || f.CollectionType is null))
                 .ToList();
-
-            _logger.Info("MarkerEnabledLibraryScope: " +
-                         (libraries.Any() ? string.Join(", ", libraries.Select(l => l.Name)) : "EMPTY"));
 
             foreach (var library in libraries)
             {

@@ -16,6 +16,8 @@ namespace StrmAssistant.Options.Store
     {
         private readonly ILogger _logger;
 
+        private bool _currentSuppressOnOptionsSaved;
+
         public IntroSkipOptionsStore(IApplicationHost applicationHost, ILogger logger, string pluginFullName)
             : base(applicationHost, logger, pluginFullName)
         {
@@ -27,6 +29,12 @@ namespace StrmAssistant.Options.Store
 
         public IntroSkipOptions IntroSkipOptions => GetOptions();
         
+        public void SavePluginOptionsSuppress()
+        {
+            _currentSuppressOnOptionsSaved = true;
+            SetOptions(IntroSkipOptions);
+        }
+
         private void OnFileSaving(object sender, FileSavingEventArgs e)
         {
             if (e.Options is IntroSkipOptions options)
@@ -133,20 +141,9 @@ namespace StrmAssistant.Options.Store
                     }
                 }
 
-                if (changedProperties.Contains(nameof(IntroSkipOptions.MarkerEnabledLibraryScope)) ||
-                    changedProperties.Contains(nameof(IntroSkipOptions.UnlockIntroSkip)))
-                {
-                    if (options.UnlockIntroSkip)
-                        Plugin.FingerprintApi.UpdateLibraryPathsInScope(options.MarkerEnabledLibraryScope);
-                }
-
-                if (changedProperties.Contains(nameof(IntroSkipOptions.IntroDetectionFingerprintMinutes)) ||
-                    changedProperties.Contains(nameof(IntroSkipOptions.UnlockIntroSkip)))
-                {
-                    if (options.UnlockIntroSkip)
-                        Plugin.FingerprintApi.UpdateLibraryIntroDetectionFingerprintLength(
-                            options.MarkerEnabledLibraryScope, options.IntroDetectionFingerprintMinutes);
-                }
+                Plugin.FingerprintApi.UpdateLibraryPathsInScope(options.MarkerEnabledLibraryScope);
+                Plugin.FingerprintApi.UpdateLibraryIntroDetectionFingerprintLength(
+                    options.MarkerEnabledLibraryScope, options.IntroDetectionFingerprintMinutes);
             }
         }
 
@@ -154,45 +151,52 @@ namespace StrmAssistant.Options.Store
         {
             if (e.Options is IntroSkipOptions options)
             {
-                _logger.Info("UnlockIntroSkip is set to {0}", options.UnlockIntroSkip);
-                _logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
-                    options.IntroDetectionFingerprintMinutes);
+                var suppressLogger = _currentSuppressOnOptionsSaved;
 
-                var markerEnabledLibraryScope = string.Join(", ",
-                    options.MarkerEnabledLibraryScope
-                        ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v =>
-                            options.MarkerEnabledLibraryList
-                                .FirstOrDefault(option => option.Value == v)?.Name) ?? Enumerable.Empty<string>());
-                _logger.Info("MarkerEnabledLibraryScope is set to {0}",
-                    string.IsNullOrEmpty(markerEnabledLibraryScope)
-                        ? options.MarkerEnabledLibraryList.Any(o => o.Value != "-1") ? "ALL" : "EMPTY"
-                        : markerEnabledLibraryScope);
+                if (!suppressLogger)
+                {
+                    _logger.Info("UnlockIntroSkip is set to {0}", options.UnlockIntroSkip);
+                    _logger.Info("IntroDetectionFingerprintMinutes is set to {0}",
+                        options.IntroDetectionFingerprintMinutes);
 
-                _logger.Info("FingerprintBlacklistShows is set to {0}", options.FingerprintBlacklistShows);
+                    var markerEnabledLibraryScope = string.Join(", ",
+                        options.MarkerEnabledLibraryScope
+                            ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(v =>
+                                options.MarkerEnabledLibraryList
+                                    .FirstOrDefault(option => option.Value == v)?.Name) ?? Enumerable.Empty<string>());
+                    _logger.Info("MarkerEnabledLibraryScope is set to {0}",
+                        string.IsNullOrEmpty(markerEnabledLibraryScope)
+                            ? options.MarkerEnabledLibraryList.Any(o => o.Value != "-1") ? "ALL" : "EMPTY"
+                            : markerEnabledLibraryScope);
 
-                _logger.Info("EnableIntroSkip is set to {0}", options.EnableIntroSkip);
-                _logger.Info("MaxIntroDurationSeconds is set to {0}", options.MaxIntroDurationSeconds);
-                _logger.Info("MaxCreditsDurationSeconds is set to {0}", options.MaxCreditsDurationSeconds);
-                _logger.Info("MinOpeningPlotDurationSeconds is set to {0}",
-                    options.MinOpeningPlotDurationSeconds);
+                    _logger.Info("FingerprintBlacklistShows is set to {0}", options.FingerprintBlacklistShows);
 
-                var intoSkipLibraryScope = string.Join(", ",
-                    options.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(v => options.LibraryList
-                            .FirstOrDefault(option => option.Value == v)
-                            ?.Name) ?? Enumerable.Empty<string>());
-                _logger.Info("IntroSkip - LibraryScope is set to {0}",
-                    string.IsNullOrEmpty(intoSkipLibraryScope) ? "ALL" : intoSkipLibraryScope);
+                    _logger.Info("EnableIntroSkip is set to {0}", options.EnableIntroSkip);
+                    _logger.Info("MaxIntroDurationSeconds is set to {0}", options.MaxIntroDurationSeconds);
+                    _logger.Info("MaxCreditsDurationSeconds is set to {0}", options.MaxCreditsDurationSeconds);
+                    _logger.Info("MinOpeningPlotDurationSeconds is set to {0}",
+                        options.MinOpeningPlotDurationSeconds);
 
-                var introSkipUserScope = string.Join(", ",
-                    options.UserScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                        .Select(v => options.UserList
-                            .FirstOrDefault(option => option.Value == v)
-                            ?.Name) ?? Enumerable.Empty<string>());
-                _logger.Info("IntroSkip - UserScope is set to {0}",
-                    string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
+                    var intoSkipLibraryScope = string.Join(", ",
+                        options.LibraryScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(v => options.LibraryList
+                                .FirstOrDefault(option => option.Value == v)
+                                ?.Name) ?? Enumerable.Empty<string>());
+                    _logger.Info("IntroSkip - LibraryScope is set to {0}",
+                        string.IsNullOrEmpty(intoSkipLibraryScope) ? "ALL" : intoSkipLibraryScope);
 
-                _logger.Info("IntroSkip - ClientScope is set to {0}", options.ClientScope);
+                    var introSkipUserScope = string.Join(", ",
+                        options.UserScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                            .Select(v => options.UserList
+                                .FirstOrDefault(option => option.Value == v)
+                                ?.Name) ?? Enumerable.Empty<string>());
+                    _logger.Info("IntroSkip - UserScope is set to {0}",
+                        string.IsNullOrEmpty(introSkipUserScope) ? "ALL" : introSkipUserScope);
+
+                    _logger.Info("IntroSkip - ClientScope is set to {0}", options.ClientScope);
+                }
+
+                if (suppressLogger) _currentSuppressOnOptionsSaved = false;
             }
         }
     }
