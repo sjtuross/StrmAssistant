@@ -181,10 +181,13 @@ namespace StrmAssistant.Mod
                 {
                     __result.PathStartsWithAny = FingerprintApi.LibraryPathsInScope.ToArray();
                 }
+                
+                var blackListSeasons = Plugin.FingerprintApi.GetAllBlacklistSeasons().ToArray();
+                if (blackListSeasons.Any())
+                {
+                    __result.ExcludeParentIds = blackListSeasons;
+                }
             }
-
-            var blackListSeasons = Plugin.FingerprintApi.GetAllBlacklistSeasons().ToArray();
-            if (blackListSeasons.Any()) __result.ExcludeParentIds = blackListSeasons;
 
             __result.HasIntroDetectionFailure = null;
         }

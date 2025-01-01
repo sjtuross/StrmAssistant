@@ -192,6 +192,45 @@ namespace StrmAssistant.Common
             return resultItems;
         }
 
+        public List<Episode> FetchIntroPreExtractTaskItems()
+        {
+            var markerEnabledLibraryScope = Plugin.Instance.IntroSkipStore.GetOptions().MarkerEnabledLibraryScope;
+            var introDetectionFingerprintMinutes =
+                Plugin.Instance.IntroSkipStore.GetOptions().IntroDetectionFingerprintMinutes;
+            UpdateLibraryIntroDetectionFingerprintLength(markerEnabledLibraryScope, introDetectionFingerprintMinutes);
+
+            var itemsFingerprintQuery = new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { nameof(Episode) },
+                Recursive = true,
+                GroupByPresentationUniqueKey = false,
+                HasPath = true,
+                HasAudioStream = false,
+            };
+
+            if (!string.IsNullOrEmpty(markerEnabledLibraryScope) && markerEnabledLibraryScope.Contains("-1"))
+            {
+                itemsFingerprintQuery.ParentIds = GetAllFavoriteSeasons().DefaultIfEmpty(-1).ToArray();
+            }
+            else
+            {
+                if (LibraryPathsInScope.Any())
+                {
+                    itemsFingerprintQuery.PathStartsWithAny = LibraryPathsInScope.ToArray();
+                }
+
+                var blackListSeasons = GetAllBlacklistSeasons();
+                if (blackListSeasons.Any())
+                {
+                    itemsFingerprintQuery.ExcludeParentIds = blackListSeasons.ToArray();
+                }
+            }
+
+            var items = _libraryManager.GetItemList(itemsFingerprintQuery).OfType<Episode>().ToList();
+
+            return items;
+        }
+
         public List<Episode> FetchIntroFingerprintTaskItems()
         {
             var markerEnabledLibraryScope = Plugin.Instance.IntroSkipStore.GetOptions().MarkerEnabledLibraryScope;
@@ -215,13 +254,19 @@ namespace StrmAssistant.Common
             }
             else
             {
-                itemsFingerprintQuery.PathStartsWithAny = LibraryPathsInScope.ToArray();
+                if (LibraryPathsInScope.Any())
+                {
+                    itemsFingerprintQuery.PathStartsWithAny = LibraryPathsInScope.ToArray();
+                }
+
+                var blackListSeasons = GetAllBlacklistSeasons();
+                if (blackListSeasons.Any())
+                {
+                    itemsFingerprintQuery.ExcludeParentIds = blackListSeasons.ToArray();
+                }
             }
 
             var items = _libraryManager.GetItemList(itemsFingerprintQuery).OfType<Episode>().ToList();
-
-            var blackListSeasons = GetAllBlacklistSeasons();
-            items = items.Where(e => !blackListSeasons.Contains(e.ParentId)).ToList();
 
             return items;
         }

@@ -332,7 +332,8 @@ namespace StrmAssistant.Mod
                     CurrentRefreshContext.Value.MetadataRefreshOptions.SearchResult != null))
             {
                 if (item is Video && Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
-                    QueueManager.ExternalSubtitleItemQueue.Enqueue(item);
+                    Task.Run(() =>
+                        Plugin.SubtitleApi.UpdateExternalSubtitles(item, CancellationToken.None).ConfigureAwait(false));
 
                 __result = false;
                 return false;
@@ -349,7 +350,8 @@ namespace StrmAssistant.Mod
             if (!IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) && Plugin.LibraryApi.HasMediaInfo(item))
             {
                 if (item is Video && Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
-                    QueueManager.ExternalSubtitleItemQueue.Enqueue(item);
+                    Task.Run(() =>
+                        Plugin.SubtitleApi.UpdateExternalSubtitles(item, CancellationToken.None).ConfigureAwait(false));
 
                 __result = false;
                 return false;
