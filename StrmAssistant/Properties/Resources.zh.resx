@@ -473,4 +473,10 @@
   <data name="IntroSkipOptions_IntroDetectionFingerprintMinutes_It_must_be_between_2_and_20__Default_is_10_" xml:space="preserve">
     <value>自定义片头声纹探测时长，必须在 2 至 20 之间，默认为 10。</value>
   </data>
+  <data name="UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_Boxsets_Auto_Creation" xml:space="preserve">
+    <value>避免合集库自动创建</value>
+  </data>
+  <data name="UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_automatic_boxset_library_creation__Default_is_OFF_" xml:space="preserve">
+    <value>避免扫库时自动创建合集媒体库，默认关闭。</value>
+  </data>
 </root>

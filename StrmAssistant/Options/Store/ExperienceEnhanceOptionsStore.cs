@@ -89,6 +89,18 @@ namespace StrmAssistant.Options.Store
                         EnhanceMissingEpisodes.Unpatch();
                     }
                 }
+
+                if (changedProperties.Contains(nameof(ExperienceEnhanceOptions.UIFunctionOptions.NoBoxsetsAutoCreation)))
+                {
+                    if (options.UIFunctionOptions.NoBoxsetsAutoCreation)
+                    {
+                        NoBoxsetsAutoCreation.Patch();
+                    }
+                    else
+                    {
+                        NoBoxsetsAutoCreation.Unpatch();
+                    }
+                }
             }
         }
 
@@ -101,6 +113,7 @@ namespace StrmAssistant.Options.Store
                 _logger.Info("EnforceLibraryOrder is set to {0}", options.UIFunctionOptions.EnforceLibraryOrder);
                 _logger.Info("BeautifyMissingMetadata is set to {0}", options.UIFunctionOptions.BeautifyMissingMetadata);
                 _logger.Info("EnhanceMissingEpisodes is set to {0}", options.UIFunctionOptions.EnhanceMissingEpisodes);
+                _logger.Info("NoBoxsetsAutoCreation is set to {0}", options.UIFunctionOptions.NoBoxsetsAutoCreation);
             }
         }
     }

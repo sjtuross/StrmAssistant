@@ -36,6 +36,12 @@ namespace StrmAssistant.Options
         [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
         public bool EnforceLibraryOrder { get; set; } = false;
 
+        [DisplayNameL("UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_Boxsets_Auto_Creation", typeof(Resources))]
+        [DescriptionL("UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_automatic_boxset_library_creation__Default_is_OFF_", typeof(Resources))]
+        [Required]
+        [EnabledCondition(nameof(IsModSupported), SimpleCondition.IsTrue)]
+        public bool NoBoxsetsAutoCreation { get; set; } = false;
+
         [Browsable(false)]
         public bool IsModSupported { get; } = RuntimeInformation.ProcessArchitecture == Architecture.X64;
     }

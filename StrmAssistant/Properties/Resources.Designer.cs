@@ -309,7 +309,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Intro Detection Fingerprint Length (Minute), Default is 10.
+        ///   Looks up a localized string similar to Intro Detection Fingerprint Length (Minute).
         /// </summary>
         public static string IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes {
             get {
@@ -319,7 +319,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to It must be between 2 and 20. Default is 10..
+        ///   Looks up a localized string similar to Customize intro detection fingerprint length. It must be between 2 and 20. Default is 10..
         /// </summary>
         public static string IntroSkipOptions_IntroDetectionFingerprintMinutes_It_must_be_between_2_and_20__Default_is_10_ {
             get {
@@ -403,7 +403,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Customize intro detection fingerprint length, unlock Strm support. Default is OFF..
+        ///   Looks up a localized string similar to Provide customizable options, unlock Strm support. Default is OFF..
         /// </summary>
         public static string IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection {
             get {
@@ -1438,6 +1438,25 @@ namespace StrmAssistant.Properties {
         public static string UIFunctionOptions_EnhanceMissingEpisodes_Missing_Episodes_Enhanced {
             get {
                 return ResourceManager.GetString("UIFunctionOptions_EnhanceMissingEpisodes_Missing_Episodes_Enhanced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prevent automatic boxset library creation. Default is OFF..
+        /// </summary>
+        public static string UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_automatic_boxset_library_creation__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_automatic_boxset_library_creation" +
+                        "__Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prevent Boxsets Auto Creation.
+        /// </summary>
+        public static string UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_Boxsets_Auto_Creation {
+            get {
+                return ResourceManager.GetString("UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_Boxsets_Auto_Creation", resourceCulture);
             }
         }
         
