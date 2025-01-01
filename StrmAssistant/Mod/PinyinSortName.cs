@@ -13,15 +13,15 @@ namespace StrmAssistant.Mod
     {
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
 
-        private static MethodInfo _sortNameGetter;
+        private static MethodInfo _createSortName;
 
         public static void Initialize()
         {
             try
             {
-                var sortNameProperty =
-                    typeof(BaseItem).GetProperty("SortName", BindingFlags.Instance | BindingFlags.Public);
-                _sortNameGetter = sortNameProperty?.GetGetMethod();
+                _createSortName = typeof(BaseItem).GetMethod("CreateSortName",
+                    BindingFlags.Instance | BindingFlags.NonPublic, null,
+                    new[] { typeof(ReadOnlySpan<char>) }, null);
             }
             catch (Exception e)
             {
@@ -46,12 +46,12 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (!IsPatched(_sortNameGetter, typeof(PinyinSortName)))
+                    if (!IsPatched(_createSortName, typeof(PinyinSortName)))
                     {
-                        HarmonyMod.Patch(_sortNameGetter,
-                            postfix: new HarmonyMethod(typeof(PinyinSortName).GetMethod("SortNameGetterPostfix",
+                        HarmonyMod.Patch(_createSortName,
+                            postfix: new HarmonyMethod(typeof(PinyinSortName).GetMethod("CreateSortNamePostfix",
                                 BindingFlags.Static | BindingFlags.NonPublic)));
-                        Plugin.Instance.Logger.Debug("Patch SortNameGetter Success by Harmony");
+                        Plugin.Instance.Logger.Debug("Patch CreateSortName Success by Harmony");
                     }
                 }
                 catch (Exception he)
@@ -70,16 +70,16 @@ namespace StrmAssistant.Mod
             {
                 try
                 {
-                    if (IsPatched(_sortNameGetter, typeof(PinyinSortName)))
+                    if (IsPatched(_createSortName, typeof(PinyinSortName)))
                     {
-                        HarmonyMod.Unpatch(_sortNameGetter,
-                            AccessTools.Method(typeof(PinyinSortName), "SortNameGetterPostfix"));
-                        Plugin.Instance.Logger.Debug("Unpatch SortNameGetter Success by Harmony");
+                        HarmonyMod.Unpatch(_createSortName,
+                            AccessTools.Method(typeof(PinyinSortName), "CreateSortNamePostfix"));
+                        Plugin.Instance.Logger.Debug("Unpatch CreateSortName Success by Harmony");
                     }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.Logger.Debug("Unpatch PinyinSortName Failed by Harmony");
+                    Plugin.Instance.Logger.Debug("Unpatch CreateSortName Failed by Harmony");
                     Plugin.Instance.Logger.Debug(he.Message);
                     Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
@@ -87,19 +87,19 @@ namespace StrmAssistant.Mod
         }
 
         [HarmonyPostfix]
-        private static void SortNameGetterPostfix(BaseItem __instance, ref string __result)
+        private static void CreateSortNamePostfix(BaseItem __instance, ref ReadOnlySpan<char> __result)
         {
             if (__instance.SupportsUserData && __instance.EnableAlphaNumericSorting && !(__instance is IHasSeries) &&
                 (__instance is Video || __instance is Audio || __instance is IItemByName ||
-                 __instance is Folder && !__instance.IsTopParent))
+                 __instance is Folder && !__instance.IsTopParent) && !__instance.IsFieldLocked(MetadataFields.SortName))
             {
-                if (__instance.IsFieldLocked(MetadataFields.SortName) || IsJapanese(__instance.Name) ||
-                    !IsChinese(__instance.Name)) return;
+                var result = new string(__result);
 
-                var nameToProcess =
-                    __instance is BoxSet ? RemoveDefaultCollectionName(__instance.Name) : __instance.Name;
+                if (IsJapanese(result) || !IsChinese(result)) return;
 
-                __result = ConvertToPinyinInitials(nameToProcess);
+                var nameToProcess = __instance is BoxSet ? RemoveDefaultCollectionName(result) : result;
+
+                __result = ConvertToPinyinInitials(nameToProcess).AsSpan();
             }
         }
     }
