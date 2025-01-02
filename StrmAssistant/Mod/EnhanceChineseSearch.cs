@@ -286,8 +286,8 @@ namespace StrmAssistant.Mod
                 {
                     var existingSha1 = ComputeSha1(_tokenizerPath);
                     Plugin.Instance.Logger.Debug(existingSha1 == expectedSha1
-                        ? "EnhanceChineseSearch - Tokenizer exists with matching SHA-1."
-                        : "EnhanceChineseSearch - Tokenizer exists but SHA-1 does not match.");
+                        ? "EnhanceChineseSearch - Tokenizer exists with matching SHA-1"
+                        : "EnhanceChineseSearch - Tokenizer exists but SHA-1 does not match");
 
                     return true;
                 }

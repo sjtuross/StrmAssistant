@@ -195,11 +195,11 @@ namespace StrmAssistant
             {
                 if (e.Item is Season season && season.IndexNumber > 0)
                 {
-                    LibraryApi.UpdateSeriesPeople(season.Parent as Series);
+                    MetadataApi.UpdateSeriesPeople(season.Parent as Series);
                 }
                 else if (e.Item is Series series)
                 {
-                    LibraryApi.UpdateSeriesPeople(series);
+                    MetadataApi.UpdateSeriesPeople(series);
                 }
             }
         }

@@ -5,6 +5,7 @@
     <FileVersion>2.0.0.2</FileVersion>
     <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
     <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
+    <NoWarn>IDE0051</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Tokenizer\linux\libsimple.so" />

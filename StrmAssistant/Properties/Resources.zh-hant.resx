@@ -36,7 +36,7 @@
     <value>主最大並發線程數</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
-    <value>提取媒體訊息，視訊截圖和聲紋任務共享，必須在 1 至 20 之間，預設為 1。</value>
+    <value>媒體訊息提取，視訊截圖，聲紋提取任務共享，必須在 1 至 20 之間，預設為 1。</value>
   </data>
   <data name="PluginOptions_StrmOnly_Extract_media_info_of_Strm_only__Default_is_True_" xml:space="preserve">
     <value>僅支援 STRM，關閉後支援所有，預設開啟。</value>
@@ -156,7 +156,7 @@
     <value>原生片頭探測增強</value>
   </data>
   <data name="IntroSkipOptions_UnlockIntroSkip_Unlock_Strm_support_for_built_in_intro_skip_detection" xml:space="preserve">
-    <value>自訂片頭聲紋探測時長，解鎖支援 STRM，預設為關閉。</value>
+    <value>提供自訂選項，解鎖支援 STRM，預設為關閉。</value>
   </data>
   <data name="ModOptions_EnhanceChineseSearch_Support_Chinese_fuzzy_search_and_Pinyin_search__Default_is_OFF_" xml:space="preserve">
     <value>支援中文模糊搜尋和拼音搜索，預設為關閉。</value>
@@ -261,7 +261,7 @@
     <value>首位管理員的自訂媒體庫排序作用於所有用戶，預設為關閉。</value>
   </data>
   <data name="IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes" xml:space="preserve">
-    <value>片頭聲紋探測時長 (分鐘)，預設為 10</value>
+    <value>片頭聲紋探測時長 (分鐘)</value>
   </data>
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope" xml:space="preserve">
     <value>媒體庫範圍</value>
@@ -469,5 +469,8 @@
   </data>
   <data name="GeneralOptions_CooldownDurationSeconds_Applicable_to_single_thread_mode__Default_is_0_" xml:space="preserve">
     <value>單線程模式有效，必須在 0 至 60 之間，預設為 0。</value>
+  </data>
+  <data name="IntroSkipOptions_IntroDetectionFingerprintMinutes_It_must_be_between_2_and_20__Default_is_10_" xml:space="preserve">
+    <value>自訂片頭聲紋探測時長，必須在 2 至 20 之間，預設為 10。</value>
   </data>
 </root>
