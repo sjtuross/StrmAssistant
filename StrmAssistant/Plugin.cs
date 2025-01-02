@@ -146,8 +146,12 @@ namespace StrmAssistant
         {
             if (e.Argument.Item1.CollectionType == "tvshows" || e.Argument.Item1.CollectionType is null)
             {
-                IntroSkipStore.SavePluginOptionsSuppress();
+                PlaySessionMonitor.UpdateLibraryPathsInScope();
+                FingerprintApi.UpdateLibraryPathsInScope();
+                FingerprintApi.UpdateLibraryIntroDetectionFingerprintLength();
             }
+
+            LibraryApi.UpdateLibraryPathsInScope();
         }
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)

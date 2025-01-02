@@ -188,6 +188,11 @@ namespace StrmAssistant.Common
                 .ToList();
         }
 
+        public void UpdateLibraryPathsInScope()
+        {
+            UpdateLibraryPathsInScope(Plugin.Instance.MediaInfoExtractStore.GetOptions().LibraryScope);
+        }
+
         public bool IsLibraryInScope(BaseItem item)
         {
             if (string.IsNullOrEmpty(item.ContainingFolderPath)) return false;

@@ -107,7 +107,12 @@ namespace StrmAssistant.Common
                     : ls + Path.DirectorySeparatorChar)
                 .ToList();
         }
-        
+
+        public void UpdateLibraryPathsInScope()
+        {
+            UpdateLibraryPathsInScope(Plugin.Instance.IntroSkipStore.GetOptions().MarkerEnabledLibraryScope);
+        }
+
         public HashSet<long> GetAllBlacklistSeasons()
         {
             var blacklistShowIds = Plugin.Instance.IntroSkipStore.GetOptions()
@@ -287,6 +292,13 @@ namespace StrmAssistant.Common
             {
                 library.LibraryOptions.IntroDetectionFingerprintLength = currentLength;
             }
+        }
+
+        public void UpdateLibraryIntroDetectionFingerprintLength()
+        {
+            UpdateLibraryIntroDetectionFingerprintLength(
+                Plugin.Instance.IntroSkipStore.GetOptions().MarkerEnabledLibraryScope,
+                Plugin.Instance.IntroSkipStore.GetOptions().IntroDetectionFingerprintMinutes);
         }
 
         public async Task<Tuple<string, bool>> ExtractIntroFingerprint(Episode item, IDirectoryService directoryService,

@@ -65,6 +65,11 @@ namespace StrmAssistant.IntroSkip
                 .ToList();
         }
 
+        public void UpdateLibraryPathsInScope()
+        {
+            UpdateLibraryPathsInScope(Plugin.Instance.IntroSkipStore.GetOptions().LibraryScope);
+        }
+
         public void UpdateUsersInScope(string currentScope)
         {
             var userIds = Plugin.Instance.IntroSkipStore.GetOptions().UserScope
