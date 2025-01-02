@@ -163,6 +163,39 @@ namespace StrmAssistant.Common
             return resultItems;
         }
 
+        public List<Episode> FetchIntroPreExtractTaskItems()
+        {
+            var markerEnabledLibraryScope = Plugin.Instance.GetPluginOptions().IntroSkipOptions.MarkerEnabledLibraryScope;
+            
+            UpdateLibraryIntroDetectionFingerprintLength();
+
+            var itemsFingerprintQuery = new InternalItemsQuery
+            {
+                IncludeItemTypes = new[] { nameof(Episode) },
+                Recursive = true,
+                GroupByPresentationUniqueKey = false,
+                HasPath = true,
+                HasAudioStream = false,
+            };
+
+            if (!string.IsNullOrEmpty(markerEnabledLibraryScope) && markerEnabledLibraryScope.Contains("-1"))
+            {
+                itemsFingerprintQuery.ParentIds = GetAllFavoriteSeasons().DefaultIfEmpty(-1).ToArray();
+            }
+            else
+            {
+                if (LibraryPathsInScope.Any())
+                {
+                    itemsFingerprintQuery.PathStartsWithAny = LibraryPathsInScope.ToArray();
+                }
+            }
+
+            var items = _libraryManager.GetItemList(itemsFingerprintQuery).Where(i => !i.IsShortcut).OfType<Episode>()
+                .ToList();
+
+            return items;
+        }
+
         public List<Episode> FetchIntroFingerprintTaskItems()
         {
             UpdateLibraryIntroDetectionFingerprintLength();
@@ -187,7 +220,10 @@ namespace StrmAssistant.Common
             }
             else
             {
-                itemsFingerprintQuery.PathStartsWithAny = LibraryPathsInScope.ToArray();
+                if (LibraryPathsInScope.Any())
+                {
+                    itemsFingerprintQuery.PathStartsWithAny = LibraryPathsInScope.ToArray();
+                }
             }
 
             var items = _libraryManager.GetItemList(itemsFingerprintQuery).Where(i => !i.IsShortcut).OfType<Episode>()

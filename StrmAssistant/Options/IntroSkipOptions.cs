@@ -19,6 +19,7 @@ namespace StrmAssistant.Options
         public bool UnlockIntroSkip { get; set; } = false;
 
         [DisplayNameL("IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes", typeof(Resources))]
+        [DescriptionL("IntroSkipOptions_IntroDetectionFingerprintMinutes_It_must_be_between_2_and_20__Default_is_10_", typeof(Resources))]
         [MinValue(2), MaxValue(20)]
         [Required]
         [VisibleCondition(nameof(UnlockIntroSkip), SimpleCondition.IsTrue)]

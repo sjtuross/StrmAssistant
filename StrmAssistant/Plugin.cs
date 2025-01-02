@@ -146,8 +146,12 @@ namespace StrmAssistant
         {
             if (e.Argument.Item1.CollectionType == "tvshows" || e.Argument.Item1.CollectionType is null)
             {
-                SavePluginOptionsSuppress();
+                PlaySessionMonitor.UpdateLibraryPathsInScope();
+                FingerprintApi.UpdateLibraryPathsInScope();
+                FingerprintApi.UpdateLibraryIntroDetectionFingerprintLength();
             }
+
+            LibraryApi.UpdateLibraryPathsInScope();
         }
 
         private void OnItemAdded(object sender, ItemChangeEventArgs e)
@@ -330,7 +334,7 @@ namespace StrmAssistant
             {
                 _currentTier2ConcurrentCount = options.GeneralOptions.Tier2MaxConcurrentCount;
 
-                QueueManager.UpdateMasterSemaphore(_currentTier2ConcurrentCount);
+                QueueManager.UpdateTier2Semaphore(_currentTier2ConcurrentCount);
             }
             LibraryApi.UpdateLibraryPathsInScope();
 

@@ -6,6 +6,7 @@
     <CopyLocalLockFileAssemblies>True</CopyLocalLockFileAssemblies>
     <IncludeSourceRevisionInInformationalVersion>true</IncludeSourceRevisionInInformationalVersion>
     <AssemblyName>$(MSBuildProjectName)Lite</AssemblyName>
+    <NoWarn>IDE0051</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Web\Resources\shortcuts.js" />

@@ -120,7 +120,7 @@
     <value>Master Max Concurrent Thread Count</value>
   </data>
   <data name="PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_" xml:space="preserve">
-    <value>Shared by media info, image capture and fingerprint processing tasks. It must be between 1 to 20. Default is 1.</value>
+    <value>Shared by mediainfo extract, image capture and fingerprint extract tasks. It must be between 1 to 20. Default is 1.</value>
   </data>
   <data name="PluginOptions_EditorTitle_Strm_Extract" xml:space="preserve">
     <value>MediaInfo Extract</value>
@@ -348,7 +348,7 @@
     <value>Enforce customized library order per the first admin. Default if OFF.</value>
   </data>
   <data name="IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes" xml:space="preserve">
-    <value>Intro Detection Fingerprint Length (Minute), Default is 10</value>
+    <value>Intro Detection Fingerprint Length (Minute)</value>
   </data>
   <data name="IntroSkipOptions_MarkerEnabledLibraryScope_Library_Scope" xml:space="preserve">
     <value>Library Scope</value>
@@ -498,7 +498,7 @@
     <value>Scrape TV show by specified episode group. Default is OFF.</value>
   </data>
   <data name="ExclusiveControl_IgnoreFileChange_IgnoreFileChange" xml:space="preserve">
-    <value>IgnoreFileChange</value>
+    <value>Ignore File Change</value>
   </data>
   <data name="ExclusiveControl_CatchAllBlock_CatchAllBlock" xml:space="preserve">
     <value>Catch All Block</value>
@@ -556,5 +556,14 @@
   </data>
   <data name="GeneralOptions_CooldownDurationSeconds_Applicable_to_single_thread_mode__Default_is_0_" xml:space="preserve">
     <value>Applicable to single thread mode. It must be between 0 and 60. Default is 0.</value>
+  </data>
+  <data name="IntroSkipOptions_IntroDetectionFingerprintMinutes_It_must_be_between_2_and_20__Default_is_10_" xml:space="preserve">
+    <value>Customize intro detection fingerprint length. It must be between 2 and 20. Default is 10.</value>
+  </data>
+  <data name="UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_Boxsets_Auto_Creation" xml:space="preserve">
+    <value>Prevent Boxsets Auto Creation</value>
+  </data>
+  <data name="UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_automatic_boxset_library_creation__Default_is_OFF_" xml:space="preserve">
+    <value>Prevent automatic boxset library creation. Default is OFF.</value>
   </data>
 </root>

@@ -206,7 +206,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Applicable to single thread mode. Default is 0..
+        ///   Looks up a localized string similar to Applicable to single thread mode. It must be between 0 and 60. Default is 0..
         /// </summary>
         public static string GeneralOptions_CooldownDurationSeconds_Applicable_to_single_thread_mode__Default_is_0_ {
             get {
@@ -216,7 +216,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cooldown Duration (Seconds), Default is 0.
+        ///   Looks up a localized string similar to Master Cooldown Duration (Seconds).
         /// </summary>
         public static string GeneralOptions_CooldownSeconds_Cooldown_Time__Seconds___Default_is_0 {
             get {
@@ -253,7 +253,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shared by refreshing metadata, external subtitles, local processing tasks, etc. It must be between 1 to 20. Default is 1..
+        ///   Looks up a localized string similar to Shared by refreshing persons, external subtitles, local processing tasks, etc. It must be between 1 to 20. Default is 1..
         /// </summary>
         public static string GeneralOptions_Tier2MaxConcurrentCount_Refresh_metadata__subtitle__local_tasks__Default_is_1_ {
             get {
@@ -309,12 +309,22 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Intro Detection Fingerprint Length (Minute), Default is 10.
+        ///   Looks up a localized string similar to Intro Detection Fingerprint Length (Minute).
         /// </summary>
         public static string IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Minutes {
             get {
                 return ResourceManager.GetString("IntroSkipOptions_IntroDetectionFingerprintMinutes_Intro_Detection_Fingerprint_Min" +
                         "utes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Customize intro detection fingerprint length. It must be between 2 and 20. Default is 10..
+        /// </summary>
+        public static string IntroSkipOptions_IntroDetectionFingerprintMinutes_It_must_be_between_2_and_20__Default_is_10_ {
+            get {
+                return ResourceManager.GetString("IntroSkipOptions_IntroDetectionFingerprintMinutes_It_must_be_between_2_and_20__De" +
+                        "fault_is_10_", resourceCulture);
             }
         }
         
@@ -1257,7 +1267,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Shared by media info, image capture and fingerprint processing tasks. It must be between 1 to 20. Default is 1..
+        ///   Looks up a localized string similar to Shared by mediainfo extract, image capture and fingerprint extract tasks. It must be between 1 to 20. Default is 1..
         /// </summary>
         public static string PluginOptions_MaxConcurrentCount_Max_Concurrent_Count_must_be_between_1_to_10__Default_is_1_ {
             get {
@@ -1428,6 +1438,25 @@ namespace StrmAssistant.Properties {
         public static string UIFunctionOptions_EnhanceMissingEpisodes_Missing_Episodes_Enhanced {
             get {
                 return ResourceManager.GetString("UIFunctionOptions_EnhanceMissingEpisodes_Missing_Episodes_Enhanced", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prevent automatic boxset library creation. Default is OFF..
+        /// </summary>
+        public static string UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_automatic_boxset_library_creation__Default_is_OFF_ {
+            get {
+                return ResourceManager.GetString("UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_automatic_boxset_library_creation" +
+                        "__Default_is_OFF_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Prevent Boxsets Auto Creation.
+        /// </summary>
+        public static string UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_Boxsets_Auto_Creation {
+            get {
+                return ResourceManager.GetString("UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_Boxsets_Auto_Creation", resourceCulture);
             }
         }
         

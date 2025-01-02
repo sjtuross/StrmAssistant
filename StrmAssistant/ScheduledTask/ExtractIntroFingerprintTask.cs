@@ -29,6 +29,15 @@ namespace StrmAssistant.ScheduledTask
         {
             _logger.Info("IntroFingerprintExtract - Scheduled Task Execute");
             
+            var unlockIntroSkip = Plugin.Instance.GetPluginOptions().IntroSkipOptions.UnlockIntroSkip;
+            if (!unlockIntroSkip)
+            {
+                progress.Report(100.0);
+                _logger.Warn("UnlockIntroSkip is not enabled.");
+                _logger.Warn("IntroFingerprintExtract - Scheduled Task Aborted");
+                return;
+            }
+
             var maxConcurrentCount = Plugin.Instance.GetPluginOptions().GeneralOptions.MaxConcurrentCount;
             _logger.Info("Master Max Concurrent Count: " + maxConcurrentCount);
             var cooldownSeconds = maxConcurrentCount == 1
@@ -39,98 +48,145 @@ namespace StrmAssistant.ScheduledTask
             _logger.Info("Intro Detection Fingerprint Length (Minutes): " + Plugin.Instance.GetPluginOptions()
                 .IntroSkipOptions.IntroDetectionFingerprintMinutes);
 
-            var items = Plugin.FingerprintApi.FetchIntroFingerprintTaskItems();
-            _logger.Info("IntroFingerprintExtract - Number of items: " + items.Count);
+            var preExtractEpisodes = Plugin.FingerprintApi.FetchIntroPreExtractTaskItems();
+            var postExtractEpisodes = Plugin.FingerprintApi.FetchIntroFingerprintTaskItems();
+            var episodes= preExtractEpisodes.Concat(postExtractEpisodes).ToList();
+            var groupedBySeason = episodes.GroupBy(e => e.Season).ToList();
+
+            _logger.Info("IntroFingerprintExtract - Number of seasons: " + groupedBySeason.Count);
+            _logger.Info("IntroFingerprintExtract - Number of episodes: " + episodes.Count);
 
             var directoryService = new DirectoryService(_logger, _fileSystem);
 
-            double total = items.Count;
+            double total = episodes.Count;
             var index = 0;
             var current = 0;
+            var seasonSkipCount = 0;
 
-            var tasks = new List<Task>();
+            var episodeTasks = new List<Task>();
 
-            foreach (var item in items)
+            foreach (var season in groupedBySeason)
             {
-                try
-                {
-                    await QueueManager.MasterSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-                }
-                catch
-                {
-                    return;
-                }
+                var taskSeason = season.Key;
 
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    QueueManager.MasterSemaphore.Release();
                     _logger.Info("IntroFingerprintExtract - Scheduled Task Cancelled");
                     return;
                 }
 
-                var taskIndex = ++index;
-                var taskItem = item;
-                var task = Task.Run(async () =>
+                var seasonSkip = false;
+
+                foreach (var episode in season)
                 {
-                    Tuple<string, bool> result = null;
+                    var taskEpisode = episode;
 
                     try
                     {
-                        if (cancellationToken.IsCancellationRequested)
-                        {
-                            _logger.Info("IntroFingerprintExtract - Scheduled Task Cancelled");
-                            return;
-                        }
+                        await QueueManager.MasterSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        return;
+                    }
 
-                        result = await Plugin.FingerprintApi
-                            .ExtractIntroFingerprint(item, directoryService, cancellationToken)
-                            .ConfigureAwait(false);
-                    }
-                    catch (TaskCanceledException)
+                    if (cancellationToken.IsCancellationRequested)
                     {
-                        _logger.Info("IntroFingerprintExtract - Item cancelled: " + taskItem.Name + " - " + taskItem.Path);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.Error("IntroFingerprintExtract - Item failed: " + taskItem.Name + " - " + taskItem.Path);
-                        _logger.Error(e.Message);
-                        _logger.Debug(e.StackTrace);
-                    }
-                    finally
-                    {
-                        if (result?.Item2 == true && cooldownSeconds.HasValue)
-                        {
-                            try
-                            {
-                                await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken).ConfigureAwait(false);
-                            }
-                            catch
-                            {
-                                // ignored
-                            }
-                        }
-
                         QueueManager.MasterSemaphore.Release();
-
-                        var currentCount = Interlocked.Increment(ref current);
-                        progress.Report(currentCount / total * 100);
-                        _logger.Info("IntroFingerprintExtract - Progress " + currentCount + "/" + total + " - " +
-                                     "Task " + taskIndex + ": " +
-                                     taskItem.Path);
+                        _logger.Info("IntroFingerprintExtract - Scheduled Task Cancelled");
+                        return;
                     }
-                }, cancellationToken);
-                tasks.Add(task);
+
+                    var taskIndex = ++index;
+                    var task = Task.Run(async () =>
+                    {
+                        bool? result1 = null;
+                        Tuple<string, bool> result2 = null;
+
+                        try
+                        {
+                            if (cancellationToken.IsCancellationRequested)
+                            {
+                                _logger.Info("IntroFingerprintExtract - Scheduled Task Cancelled");
+                                return;
+                            }
+
+                            if (Plugin.LibraryApi.IsExtractNeeded(taskEpisode))
+                            {
+                                result1 = await Plugin.LibraryApi
+                                    .OrchestrateMediaInfoProcessAsync(taskEpisode, "IntroFingerprintExtract Task",
+                                        cancellationToken).ConfigureAwait(false);
+
+                                if (result1 is null)
+                                {
+                                    _logger.Info("IntroFingerprintExtract - Episode Skipped: " + taskEpisode.Name +
+                                                " - " + taskEpisode.Path);
+                                    seasonSkip = true;
+                                    return;
+                                }
+                            }
+
+                            result2 = await Plugin.FingerprintApi
+                                .ExtractIntroFingerprint(taskEpisode, directoryService, cancellationToken)
+                                .ConfigureAwait(false);
+                        }
+                        catch (TaskCanceledException)
+                        {
+                            _logger.Info("IntroFingerprintExtract - Episode cancelled: " + taskEpisode.Name + " - " +
+                                         taskEpisode.Path);
+                        }
+                        catch (Exception e)
+                        {
+                            _logger.Error("IntroFingerprintExtract - Episode failed: " + taskEpisode.Name + " - " +
+                                          taskEpisode.Path);
+                            _logger.Error(e.Message);
+                            _logger.Debug(e.StackTrace);
+                        }
+                        finally
+                        {
+                            if ((result1 is true || result2?.Item2 is true) && cooldownSeconds.HasValue)
+                            {
+                                try
+                                {
+                                    await Task.Delay(cooldownSeconds.Value * 1000, cancellationToken)
+                                        .ConfigureAwait(false);
+                                }
+                                catch
+                                {
+                                    // ignored
+                                }
+                            }
+
+                            QueueManager.MasterSemaphore.Release();
+
+                            var currentCount = Interlocked.Increment(ref current);
+                            progress.Report(currentCount / total * 100);
+                            _logger.Info("IntroFingerprintExtract - Progress " + currentCount + "/" + total + " - " +
+                                         "Task " + taskIndex + ": " + taskEpisode.Path);
+                        }
+                    }, cancellationToken);
+                    episodeTasks.Add(task);
+
+                    if (seasonSkip)
+                    {
+                        Interlocked.Increment(ref seasonSkipCount);
+                        _logger.Info("Fingerprint - Season Skipped: " + taskSeason.Name + " - " + taskSeason.Path);
+                        break;
+                    }
+                }
             }
-            await Task.WhenAll(tasks).ConfigureAwait(false);
+
+            await Task.WhenAll(episodeTasks).ConfigureAwait(false);
 
             progress.Report(100.0);
 
             var markerTask = _taskManager.ScheduledTasks.FirstOrDefault(t =>
                 t.Name.Equals("Detect Episode Intros", StringComparison.OrdinalIgnoreCase));
-            if (markerTask != null && items.Count > 0 && !cancellationToken.IsCancellationRequested)
+            if (markerTask != null && groupedBySeason.Count > seasonSkipCount &&
+                !cancellationToken.IsCancellationRequested)
             {
                 _ = _taskManager.Execute(markerTask, new TaskOptions());
-                _logger.Info("IntroFingerprintExtract - Triggered Detect Episode Intros to import fingerprints");
+                _logger.Info("IntroFingerprintExtract - Triggered Detect Episode Intros to process fingerprints");
             }
 
             _logger.Info("IntroFingerprintExtract - Scheduled Task Complete");

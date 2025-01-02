@@ -918,46 +918,5 @@ namespace StrmAssistant.Common
                 .Where(item => item != null)
                 .ToArray();
         }
-
-        public void UpdateSeriesPeople(Series series)
-        {
-            if (!series.ProviderIds.ContainsKey("Tmdb")) return;
-
-            var seriesPeople = _libraryManager.GetItemPeople(series);
-
-            var seasonQuery = new InternalItemsQuery
-            {
-                IncludeItemTypes = new[] { nameof(Season) },
-                ParentWithPresentationUniqueKeyFromItemId = series.InternalId,
-                MinIndexNumber = 1,
-                OrderBy = new (string, SortOrder)[] { (ItemSortBy.IndexNumber, SortOrder.Ascending) }
-            };
-
-            var seasons = _libraryManager.GetItemList(seasonQuery);
-            var peopleLists = seasons
-                .Select(s => _libraryManager.GetItemPeople(s))
-                .ToList();
-
-            peopleLists.Add(seriesPeople);
-
-            var maxPeopleCount = peopleLists.Max(seasonPeople => seasonPeople.Count);
-
-            var combinedPeople = new List<PersonInfo>();
-            var uniqueNames = new HashSet<string>();
-
-            for (var i = 0; i < maxPeopleCount; i++)
-            {
-                foreach (var seasonPeople in peopleLists)
-                {
-                    var person = i < seasonPeople.Count ? seasonPeople[i] : null;
-                    if (person != null && uniqueNames.Add(person.Name))
-                    {
-                        combinedPeople.Add(person);
-                    }
-                }
-            }
-
-            _libraryManager.UpdatePeople(series, combinedPeople);
-        }
     }
 }
