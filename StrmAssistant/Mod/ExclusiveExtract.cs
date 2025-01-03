@@ -441,7 +441,9 @@ namespace StrmAssistant.Mod
                 {
                     if (__instance.IsShortcut)
                     {
-                        Task.Run(() => Plugin.LibraryApi.DeleteMediaInfoJson(__instance, CancellationToken.None));
+                        Task.Run(() =>
+                            Plugin.LibraryApi.DeleteMediaInfoJson(__instance, "Exclusive Delete on Change",
+                                CancellationToken.None));
                     }
                     else
                     {

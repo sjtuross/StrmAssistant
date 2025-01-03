@@ -212,7 +212,7 @@ namespace StrmAssistant
         {
             if (MediaInfoExtractStore.GetOptions().PersistMediaInfo && (e.Item is Video || e.Item is Audio))
             {
-                Task.Run(() => LibraryApi.DeleteMediaInfoJson(e.Item, CancellationToken.None));
+                Task.Run(() => LibraryApi.DeleteMediaInfoJson(e.Item, "Item Removed Event", CancellationToken.None));
             }
         }
 

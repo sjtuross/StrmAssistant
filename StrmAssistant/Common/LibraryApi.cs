@@ -855,7 +855,7 @@ namespace StrmAssistant.Common
             return await DeserializeMediaInfo(item, directoryService, source, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task DeleteMediaInfoJson(BaseItem item, CancellationToken cancellationToken)
+        public async Task DeleteMediaInfoJson(BaseItem item, string source, CancellationToken cancellationToken)
         {
             var directoryService = new DirectoryService(_logger, _fileSystem);
             var mediaInfoJsonPath = GetMediaInfoJsonPath(item);
@@ -867,11 +867,11 @@ namespace StrmAssistant.Common
                 {
                     await Task.Run(() => _fileSystem.DeleteFile(mediaInfoJsonPath), cancellationToken)
                         .ConfigureAwait(false);
-                    _logger.Info("MediaInfoPersist - Delete Success: " + mediaInfoJsonPath);
+                    _logger.Info("MediaInfoPersist - Delete Success (" + source + "): " + mediaInfoJsonPath);
                 }
                 catch (Exception e)
                 {
-                    _logger.Error("MediaInfoPersist - Delete Failed: " + mediaInfoJsonPath);
+                    _logger.Error("MediaInfoPersist - Delete Failed (" + source + "): " + mediaInfoJsonPath);
                     _logger.Error(e.Message);
                     _logger.Debug(e.StackTrace);
                 }
