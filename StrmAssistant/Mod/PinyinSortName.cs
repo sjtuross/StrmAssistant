@@ -1,8 +1,11 @@
 using HarmonyLib;
 using MediaBrowser.Controller.Entities;
 using MediaBrowser.Controller.Entities.Audio;
+using MediaBrowser.Model.Dto;
 using MediaBrowser.Model.Entities;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using static StrmAssistant.Common.LanguageUtility;
 using static StrmAssistant.Mod.PatchManager;
@@ -14,6 +17,8 @@ namespace StrmAssistant.Mod
         private static readonly PatchApproachTracker PatchApproachTracker = new PatchApproachTracker();
 
         private static MethodInfo _createSortName;
+        private static MethodInfo _getPrefixes;
+        private static MethodInfo _getArtistPrefixes;
 
         public static void Initialize()
         {
@@ -22,6 +27,12 @@ namespace StrmAssistant.Mod
                 _createSortName = typeof(BaseItem).GetMethod("CreateSortName",
                     BindingFlags.Instance | BindingFlags.NonPublic, null,
                     new[] { typeof(ReadOnlySpan<char>) }, null);
+                var embyApi = Assembly.Load("Emby.Api");
+                var tagService = embyApi.GetType("Emby.Api.UserLibrary.TagService");
+                _getPrefixes =
+                    tagService.GetMethod("Get", new[] { embyApi.GetType("Emby.Api.UserLibrary.GetPrefixes") });
+                _getArtistPrefixes =
+                    tagService.GetMethod("Get", new[] { embyApi.GetType("Emby.Api.UserLibrary.GetArtistPrefixes") });
             }
             catch (Exception e)
             {
@@ -53,6 +64,20 @@ namespace StrmAssistant.Mod
                                 BindingFlags.Static | BindingFlags.NonPublic)));
                         Plugin.Instance.Logger.Debug("Patch CreateSortName Success by Harmony");
                     }
+                    if (!IsPatched(_getPrefixes, typeof(PinyinSortName)))
+                    {
+                        HarmonyMod.Patch(_getPrefixes,
+                            postfix: new HarmonyMethod(typeof(PinyinSortName).GetMethod("GetPrefixesPostfix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.Logger.Debug("Patch GetPrefixes Success by Harmony");
+                    }
+                    if (!IsPatched(_getArtistPrefixes, typeof(PinyinSortName)))
+                    {
+                        HarmonyMod.Patch(_getArtistPrefixes,
+                            postfix: new HarmonyMethod(typeof(PinyinSortName).GetMethod("GetPrefixesPostfix",
+                                BindingFlags.Static | BindingFlags.NonPublic)));
+                        Plugin.Instance.Logger.Debug("Patch GetArtistPrefixes Success by Harmony");
+                    }
                 }
                 catch (Exception he)
                 {
@@ -76,10 +101,22 @@ namespace StrmAssistant.Mod
                             AccessTools.Method(typeof(PinyinSortName), "CreateSortNamePostfix"));
                         Plugin.Instance.Logger.Debug("Unpatch CreateSortName Success by Harmony");
                     }
+                    if (IsPatched(_getPrefixes, typeof(PinyinSortName)))
+                    {
+                        HarmonyMod.Unpatch(_getPrefixes,
+                            AccessTools.Method(typeof(PinyinSortName), "GetPrefixesPostfix"));
+                        Plugin.Instance.Logger.Debug("Unpatch GetPrefixes Success by Harmony");
+                    }
+                    if (IsPatched(_getArtistPrefixes, typeof(PinyinSortName)))
+                    {
+                        HarmonyMod.Unpatch(_getArtistPrefixes,
+                            AccessTools.Method(typeof(PinyinSortName), "GetPrefixesPostfix"));
+                        Plugin.Instance.Logger.Debug("Unpatch GetArtistPrefixes Success by Harmony");
+                    }
                 }
                 catch (Exception he)
                 {
-                    Plugin.Instance.Logger.Debug("Unpatch CreateSortName Failed by Harmony");
+                    Plugin.Instance.Logger.Debug("Unpatch PinyinSortName Failed by Harmony");
                     Plugin.Instance.Logger.Debug(he.Message);
                     Plugin.Instance.Logger.Debug(he.StackTrace);
                 }
@@ -100,6 +137,22 @@ namespace StrmAssistant.Mod
                 var nameToProcess = __instance is BoxSet ? RemoveDefaultCollectionName(result) : result;
 
                 __result = ConvertToPinyinInitials(nameToProcess).AsSpan();
+            }
+        }
+
+        [HarmonyPostfix]
+        private static void GetPrefixesPostfix(object request, ref object __result)
+        {
+            if (__result is NameValuePair[] pairs)
+            {
+                var validChars = new HashSet<char>("#ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+
+                var filteredPairs = pairs.Where(p => p.Name?.Length == 1 && validChars.Contains(p.Name[0])).ToArray();
+
+                if (filteredPairs.Length != pairs.Length && filteredPairs.Any(p => p.Name[0] != '#'))
+                {
+                    __result = filteredPairs;
+                }
             }
         }
     }
