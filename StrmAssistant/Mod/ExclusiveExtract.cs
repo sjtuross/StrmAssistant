@@ -417,11 +417,9 @@ namespace StrmAssistant.Mod
                 return false;
             }
 
-            if (item.IsShortcut &&
-                item.HasImage(ImageType.Primary) &&
-                (provider is ILocalImageProvider || provider is IRemoteImageProvider) &&
+            if (item.HasImage(ImageType.Primary) && provider is IRemoteImageProvider &&
                 (IsExclusiveFeatureSelected(ExclusiveControl.CatchAllBlock) ||
-                 !IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) &&
+                 !IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) && item.IsShortcut &&
                  refreshOptions is MetadataRefreshOptions && !refreshOptions.ReplaceAllImages))
             {
                 __result = false;
