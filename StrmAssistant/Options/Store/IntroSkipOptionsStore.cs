@@ -43,8 +43,9 @@ namespace StrmAssistant.Options.Store
                         .Where(v => options.UserList.Any(option => option.Value == v)) ??
                     Enumerable.Empty<string>());
 
-                options.MarkerEnabledLibraryScope =
-                    options.MarkerEnabledLibraryScope
+                var isModSupported = options.IsModSupported;
+                options.MarkerEnabledLibraryScope = isModSupported
+                    ? options.MarkerEnabledLibraryScope
                         ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                         .Contains("-1") == true
                         ? "-1"
@@ -52,37 +53,46 @@ namespace StrmAssistant.Options.Store
                             options.MarkerEnabledLibraryScope
                                 ?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                                 .Where(v => options.MarkerEnabledLibraryList.Any(option =>
-                                    option.Value == v)) ?? Enumerable.Empty<string>());
+                                    option.Value == v)) ?? Enumerable.Empty<string>())
+                    : string.Empty;
 
-                var blacklistShowIds = options.FingerprintBlacklistShows
-                    .Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(part => long.TryParse(part.Trim(), out var id) ? id : (long?)null)
-                    .Where(id => id.HasValue)
-                    .Select(id => id.Value)
-                    .ToArray();
-
-                var items = Plugin.LibraryApi.GetItemsByIds(blacklistShowIds);
-
-                options.FingerprintBlacklistShowsResult.Clear();
-
-                foreach (var item in items.Where(item => item is Series || item is Season))
+                if (isModSupported)
                 {
-                    var listItem = new GenericListItem();
+                    var blacklistShowIds = options.FingerprintBlacklistShows
+                        .Split(new char[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(part => long.TryParse(part.Trim(), out var id) ? id : (long?)null)
+                        .Where(id => id.HasValue)
+                        .Select(id => id.Value)
+                        .ToArray();
+
+                    var items = Plugin.LibraryApi.GetItemsByIds(blacklistShowIds);
+
+                    options.FingerprintBlacklistShowsResult.Clear();
+
+                    foreach (var item in items.Where(item => item is Series || item is Season))
+                    {
+                        var listItem = new GenericListItem();
     
-                    if (item is Series series)
-                    {
-                        listItem.PrimaryText = $"{series.Name} ({series.InternalId}) - {series.ContainingFolderPath}";
-                    }
-                    else if (item is Season season)
-                    {
-                        listItem.PrimaryText =
-                            $"{season.SeriesName} - {season.Name} ({season.InternalId}) - {season.ContainingFolderPath}";
-                    }
+                        if (item is Series series)
+                        {
+                            listItem.PrimaryText = $"{series.Name} ({series.InternalId}) - {series.ContainingFolderPath}";
+                        }
+                        else if (item is Season season)
+                        {
+                            listItem.PrimaryText =
+                                $"{season.SeriesName} - {season.Name} ({season.InternalId}) - {season.ContainingFolderPath}";
+                        }
 
-                    listItem.Icon = IconNames.block;
-                    listItem.IconMode = ItemListIconMode.SmallRegular;
+                        listItem.Icon = IconNames.block;
+                        listItem.IconMode = ItemListIconMode.SmallRegular;
 
-                    options.FingerprintBlacklistShowsResult.Add(listItem);
+                        options.FingerprintBlacklistShowsResult.Add(listItem);
+                    }
+                }
+                else
+                {
+                    options.FingerprintBlacklistShows = string.Empty;
+                    options.FingerprintBlacklistShowsResult.Clear();
                 }
 
                 var changes = PropertyChangeDetector.DetectObjectPropertyChanges(IntroSkipOptions, options);

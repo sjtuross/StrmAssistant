@@ -43,15 +43,19 @@ namespace StrmAssistant.Options
         [EditMultilSelect]
         [SelectItemsSource(nameof(MarkerEnabledLibraryList))]
         [VisibleCondition(nameof(UnlockIntroSkip), SimpleCondition.IsTrue)]
+        [EnabledCondition(nameof(IsModSupported),SimpleCondition.IsTrue)]
         public string MarkerEnabledLibraryScope { get; set; } = string.Empty;
 
         [DisplayNameL("IntroSkipOptions_BlacklistShows_Optional_Blacklist_Shows", typeof(Resources))]
         [DescriptionL("IntroSkipOptions_BlacklistShows_List_of_Series_Id_or_Season_Id_separated_by_comma_or_semicolon__Default_is_EMPTY", typeof(Resources))]
+        [VisibleCondition(nameof(UnlockIntroSkip), SimpleCondition.IsTrue)]
+        [EnabledCondition(nameof(IsModSupported),SimpleCondition.IsTrue)]
         public string FingerprintBlacklistShows { get; set; } = string.Empty;
 
         [VisibleCondition(nameof(UnlockIntroSkip), SimpleCondition.IsTrue)]
         public GenericItemList FingerprintBlacklistShowsResult { get; set; } = new GenericItemList();
 
+        [VisibleCondition(nameof(UnlockIntroSkip), SimpleCondition.IsTrue)]
         public SpacerItem Separator { get; set; } = new SpacerItem(SpacerSize.Medium);
 
         [DisplayNameL("PluginOptions_EnableIntroSkip_Enable_Intro_Skip__Experimental_", typeof(Resources))]
