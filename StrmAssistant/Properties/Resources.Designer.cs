@@ -134,7 +134,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to IgnoreFileChange.
+        ///   Looks up a localized string similar to Ignore File Change.
         /// </summary>
         public static string ExclusiveControl_IgnoreFileChange_IgnoreFileChange {
             get {
@@ -268,6 +268,15 @@ namespace StrmAssistant.Properties {
         public static string GeneralOptions_Tier2MaxConcurrentCount_Tier_2_Max_Concurrent_Count {
             get {
                 return ResourceManager.GetString("GeneralOptions_Tier2MaxConcurrentCount_Tier_2_Max_Concurrent_Count", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to .
+        /// </summary>
+        public static string IntroDetectionEnhancedNotEnabled {
+            get {
+                return ResourceManager.GetString("IntroDetectionEnhancedNotEnabled", resourceCulture);
             }
         }
         
@@ -1372,6 +1381,15 @@ namespace StrmAssistant.Properties {
         public static string ScanExternalSubtitleTask_Name_Scan_External_Subtitles {
             get {
                 return ResourceManager.GetString("ScanExternalSubtitleTask_Name_Scan_External_Subtitles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Server Preferred Metadata Language is not set to Chinese. RefreshPerson Task Aborted..
+        /// </summary>
+        public static string ServerPreferredMetadataLanguageIsNotZh {
+            get {
+                return ResourceManager.GetString("ServerPreferredMetadataLanguageIsNotZh", resourceCulture);
             }
         }
         

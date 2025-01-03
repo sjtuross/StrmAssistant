@@ -33,7 +33,10 @@ namespace StrmAssistant.ScheduledTask
             if (!unlockIntroSkip)
             {
                 progress.Report(100.0);
-                _logger.Warn("UnlockIntroSkip is not enabled.");
+                _ = Plugin.NotificationApi.SendMessageToAdmins(
+                    $"[{Resources.PluginOptions_EditorTitle_Strm_Assistant}] {Resources.IntroDetectionEnhancedNotEnabled}",
+                    10000);
+                _logger.Warn("Built-in Intro Detection Enhanced is not enabled.");
                 _logger.Warn("IntroFingerprintExtract - Scheduled Task Aborted");
                 return;
             }

@@ -42,6 +42,9 @@ namespace StrmAssistant.ScheduledTask
             if (!isServerPreferZh)
             {
                 progress.Report(100.0);
+                _ = Plugin.NotificationApi.SendMessageToAdmins(
+                    $"[{Resources.PluginOptions_EditorTitle_Strm_Assistant}] {Resources.ServerPreferredMetadataLanguageIsNotZh}",
+                    10000);
                 _logger.Warn("Server Preferred Metadata Language is not set to Chinese.");
                 _logger.Warn("RefreshPerson - Scheduled Task Aborted");
                 return;

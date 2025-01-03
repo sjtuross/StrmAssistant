@@ -479,4 +479,10 @@
   <data name="UIFunctionOptions_NoBoxsetsAutoCreation_Prevent_automatic_boxset_library_creation__Default_is_OFF_" xml:space="preserve">
     <value>避免扫库时自动创建合集媒体库，默认关闭。</value>
   </data>
+  <data name="ServerPreferredMetadataLanguageIsNotZh" xml:space="preserve">
+    <value>服务器首选元数据语言未设置为中文，刷新演员任务已中止。</value>
+  </data>
+  <data name="IntroDetectionEnhancedNotEnabled" xml:space="preserve">
+    <value>原生片头探测增强未启用，提取声纹任务已中止。</value>
+  </data>
 </root>

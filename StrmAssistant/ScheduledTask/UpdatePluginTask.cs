@@ -157,7 +157,8 @@ namespace StrmAssistant.ScheduledTask
                 }
                 else
                 {
-                    Plugin.NotificationApi.SendPluginNoUpdateMessage();
+                    _ = Plugin.NotificationApi.SendMessageToAdmins(
+                        $"[{Resources.PluginOptions_EditorTitle_Strm_Assistant}] {Resources.No_Update_Message}", 1000);
                     _logger.Info("No need to update");
                 }
             }

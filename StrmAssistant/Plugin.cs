@@ -27,6 +27,7 @@ using StrmAssistant.Mod;
 using StrmAssistant.Options;
 using StrmAssistant.Options.Store;
 using StrmAssistant.Options.View;
+using StrmAssistant.Properties;
 using StrmAssistant.Web.Helper;
 using System;
 using System.Collections.Generic;
@@ -232,6 +233,17 @@ namespace StrmAssistant
                     QueueManager.MediaInfoExtractItemQueue.Enqueue(e.Item);
                 }
             }
+        }
+
+        public override void OnUninstalling()
+        {
+            if (MainOptionsStore.GetOptions().ModOptions.EnhanceChineseSearch)
+            {
+                _ = NotificationApi.SendMessageToAdmins(
+                    $"[{Resources.PluginOptions_EditorTitle_Strm_Assistant}] {Resources.Uninstall_Warning}", 10000);
+            }
+
+            base.OnUninstalling();
         }
 
         public ImageFormat ThumbImageFormat => ImageFormat.Png;
