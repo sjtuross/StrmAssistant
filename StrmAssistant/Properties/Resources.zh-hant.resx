@@ -485,4 +485,10 @@
   <data name="IntroDetectionEnhancedNotEnabled" xml:space="preserve">
     <value>原生片頭偵測增強未啟用，擷取聲紋任務已中止。</value>
   </data>
+  <data name="ExclusiveControl_IgnoreExtSubChange_IgnoreExtSubChange" xml:space="preserve">
+    <value>忽略外掛字幕變更</value>
+  </data>
+  <data name="ExclusiveControl_NoPersistIntegration_NoPersistIntegration" xml:space="preserve">
+    <value>無持久化整合</value>
+  </data>
 </root>

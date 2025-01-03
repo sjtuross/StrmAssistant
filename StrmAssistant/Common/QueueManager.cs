@@ -50,13 +50,13 @@ namespace StrmAssistant.Common
             if (MediaInfoProcessTask is null || MediaInfoProcessTask.IsCompleted)
             {
                 MediaInfoExtractItemQueue.Clear();
-                MediaInfoProcessTask = Task.Run(MediaInfo_ProcessItemQueueAsync);
+                MediaInfoProcessTask = MediaInfo_ProcessItemQueueAsync();
             }
 
             if (FingerprintProcessTask is null || FingerprintProcessTask.IsCompleted)
             {
                 FingerprintItemQueue.Clear();
-                FingerprintProcessTask = Task.Run(Fingerprint_ProcessItemQueueAsync);
+                FingerprintProcessTask = Fingerprint_ProcessItemQueueAsync();
             }
         }
 

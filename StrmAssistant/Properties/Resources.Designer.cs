@@ -134,11 +134,29 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to IgnoreExtSubChange.
+        /// </summary>
+        public static string ExclusiveControl_IgnoreExtSubChange_IgnoreExtSubChange {
+            get {
+                return ResourceManager.GetString("ExclusiveControl_IgnoreExtSubChange_IgnoreExtSubChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ignore File Change.
         /// </summary>
         public static string ExclusiveControl_IgnoreFileChange_IgnoreFileChange {
             get {
                 return ResourceManager.GetString("ExclusiveControl_IgnoreFileChange_IgnoreFileChange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NoPersistIntegration.
+        /// </summary>
+        public static string ExclusiveControl_NoPersistIntegration_NoPersistIntegration {
+            get {
+                return ResourceManager.GetString("ExclusiveControl_NoPersistIntegration_NoPersistIntegration", resourceCulture);
             }
         }
         
@@ -272,7 +290,7 @@ namespace StrmAssistant.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to Built-in Intro Detection Enhanced is not enabled. IntroFingerprintExtract task aborted..
         /// </summary>
         public static string IntroDetectionEnhancedNotEnabled {
             get {

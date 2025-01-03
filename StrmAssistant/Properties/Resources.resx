@@ -572,4 +572,10 @@
   <data name="IntroDetectionEnhancedNotEnabled" xml:space="preserve">
     <value>Built-in Intro Detection Enhanced is not enabled. IntroFingerprintExtract task aborted.</value>
   </data>
+  <data name="ExclusiveControl_IgnoreExtSubChange_IgnoreExtSubChange" xml:space="preserve">
+    <value>IgnoreExtSubChange</value>
+  </data>
+  <data name="ExclusiveControl_NoPersistIntegration_NoPersistIntegration" xml:space="preserve">
+    <value>NoPersistIntegration</value>
+  </data>
 </root>

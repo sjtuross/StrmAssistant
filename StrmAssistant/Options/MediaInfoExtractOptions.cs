@@ -47,7 +47,11 @@ namespace StrmAssistant.Options
             [DescriptionL("ExclusiveControl_CatchAllAllow_CatchAllAllow", typeof(Resources))]
             CatchAllAllow,
             [DescriptionL("ExclusiveControl_CatchAllBlock_CatchAllBlock", typeof(Resources))]
-            CatchAllBlock
+            CatchAllBlock,
+            [DescriptionL("ExclusiveControl_IgnoreExtSubChange_IgnoreExtSubChange", typeof(Resources))]
+            IgnoreExtSubChange,
+            [DescriptionL("ExclusiveControl_NoPersistIntegration_NoPersistIntegration", typeof(Resources))]
+            NoPersistIntegration
         }
 
         [Browsable(false)]

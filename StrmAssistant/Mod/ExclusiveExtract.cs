@@ -331,9 +331,11 @@ namespace StrmAssistant.Mod
                     MetadataRefreshMode.Default || !IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) &&
                     CurrentRefreshContext.Value.MetadataRefreshOptions.SearchResult != null))
             {
-                if (item is Video && Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
-                    Task.Run(() =>
-                        Plugin.SubtitleApi.UpdateExternalSubtitles(item, CancellationToken.None).ConfigureAwait(false));
+                if (!IsExclusiveFeatureSelected(ExclusiveControl.IgnoreExtSubChange) && item is Video &&
+                    Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
+                {
+                    _ = Plugin.SubtitleApi.UpdateExternalSubtitles(item, CancellationToken.None).ConfigureAwait(false);
+                }
 
                 __result = false;
                 return false;
@@ -349,9 +351,11 @@ namespace StrmAssistant.Mod
 
             if (!IsExclusiveFeatureSelected(ExclusiveControl.CatchAllAllow) && Plugin.LibraryApi.HasMediaInfo(item))
             {
-                if (item is Video && Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
-                    Task.Run(() =>
-                        Plugin.SubtitleApi.UpdateExternalSubtitles(item, CancellationToken.None).ConfigureAwait(false));
+                if (!IsExclusiveFeatureSelected(ExclusiveControl.IgnoreExtSubChange) && item is Video &&
+                    Plugin.SubtitleApi.HasExternalSubtitleChanged(item))
+                {
+                    _ = Plugin.SubtitleApi.UpdateExternalSubtitles(item, CancellationToken.None).ConfigureAwait(false);
+                }
 
                 __result = false;
                 return false;
@@ -433,6 +437,7 @@ namespace StrmAssistant.Mod
         private static bool AfterMetadataRefreshPrefix(BaseItem __instance)
         {
             if (Plugin.Instance.MediaInfoExtractStore.GetOptions().PersistMediaInfo &&
+                !IsExclusiveFeatureSelected(ExclusiveControl.NoPersistIntegration) &&
                 (__instance is Video || __instance is Audio) && Plugin.LibraryApi.IsLibraryInScope(__instance) &&
                 CurrentRefreshContext.Value != null &&
                 CurrentRefreshContext.Value.InternalId == __instance.InternalId && ExclusiveItem.Value == 0)
@@ -441,28 +446,24 @@ namespace StrmAssistant.Mod
                 {
                     if (__instance.IsShortcut)
                     {
-                        Task.Run(() =>
-                            Plugin.LibraryApi.DeleteMediaInfoJson(__instance, "Exclusive Delete on Change",
-                                CancellationToken.None));
+                        _ = Plugin.LibraryApi.DeleteMediaInfoJson(__instance, "Exclusive Delete on Change",
+                            CancellationToken.None);
                     }
                     else
                     {
-                        Task.Run(() =>
-                            Plugin.LibraryApi.SerializeMediaInfo(__instance, true, "Exclusive Overwrite",
-                                CancellationToken.None));
+                        _ = Plugin.LibraryApi.SerializeMediaInfo(__instance, true, "Exclusive Overwrite",
+                            CancellationToken.None);
                     }
                 }
                 else if (!Plugin.LibraryApi.HasMediaInfo(__instance))
                 {
-                    Task.Run(() =>
-                        Plugin.LibraryApi.DeserializeMediaInfo(__instance, "Exclusive Restore",
-                            CancellationToken.None));
+                    _ = Plugin.LibraryApi.DeserializeMediaInfo(__instance, "Exclusive Restore",
+                        CancellationToken.None);
                 }
                 else
                 {
-                    Task.Run(() =>
-                        Plugin.LibraryApi.SerializeMediaInfo(__instance, false, "Exclusive Non-existence",
-                            CancellationToken.None));
+                    _ = Plugin.LibraryApi.SerializeMediaInfo(__instance, false, "Exclusive Non-existence",
+                        CancellationToken.None);
                 }
 
                 CurrentRefreshContext.Value = null;
