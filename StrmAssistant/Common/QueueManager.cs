@@ -109,6 +109,14 @@ namespace StrmAssistant.Common
 
                 if (!MediaInfoExtractItemQueue.IsEmpty)
                 {
+                    if (Plugin.LibraryApi.IsLibraryScanRunning())
+                    {
+                        Logger.Info("MediaInfoExtract - ProcessItemQueueAsync Deferred (Library Scan Running)");
+                        Logger.Info("MediaInfoExtract - ProcessItemQueueAsync Queue: " + MediaInfoExtractItemQueue.Count);
+                        _mediaInfoProcessLastRunTime = DateTime.UtcNow;
+                        continue;
+                    }
+
                     var dequeueMediaInfoItems = new List<BaseItem>();
                     while (MediaInfoExtractItemQueue.TryDequeue(out var dequeueItem))
                     {
@@ -269,6 +277,14 @@ namespace StrmAssistant.Common
 
                 if (!FingerprintItemQueue.IsEmpty)
                 {
+                    if (Plugin.LibraryApi.IsLibraryScanRunning())
+                    {
+                        Logger.Info("Fingerprint - ProcessItemQueueAsync Deferred (Library Scan Running)");
+                        Logger.Info("Fingerprint - ProcessItemQueueAsync Queue: " + FingerprintItemQueue.Count);
+                        _fingerprintProcessLastRunTime = DateTime.UtcNow;
+                        continue;
+                    }
+
                     var dequeueItems = new List<BaseItem>();
                     while (FingerprintItemQueue.TryDequeue(out var dequeueItem))
                     {

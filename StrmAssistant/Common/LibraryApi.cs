@@ -176,6 +176,11 @@ namespace StrmAssistant.Common
             }
         }
 
+        public bool IsLibraryScanRunning()
+        {
+            return _libraryManager.IsScanRunning;
+        }
+
         public void UpdateLibraryPathsInScope(string currentScope)
         {
             var libraryIds = currentScope?.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).ToArray();
